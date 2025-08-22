@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="@color/claude_accent"
+        android:pathData="M12,2 C17.523,2 22,6.477 22,12 C22,17.523 17.523,22 12,22 C6.477,22 2,17.523 2,12 C2,6.477 6.477,2 12,2 Z M12,4 C7.582,4 4,7.582 4,12 C4,16.418 7.582,20 12,20 C16.418,20 20,16.418 20,12 C20,7.582 16.418,4 12,4 Z" />
+    <path
+        android:fillColor="@color/claude_accent"
+        android:pathData="M8,10 C8.552,10 9,10.448 9,11 C9,11.552 8.552,12 8,12 C7.448,12 7,11.552 7,11 C7,10.448 7.448,10 8,10 Z" />
+    <path
+        android:fillColor="@color/claude_accent"
+        android:pathData="M12,10 C12.552,10 13,10.448 13,11 C13,11.552 12.552,12 12,12 C11.448,12 11,11.552 11,11 C11,10.448 11.448,10 12,10 Z" />
+    <path
+        android:fillColor="@color/claude_accent"
+        android:pathData="M16,10 C16.552,10 17,10.448 17,11 C17,11.552 16.552,12 16,12 C15.448,12 15,11.552 15,11 C15,10.448 15.448,10 16,10 Z" />
+</vector>
