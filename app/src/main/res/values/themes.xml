@@ -1,4 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 
+    Termux AI Theme System
+    
+    Provides Material You dynamic colors support with expressive fallback.
+    Aligns with upstream Termux dark terminal aesthetic while enabling modern theming.
+    
+    Themes:
+    - Theme.TermuxAI: Base dark theme for terminal application
+    - Theme.TermuxAI.Expressive: Manual color palette fallback for pre-Android 12
+    
+    Custom styles prevent AAPT errors and ensure consistent UI across components.
+-->
 <resources>
     <!-- Base application theme with Material You dynamic colors -->
     <style name="Theme.TermuxAI" parent="Theme.Material3.Dark.NoActionBar">

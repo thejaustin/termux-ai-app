@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Night mode theme overrides for dark consistency -->
+<!-- 
+    Night mode theme overrides for dark consistency 
+    
+    Ensures Termux AI maintains dark terminal aesthetic in all lighting conditions.
+    Prevents any light theme elements from appearing, maintaining upstream Termux consistency.
+-->
 <resources>
     <!-- Ensure TermuxAI theme maintains dark consistency in night mode -->
     <style name="Theme.TermuxAI" parent="Theme.Material3.Dark.NoActionBar">

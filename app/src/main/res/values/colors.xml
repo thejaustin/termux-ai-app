@@ -1,4 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 
+    Termux AI Color Palette
+    
+    Upstream Termux aesthetic alignment with dark terminal-friendly colors.
+    Includes Material You expressive fallback palette for devices without dynamic colors.
+    AI-specific colors (ai_green, claude_accent) for consistent theming across terminal operations.
+    
+    Key color groups:
+    - Terminal: Dark backgrounds with high-contrast text for readability
+    - Claude AI: Green accent colors for AI operation indicators
+    - Material You: Expressive palette fallback for older devices
+-->
 <resources>
     <!-- Primary theme colors -->
     <color name="colorPrimary">#FF10A37F</color>
