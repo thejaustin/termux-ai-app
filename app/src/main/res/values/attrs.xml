@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Custom attributes -->
-    <attr name="boxStrokeColorStateList" format="color|reference" />
+    <!-- Custom attributes for Termux AI -->
 </resources>

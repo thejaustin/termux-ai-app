@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application theme for dark mode -->
+    <style name="Theme.TermuxAI" parent="Theme.Material3.DynamicColors.Dark">
+        <!-- Primary brand color -->
+        <item name="colorPrimary">@color/claude_accent</item>
+        <item name="colorPrimaryVariant">@color/claude_accent_dark</item>
+        <item name="colorOnPrimary">@color/white</item>
+        
+        <!-- Secondary brand color -->
+        <item name="colorSecondary">@color/tab_indicator</item>
+        <item name="colorSecondaryVariant">@color/teal_700</item>
+        <item name="colorOnSecondary">@color/black</item>
+        
+        <!-- Background colors -->
+        <item name="android:colorBackground">@color/terminal_background</item>
+        <item name="colorSurface">@color/panel_background</item>
+        <item name="colorOnBackground">@color/text_primary</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        
+        <!-- Status bar -->
+        <item name="android:statusBarColor">@color/terminal_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+        
+        <!-- Navigation bar -->
+        <item name="android:navigationBarColor">@color/terminal_background</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        
+        <!-- Window background -->
+        <item name="android:windowBackground">@color/terminal_background</item>
+        
+        <!-- Text colors -->
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="android:textColorHint">@color/text_tertiary</item>
+        
+        <!-- Action bar -->
+        <item name="actionBarTheme">@style/ThemeOverlay.TermuxAI.ActionBar</item>
+    </style>
+    
+    <!-- Light theme for older devices -->
+    <style name="Theme.TermuxAI.Light" parent="Theme.Material3.Light">
+        <!-- Primary brand color -->
+        <item name="colorPrimary">@color/claude_accent</item>
+        <item name="colorPrimaryVariant">@color/claude_accent_dark</item>
+        <item name="colorOnPrimary">@color/white</item>
+        
+        <!-- Secondary brand color -->
+        <item name="colorSecondary">@color/tab_indicator</item>
+        <item name="colorSecondaryVariant">@color/teal_700</item>
+        <item name="colorOnSecondary">@color/white</item>
+        
+        <!-- Background colors for light mode -->
+        <item name="android:colorBackground">@color/light_terminal_background</item>
+        <item name="colorSurface">@color/light_panel_background</item>
+        <item name="colorOnBackground">@color/light_text_primary</item>
+        <item name="colorOnSurface">@color/light_text_primary</item>
+        
+        <!-- Status bar -->
+        <item name="android:statusBarColor">@color/light_terminal_background</item>
+        <item name="android:windowLightStatusBar">true</item>
+        
+        <!-- Navigation bar -->
+        <item name="android:navigationBarColor">@color/light_terminal_background</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        
+        <!-- Window background -->
+        <item name="android:windowBackground">@color/light_terminal_background</item>
+        
+        <!-- Text colors -->
+        <item name="android:textColorPrimary">@color/light_text_primary</item>
+        <item name="android:textColorSecondary">@color/light_text_secondary</item>
+        <item name="android:textColorHint">@color/light_text_tertiary</item>
+        
+        <!-- Action bar -->
+        <item name="actionBarTheme">@style/ThemeOverlay.TermuxAI.ActionBar.Light</item>
+    </style>
+</resources>
