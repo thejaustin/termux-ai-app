@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Claude AI Active Indicator Icon
+    
+    Vector drawable that represents active Claude AI integration status.
+    Used in the terminal UI to indicate when Claude Code is actively
+    processing commands or providing AI assistance.
+    
+    Design: Circular background with Claude brand colors and friendly face icon
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="24dp"
     android:height="24dp"
