@@ -45,7 +45,7 @@
     </style>
     
     <!-- Dialog theme -->
-    <style name="Theme.TermuxAI.Dialog" parent="Theme.Material3.DynamicColors.Dark.DialogWhenLarge">
+    <style name="Theme.TermuxAI.Dialog" parent="Theme.Material3.Dark">
         <item name="colorPrimary">@color/claude_accent</item>
         <item name="android:colorBackground">@color/panel_background</item>
         <item name="colorSurface">@color/panel_background</item>
@@ -105,7 +105,7 @@
     <style name="InputFieldStyle" parent="Widget.Material3.TextInputLayout.OutlinedBox">
         <item name="boxBackgroundColor">@color/input_background</item>
         <item name="boxStrokeColor">@color/input_border</item>
-        <item name="boxStrokeColorStateList">@color/input_border_focused</item>
+        <item name="boxStrokeColorStateList">@color/box_stroke_color</item>
         <item name="android:textColorHint">@color/input_hint</item>
     </style>
     
