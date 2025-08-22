@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Custom attributes -->
-    <attr name="boxStrokeColorStateList" format="color|reference" />
+    <!-- Custom attributes can be added here as needed -->
 </resources>

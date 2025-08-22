@@ -7,6 +7,8 @@ import android.util.Log;
 
 import androidx.appcompat.app.AppCompatDelegate;
 
+import com.google.android.material.color.DynamicColors;
+
 /**
  * Main Application class for Termux AI
  * 
@@ -32,6 +34,9 @@ public class TermuxAIApplication extends Application {
         
         // Set up dark theme (always dark for terminal app)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        
+        // Enable dynamic colors if available (Android 12+)
+        DynamicColors.applyToActivitiesIfAvailable(this);
         
         // Initialize global components
         initializeClaudeIntegration();
