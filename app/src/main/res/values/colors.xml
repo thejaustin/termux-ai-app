@@ -107,4 +107,20 @@
     <color name="ansi_bright_magenta">#FFBC8CFF</color>
     <color name="ansi_bright_cyan">#FF39D0D8</color>
     <color name="ansi_bright_white">#FFFFFFFF</color>
+    
+    <!-- AI-themed colors -->
+    <color name="ai_green">#FF10A37F</color>
+    <color name="ai_blue">#FF0066CC</color>
+    <color name="ai_purple">#FF6F42C1</color>
+    <color name="ai_orange">#FFFD7E14</color>
+    
+    <!-- Light theme colors -->
+    <color name="light_terminal_background">#FFFFFFFF</color>
+    <color name="light_panel_background">#FFF6F8FA</color>
+    <color name="light_text_primary">#FF24292F</color>
+    <color name="light_text_secondary">#FF656D76</color>
+    <color name="light_text_tertiary">#FF8C959F</color>
+    
+    <!-- Box stroke color reference -->
+    <color name="box_stroke_color">@color/input_border</color>
 </resources>

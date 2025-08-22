@@ -100,16 +100,16 @@ public class EnhancedTerminalView extends TerminalView {
     private void initializePaints() {
         overlayPaint = new Paint();
         overlayPaint.setAntiAlias(true);
-        overlayPaint.setColor(0x88000000); // Semi-transparent black
+        overlayPaint.setColor(getContext().getColor(R.color.overlay_background));
         
         progressPaint = new Paint();
         progressPaint.setAntiAlias(true);
-        progressPaint.setColor(0xFF4CAF50); // Green
+        progressPaint.setColor(getContext().getColor(R.color.ai_green));
         progressPaint.setStrokeWidth(8);
         
         highlightPaint = new Paint();
         highlightPaint.setAntiAlias(true);
-        highlightPaint.setColor(0x4400FF00); // Semi-transparent green
+        highlightPaint.setColor(getContext().getColor(R.color.file_highlight_bg));
     }
     
     private void setupGestureDetector() {
@@ -246,7 +246,7 @@ public class EnhancedTerminalView extends TerminalView {
         if (!currentClaudeOperation.isEmpty()) {
             String statusText = "🤖 " + currentClaudeOperation;
             Paint textPaint = new Paint();
-            textPaint.setColor(0xFF4CAF50);
+            textPaint.setColor(getContext().getColor(R.color.ai_green));
             textPaint.setTextSize(24);
             textPaint.setTypeface(Typeface.DEFAULT_BOLD);
             
@@ -289,7 +289,7 @@ public class EnhancedTerminalView extends TerminalView {
             // Progress text
             String progressText = (int)(claudeProgress * 100) + "%";
             Paint textPaint = new Paint();
-            textPaint.setColor(0xFF4CAF50);
+            textPaint.setColor(getContext().getColor(R.color.ai_green));
             textPaint.setTextSize(32);
             textPaint.setTypeface(Typeface.DEFAULT_BOLD);
             

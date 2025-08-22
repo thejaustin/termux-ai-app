@@ -3,6 +3,7 @@ package com.termux.ai;
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.util.Log;
 
 import androidx.appcompat.app.AppCompatDelegate;
@@ -30,8 +31,8 @@ public class TermuxAIApplication extends Application {
         // Initialize preferences
         preferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         
-        // Set up dark theme (always dark for terminal app)
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        // Set up dynamic theming with fallback
+        setupDynamicTheming();
         
         // Initialize global components
         initializeClaudeIntegration();
@@ -196,6 +197,68 @@ public class TermuxAIApplication extends Application {
     
     public boolean isAutoSuggestionsEnabled() {
         return preferences.getBoolean("auto_suggestions", true);
+    }
+    
+    /**
+     * Setup dynamic theming with fallback logic for different Android versions
+     */
+    private void setupDynamicTheming() {
+        // Check user's preferred theme mode
+        String themeMode = preferences.getString("theme_mode", "follow_system");
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            // Android 12+ supports dynamic colors
+            Log.d(TAG, "Using dynamic colors on Android 12+");
+            
+            switch (themeMode) {
+                case "light":
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                    break;
+                case "dark":
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                    break;
+                default:
+                    // Follow system default
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+                    break;
+            }
+        } else {
+            // Fallback to expressive theming for older Android versions
+            Log.d(TAG, "Using expressive fallback themes for pre-Android 12");
+            
+            switch (themeMode) {
+                case "light":
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                    break;
+                case "dark":
+                default:
+                    // Default to dark theme for terminal app
+                    AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                    break;
+            }
+        }
+    }
+    
+    /**
+     * Check if dynamic colors are supported on this device
+     */
+    public boolean isDynamicColorSupported() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
+    }
+    
+    /**
+     * Set theme mode preference
+     */
+    public void setThemeMode(String mode) {
+        preferences.edit().putString("theme_mode", mode).apply();
+        setupDynamicTheming();
+    }
+    
+    /**
+     * Get current theme mode preference
+     */
+    public String getThemeMode() {
+        return preferences.getString("theme_mode", "follow_system");
     }
     
     public void setAutoSuggestionsEnabled(boolean enabled) {
