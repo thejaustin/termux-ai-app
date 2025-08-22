@@ -1,4 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Claude Status Background Shape
+    
+    Drawable background for Claude AI status indicators and overlays.
+    Provides a consistent rounded rectangle background that aligns with
+    Termux aesthetics while highlighting AI-related UI elements.
+    
+    Features: Rounded corners, primary brand color, subtle border
+-->
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
     <solid android:color="@color/colorPrimary" />
     <corners android:radius="8dp" />

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Termux AI Night Mode Colors
+    
+    Color definitions specifically for night/dark mode to ensure proper
+    theming on Android versions that don't support dynamic colors.
+    These colors provide consistent dark theme experience.
+-->
+<resources>
+    <!-- Override specific colors for night mode if needed -->
+    <color name="terminal_background">#FF0D1117</color>
+    <color name="terminal_foreground">#FFC9D1D9</color>
+    <color name="text_primary">#FFF0F6FC</color>
+    <color name="text_secondary">#FF8B949E</color>
+    
+    <!-- Ensure AI colors remain consistent in night mode -->
+    <color name="ai_green">#FF10A37F</color>
+    <color name="ai_overlay">#88000000</color>
+    <color name="ai_highlight">#4410A37F</color>
+</resources>
