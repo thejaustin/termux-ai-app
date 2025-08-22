@@ -1,7 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 
+    Termux AI Theme System
+    
+    Provides Material You dynamic colors support with expressive fallback.
+    Aligns with upstream Termux dark terminal aesthetic while enabling modern theming.
+    
+    Themes:
+    - Theme.TermuxAI: Base dark theme for terminal application
+    - Theme.TermuxAI.Expressive: Manual color palette fallback for pre-Android 12
+    
+    Custom styles prevent AAPT errors and ensure consistent UI across components.
+-->
 <resources>
-    <!-- Base application theme -->
-    <style name="Theme.TermuxAI" parent="Theme.Material3.DynamicColors.Dark">
+    <!-- Base application theme with Material You dynamic colors -->
+    <style name="Theme.TermuxAI" parent="Theme.Material3.Dark.NoActionBar">
         <!-- Primary brand color -->
         <item name="colorPrimary">@color/claude_accent</item>
         <item name="colorPrimaryVariant">@color/claude_accent_dark</item>
@@ -42,6 +54,40 @@
     <style name="Theme.TermuxAI.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+    </style>
+    
+    <!-- Expressive theme for manual palette fallback (Material You alternative) -->
+    <style name="Theme.TermuxAI.Expressive" parent="Theme.Material3.Dark.NoActionBar">
+        <!-- Expressive color palette for devices without dynamic colors -->
+        <item name="colorPrimary">@color/expressive_primary</item>
+        <item name="colorOnPrimary">@color/expressive_on_primary</item>
+        <item name="colorPrimaryContainer">@color/expressive_primary_container</item>
+        <item name="colorOnPrimaryContainer">@color/expressive_on_primary_container</item>
+        
+        <item name="colorSecondary">@color/expressive_secondary</item>
+        <item name="colorOnSecondary">@color/expressive_on_secondary</item>
+        <item name="colorSecondaryContainer">@color/expressive_secondary_container</item>
+        <item name="colorOnSecondaryContainer">@color/expressive_on_secondary_container</item>
+        
+        <item name="colorSurface">@color/expressive_surface</item>
+        <item name="colorOnSurface">@color/expressive_on_surface</item>
+        <item name="colorSurfaceVariant">@color/expressive_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/expressive_on_surface_variant</item>
+        
+        <item name="android:colorBackground">@color/expressive_background</item>
+        <item name="colorOnBackground">@color/expressive_on_background</item>
+        
+        <item name="colorOutline">@color/expressive_outline</item>
+        <item name="colorOutlineVariant">@color/expressive_outline_variant</item>
+        
+        <!-- Status and navigation bar -->
+        <item name="android:statusBarColor">@color/expressive_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:navigationBarColor">@color/expressive_background</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        
+        <!-- Window background -->
+        <item name="android:windowBackground">@color/expressive_background</item>
     </style>
     
     <!-- Dialog theme -->
@@ -105,8 +151,16 @@
     <style name="InputFieldStyle" parent="Widget.Material3.TextInputLayout.OutlinedBox">
         <item name="boxBackgroundColor">@color/input_background</item>
         <item name="boxStrokeColor">@color/input_border</item>
+        <item name="android:textColorHint">@color/input_hint</item>
+    </style>
+    
+    <!-- Custom TextInput style to avoid AAPT errors -->
+    <style name="Widget.TermuxAI.TextInput" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxBackgroundColor">@color/input_background</item>
+        <item name="boxStrokeColor">@color/input_border</item>
         <item name="boxStrokeColorStateList">@color/box_stroke_color</item>
         <item name="android:textColorHint">@color/input_hint</item>
+        <item name="hintTextColor">@color/input_hint</item>
     </style>
     
     <!-- Progress bar styles -->

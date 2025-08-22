@@ -33,6 +33,9 @@ public class TermuxAIApplication extends Application {
         // Set up dark theme (always dark for terminal app)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
         
+        // Apply Material You dynamic colors with fallback
+        applyDynamicColors();
+        
         // Initialize global components
         initializeClaudeIntegration();
         initializeTerminalEnvironment();
@@ -233,5 +236,25 @@ public class TermuxAIApplication extends Application {
     
     public boolean isDebugMode() {
         return BuildConfig.DEBUG;
+    }
+    
+    /**
+     * Apply Material You dynamic colors with safe fallback
+     * Attempts to use dynamic colors on Android 12+ devices,
+     * falls back to expressive palette if dynamic colors are unsupported
+     */
+    private void applyDynamicColors() {
+        try {
+            // Try to apply dynamic colors (requires Android 12+ and Material 3)
+            Class<?> dynamicColorsClass = Class.forName("com.google.android.material.color.DynamicColors");
+            java.lang.reflect.Method applyMethod = dynamicColorsClass.getMethod("applyToActivitiesIfAvailable", Application.class);
+            applyMethod.invoke(null, this);
+            Log.d(TAG, "Dynamic colors applied successfully");
+        } catch (Exception e) {
+            Log.d(TAG, "Dynamic colors not available, using expressive theme fallback: " + e.getMessage());
+            // Optional: Set flag to use Theme.TermuxAI.Expressive in activities
+            // Activities can check this preference to choose the appropriate theme
+            preferences.edit().putBoolean("use_expressive_theme", true).apply();
+        }
     }
 }

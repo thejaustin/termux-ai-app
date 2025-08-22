@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 
+    Hint background drawable
+    
+    Used for gesture hints and user guidance overlays.
+    Semi-transparent background for better readability over terminal content.
+-->
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
     <solid android:color="#20FFFFFF" />
     <corners android:radius="4dp" />

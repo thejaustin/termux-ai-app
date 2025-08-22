@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+    Night mode theme overrides for dark consistency 
+    
+    Ensures Termux AI maintains dark terminal aesthetic in all lighting conditions.
+    Prevents any light theme elements from appearing, maintaining upstream Termux consistency.
+-->
+<resources>
+    <!-- Ensure TermuxAI theme maintains dark consistency in night mode -->
+    <style name="Theme.TermuxAI" parent="Theme.Material3.Dark.NoActionBar">
+        <!-- Upstream Termux aesthetic alignment with dark terminal colors -->
+        <item name="colorPrimary">@color/claude_accent</item>
+        <item name="colorPrimaryVariant">@color/claude_accent_dark</item>
+        <item name="colorOnPrimary">@color/white</item>
+        
+        <item name="colorSecondary">@color/tab_indicator</item>
+        <item name="colorSecondaryVariant">@color/teal_700</item>
+        <item name="colorOnSecondary">@color/black</item>
+        
+        <!-- Terminal-friendly dark background -->
+        <item name="android:colorBackground">@color/terminal_background</item>
+        <item name="colorSurface">@color/panel_background</item>
+        <item name="colorOnBackground">@color/text_primary</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        
+        <!-- Dark status and navigation bars -->
+        <item name="android:statusBarColor">@color/terminal_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:navigationBarColor">@color/terminal_background</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        
+        <!-- Consistent dark window background -->
+        <item name="android:windowBackground">@color/terminal_background</item>
+        
+        <!-- Dark text colors -->
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="android:textColorHint">@color/text_tertiary</item>
+    </style>
+    
+    <!-- Expressive theme also enforces dark mode -->
+    <style name="Theme.TermuxAI.Expressive" parent="Theme.Material3.Dark.NoActionBar">
+        <!-- Same as day variant to ensure consistent dark experience -->
+        <item name="colorPrimary">@color/expressive_primary</item>
+        <item name="colorOnPrimary">@color/expressive_on_primary</item>
+        <item name="android:colorBackground">@color/expressive_background</item>
+        <item name="colorOnBackground">@color/expressive_on_background</item>
+        <item name="android:statusBarColor">@color/expressive_background</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:navigationBarColor">@color/expressive_background</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+</resources>

@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- 
+    Claude status background drawable
+    
+    Used for Claude AI operation status overlays in terminal view.
+    Provides consistent visual indicator aligned with app theming.
+-->
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
     <solid android:color="@color/colorPrimary" />
     <corners android:radius="8dp" />

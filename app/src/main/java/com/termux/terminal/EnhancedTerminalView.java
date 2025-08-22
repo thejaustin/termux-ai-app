@@ -21,8 +21,10 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 
 import com.termux.ai.ClaudeCodeIntegration;
+import com.termux.ai.R;
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
 import com.termux.view.TerminalView;
@@ -104,12 +106,14 @@ public class EnhancedTerminalView extends TerminalView {
         
         progressPaint = new Paint();
         progressPaint.setAntiAlias(true);
-        progressPaint.setColor(0xFF4CAF50); // Green
+        progressPaint.setColor(ContextCompat.getColor(getContext(), R.color.ai_green));
         progressPaint.setStrokeWidth(8);
         
         highlightPaint = new Paint();
         highlightPaint.setAntiAlias(true);
-        highlightPaint.setColor(0x4400FF00); // Semi-transparent green
+        // Use ai_green with transparency for highlights
+        int aiGreenColor = ContextCompat.getColor(getContext(), R.color.ai_green);
+        highlightPaint.setColor((aiGreenColor & 0x00FFFFFF) | 0x44000000); // Semi-transparent ai_green
     }
     
     private void setupGestureDetector() {
@@ -246,7 +250,7 @@ public class EnhancedTerminalView extends TerminalView {
         if (!currentClaudeOperation.isEmpty()) {
             String statusText = "🤖 " + currentClaudeOperation;
             Paint textPaint = new Paint();
-            textPaint.setColor(0xFF4CAF50);
+            textPaint.setColor(ContextCompat.getColor(getContext(), R.color.ai_green));
             textPaint.setTextSize(24);
             textPaint.setTypeface(Typeface.DEFAULT_BOLD);
             
@@ -289,7 +293,7 @@ public class EnhancedTerminalView extends TerminalView {
             // Progress text
             String progressText = (int)(claudeProgress * 100) + "%";
             Paint textPaint = new Paint();
-            textPaint.setColor(0xFF4CAF50);
+            textPaint.setColor(ContextCompat.getColor(getContext(), R.color.ai_green));
             textPaint.setTextSize(32);
             textPaint.setTypeface(Typeface.DEFAULT_BOLD);
             
