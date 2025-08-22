@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Base application theme -->
-    <style name="Theme.TermuxAI" parent="Theme.Material3.DynamicColors.Dark">
+    <style name="Theme.TermuxAI" parent="Theme.Material3.DayNight">
         <!-- Primary brand color -->
         <item name="colorPrimary">@color/claude_accent</item>
         <item name="colorPrimaryVariant">@color/claude_accent_dark</item>
@@ -105,7 +105,6 @@
     <style name="InputFieldStyle" parent="Widget.Material3.TextInputLayout.OutlinedBox">
         <item name="boxBackgroundColor">@color/input_background</item>
         <item name="boxStrokeColor">@color/input_border</item>
-        <item name="boxStrokeColorStateList">@color/box_stroke_color</item>
         <item name="android:textColorHint">@color/input_hint</item>
     </style>
     
