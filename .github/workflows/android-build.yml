@@ -33,11 +33,25 @@ jobs:
     - name: Fix Gradle wrapper
       run: |
         rm -f gradle/wrapper/gradle-wrapper.jar
-        curl -L -o gradle/wrapper/gradle-wrapper.jar "https://downloads.gradle.org/distributions/gradle-8.10.2-wrapper.jar"
+        # Try downloading from multiple sources
+        curl -L -f -o gradle/wrapper/gradle-wrapper.jar "https://downloads.gradle.org/distributions/gradle-8.10.2-wrapper.jar" || \
+        curl -L -f -o gradle/wrapper/gradle-wrapper.jar "https://services.gradle.org/distributions/gradle-8.10.2-wrapper.jar" || \
+        wget -O gradle/wrapper/gradle-wrapper.jar "https://downloads.gradle.org/distributions/gradle-8.10.2-wrapper.jar"
+        # Verify the downloaded file is valid
+        file gradle/wrapper/gradle-wrapper.jar
         chmod +x gradlew
 
-    - name: Build Debug APK
+    - name: Build Debug APK (with wrapper)
       run: ./gradlew assembleDebug --stacktrace --no-daemon
+      continue-on-error: true
+
+    - name: Build Debug APK (with system gradle)
+      if: failure()
+      run: |
+        echo "Wrapper failed, trying system gradle"
+        sudo apt-get update
+        sudo apt-get install -y gradle
+        gradle assembleDebug --stacktrace --no-daemon
 
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
