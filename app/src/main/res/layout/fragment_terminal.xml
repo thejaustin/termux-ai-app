@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/terminal_background">
+
+    <!-- Main terminal view -->
+    <com.termux.terminal.EnhancedTerminalView
+        android:id="@+id/terminal_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/terminal_background"
+        android:scrollbars="vertical"
+        android:fadingEdge="vertical"
+        android:fadingEdgeLength="10dp" />
+
+    <!-- Claude Code overlay indicators -->
+    <LinearLayout
+        android:id="@+id/claude_indicators"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_margin="8dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <!-- Claude active indicator -->
+        <ImageView
+            android:id="@+id/claude_active_indicator"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginBottom="4dp"
+            android:src="@drawable/ic_claude_active"
+            android:background="@drawable/circle_indicator_background"
+            android:padding="4dp"
+            android:tint="@color/claude_accent" />
+
+        <!-- Progress indicator -->
+        <ProgressBar
+            android:id="@+id/claude_mini_progress"
+            style="?android:attr/progressBarStyleSmall"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:indeterminateTint="@color/claude_accent"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+    <!-- File operation highlights overlay -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/file_highlights_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="48dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:visibility="gone"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+    <!-- Quick action overlay -->
+    <LinearLayout
+        android:id="@+id/quick_actions_overlay"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|start"
+        android:layout_margin="16dp"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        android:background="@drawable/quick_actions_background"
+        android:padding="8dp">
+
+        <ImageButton
+            android:id="@+id/btn_stop_claude"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_margin="4dp"
+            android:background="@drawable/circle_button_background"
+            android:src="@drawable/ic_stop"
+            android:contentDescription="@string/stop_claude"
+            android:tint="@color/error_color" />
+
+        <ImageButton
+            android:id="@+id/btn_claude_help"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_margin="4dp"
+            android:background="@drawable/circle_button_background"
+            android:src="@drawable/ic_help"
+            android:contentDescription="@string/claude_history"
+            android:tint="@color/info_color" />
+
+    </LinearLayout>
+
+    <!-- Text selection enhancement overlay -->
+    <View
+        android:id="@+id/selection_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:background="@color/overlay_background" />
+
+</FrameLayout>
