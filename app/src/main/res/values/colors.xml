@@ -24,6 +24,9 @@
     <color name="claude_background">#FF1A1A1A</color>
     <color name="claude_text">#FFECEDEE</color>
     
+    <!-- AI theme color for terminal consistency -->
+    <color name="ai_green">#FF10A37F</color>
+    
     <!-- Tab colors -->
     <color name="tab_background">#FF161B22</color>
     <color name="tab_text_normal">#FF8B949E</color>
@@ -107,4 +110,22 @@
     <color name="ansi_bright_magenta">#FFBC8CFF</color>
     <color name="ansi_bright_cyan">#FF39D0D8</color>
     <color name="ansi_bright_white">#FFFFFFFF</color>
+    
+    <!-- Material You Expressive palette fallback colors -->
+    <color name="expressive_primary">#FF10A37F</color>
+    <color name="expressive_on_primary">#FFFFFFFF</color>
+    <color name="expressive_primary_container">#FF0F7A5C</color>
+    <color name="expressive_on_primary_container">#FFC9E6DC</color>
+    <color name="expressive_secondary">#FF58A6FF</color>
+    <color name="expressive_on_secondary">#FF000000</color>
+    <color name="expressive_secondary_container">#FF264F78</color>
+    <color name="expressive_on_secondary_container">#FFC9D1D9</color>
+    <color name="expressive_surface">#FF0D1117</color>
+    <color name="expressive_on_surface">#FFF0F6FC</color>
+    <color name="expressive_surface_variant">#FF161B22</color>
+    <color name="expressive_on_surface_variant">#FF8B949E</color>
+    <color name="expressive_background">#FF0D1117</color>
+    <color name="expressive_on_background">#FFF0F6FC</color>
+    <color name="expressive_outline">#FF30363D</color>
+    <color name="expressive_outline_variant">#FF21262D</color>
 </resources>
