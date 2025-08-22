@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<full-backup-content>
+    <!-- Exclude sensitive files from backup -->
+    <exclude domain="sharedpref" path="auth_preferences.xml" />
+    <exclude domain="sharedpref" path="api_keys.xml" />
+    <exclude domain="database" path="user_data.db" />
+    <exclude domain="file" path="ai_models/" />
+    <exclude domain="file" path="logs/" />
+    <exclude domain="file" path="temp/" />
+    
+    <!-- Include important user settings -->
+    <include domain="sharedpref" path="app_preferences.xml" />
+    <include domain="file" path="themes/" />
+    <include domain="file" path="scripts/" />
+</full-backup-content>

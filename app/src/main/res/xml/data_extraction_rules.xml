@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-extraction-rules>
+    <cloud-backup>
+        <!-- Exclude sensitive data from cloud backup -->
+        <exclude domain="sharedpref" path="."/>
+        <exclude domain="database" path="."/>
+        <exclude domain="file" path="ai_models/"/>
+        <exclude domain="file" path="logs/"/>
+    </cloud-backup>
+    <device-transfer>
+        <!-- Allow app data transfer between devices -->
+        <include domain="sharedpref" path="."/>
+        <include domain="file" path="themes/"/>
+        <exclude domain="database" path="."/>
+        <exclude domain="file" path="ai_models/"/>
+    </device-transfer>
+</data-extraction-rules>

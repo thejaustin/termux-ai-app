@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+    <!-- Background circle -->
+    <path
+        android:fillColor="@color/terminal_background"
+        android:pathData="M24,2 C36.15,2 46,11.85 46,24 C46,36.15 36.15,46 24,46 C11.85,46 2,36.15 2,24 C2,11.85 11.85,2 24,2 Z" />
+    <!-- Terminal window -->
+    <path
+        android:fillColor="@color/terminal_foreground"
+        android:pathData="M10,12 L38,12 L38,32 L10,32 Z"
+        android:strokeWidth="1"
+        android:strokeColor="@color/claude_accent" />
+    <!-- Command prompt -->
+    <path
+        android:fillColor="@color/claude_accent"
+        android:pathData="M12,18 L18,18 L18,20 L12,20 Z" />
+    <!-- AI text -->
+    <path
+        android:fillColor="@color/claude_accent_light"
+        android:pathData="M22,18 L28,18 L28,20 L22,20 Z M30,18 L36,18 L36,20 L30,20 Z" />
+    <!-- Terminal cursor -->
+    <path
+        android:fillColor="@color/terminal_cursor"
+        android:pathData="M12,24 L14,24 L14,26 L12,26 Z" />
+</vector>

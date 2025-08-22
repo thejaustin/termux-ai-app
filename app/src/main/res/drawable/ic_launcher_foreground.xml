@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <group android:scaleX="0.8"
+        android:scaleY="0.8"
+        android:pivotX="54"
+        android:pivotY="54">
+        <!-- Terminal window -->
+        <path
+            android:fillColor="@color/terminal_foreground"
+            android:pathData="M20,25 L88,25 L88,75 L20,75 Z"
+            android:strokeWidth="2"
+            android:strokeColor="@color/claude_accent" />
+        <!-- Command prompt -->
+        <path
+            android:fillColor="@color/claude_accent"
+            android:pathData="M25,40 L35,40 L35,45 L25,45 Z" />
+        <!-- AI symbol -->
+        <path
+            android:fillColor="@color/claude_accent"
+            android:pathData="M45,35 L55,35 L55,40 L45,40 Z M60,35 L70,35 L70,40 L60,40 Z" />
+        <!-- Terminal cursor -->
+        <path
+            android:fillColor="@color/terminal_cursor"
+            android:pathData="M75,40 L80,40 L80,45 L75,45 Z" />
+        <!-- Connection lines -->
+        <path
+            android:strokeColor="@color/claude_accent_light"
+            android:strokeWidth="1"
+            android:pathData="M40,50 Q54,60 68,50" />
+    </group>
+</vector>

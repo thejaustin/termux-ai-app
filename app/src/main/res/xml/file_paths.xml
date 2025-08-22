@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Internal app storage -->
+    <files-path name="app_files" path="." />
+    
+    <!-- Cache directory -->
+    <cache-path name="app_cache" path="." />
+    
+    <!-- External storage for file sharing -->
+    <external-files-path name="external_files" path="." />
+    <external-cache-path name="external_cache" path="." />
+    
+    <!-- Shared downloads directory -->
+    <external-files-path name="downloads" path="Downloads/" />
+    
+    <!-- AI models and scripts -->
+    <files-path name="ai_models" path="ai_models/" />
+    <files-path name="scripts" path="scripts/" />
+</paths>
