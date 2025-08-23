@@ -33,14 +33,164 @@ jobs:
       run: echo "sdk.dir=$ANDROID_HOME" > local.properties
 
     - name: Build Debug APK
-      run: gradle assembleDebug --stacktrace --no-daemon
+      # Capture full build output to log file for error processing
+      run: gradle assembleDebug --stacktrace --no-daemon 2>&1 | tee full-build.log
+      continue-on-error: true
+
+    - name: Extract javac errors
+      # Extract javac compilation errors from build log
+      if: always()
+      run: |
+        # Initialize empty javac-errors.txt
+        touch javac-errors.txt
+        
+        # Extract javac errors using common patterns
+        if [ -f full-build.log ]; then
+          # Pattern 1: Standard javac error format (file:line: error: message)
+          grep -n "\.java:[0-9]*: error:" full-build.log >> javac-errors.txt || true
+          
+          # Pattern 2: Compilation failed messages
+          grep -A 5 -B 2 "compilation failed" full-build.log >> javac-errors.txt || true
+          
+          # Pattern 3: Cannot find symbol errors
+          grep -A 3 -B 1 "cannot find symbol" full-build.log >> javac-errors.txt || true
+          
+          # Pattern 4: Package does not exist
+          grep -A 1 "package .* does not exist" full-build.log >> javac-errors.txt || true
+          
+          # Pattern 5: Method/variable not found
+          grep -A 2 -B 1 "cannot be resolved" full-build.log >> javac-errors.txt || true
+          
+          # If no specific javac errors found, check for general build failures
+          if [ ! -s javac-errors.txt ]; then
+            # Look for general error patterns that might include javac issues
+            grep -A 10 -B 5 "BUILD FAILED\|FAILURE: Build failed\|What went wrong:" full-build.log >> javac-errors.txt || true
+          fi
+        fi
+        
+        # Add summary at the top if errors were found
+        if [ -s javac-errors.txt ]; then
+          temp_file=$(mktemp)
+          echo "=== Javac/Build Errors Found ===" > "$temp_file"
+          echo "" >> "$temp_file"
+          cat javac-errors.txt >> "$temp_file"
+          mv "$temp_file" javac-errors.txt
+          echo "Javac errors extracted to javac-errors.txt"
+        else
+          echo "No javac errors found in build output"
+          echo "No javac errors captured during build." > javac-errors.txt
+        fi
+
+    - name: Upload build logs
+      # Upload both full log and extracted errors as artifacts
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: build-logs
+        path: |
+          full-build.log
+          javac-errors.txt
+        retention-days: 7
 
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
+      if: success()
       with:
         name: termux-ai-debug-apk
         path: app/build/outputs/apk/debug/*.apk
         retention-days: 7
+
+    - name: Append errors to summary
+      # Add javac errors to the GitHub job summary
+      if: always()
+      run: |
+        echo "## Build Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ -f javac-errors.txt ] && [ -s javac-errors.txt ]; then
+          echo "### Javac/Build Errors:" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          cat javac-errors.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+        else
+          echo "✅ No javac errors found" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "**Artifacts uploaded:**" >> $GITHUB_STEP_SUMMARY
+        echo "- Build logs (full-build.log, javac-errors.txt)" >> $GITHUB_STEP_SUMMARY
+        if [ -d app/build/outputs/apk/debug ]; then
+          echo "- Debug APK" >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: Post javac errors as PR comment
+      # Create or update PR comment with javac errors (only on pull_request events)
+      uses: actions/github-script@v7
+      if: ${{ github.event_name == 'pull_request' }}
+      with:
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          
+          // Read javac errors file if it exists
+          let errorContent = '';
+          const errorsFile = 'javac-errors.txt';
+          
+          try {
+            if (fs.existsSync(errorsFile)) {
+              errorContent = fs.readFileSync(errorsFile, 'utf8').trim();
+            }
+          } catch (error) {
+            console.log('Could not read javac-errors.txt:', error.message);
+          }
+          
+          // Prepare comment content
+          let commentBody = '### Javac Errors Report\n\n';
+          
+          if (errorContent && errorContent !== 'No javac errors captured during build.') {
+            // Truncate content to 5000 chars to avoid overly long comments
+            if (errorContent.length > 5000) {
+              commentBody += '```\n' + errorContent.substring(0, 5000) + '\n...\n[Content truncated - see full logs in build artifacts]\n```';
+            } else {
+              commentBody += '```\n' + errorContent + '\n```';
+            }
+          } else {
+            commentBody += '✅ No javac errors captured.';
+          }
+          
+          commentBody += '\n\n---\n*This comment is automatically updated on each push to the PR.*';
+          
+          // Get existing comments
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          });
+          
+          // Find existing javac errors comment
+          const existingComment = comments.find(comment => 
+            comment.body.includes('### Javac Errors Report')
+          );
+          
+          if (existingComment) {
+            // Update existing comment
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: existingComment.id,
+              body: commentBody
+            });
+            console.log('Updated existing javac errors comment');
+          } else {
+            // Create new comment
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: commentBody
+            });
+            console.log('Created new javac errors comment');
+          }
 
     - name: List build output
       if: always()
