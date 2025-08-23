@@ -1,5 +1,7 @@
-apply plugin: 'com.android.application'
-apply plugin: 'kotlin-android'
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
 
 android {
     namespace 'com.termux.ai'
@@ -35,6 +37,7 @@ android {
         }
         release {
             minifyEnabled true
+            shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             buildConfigField "boolean", "AI_DEBUG", "false"
         }
@@ -46,12 +49,12 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = '17'
     }
 
     packagingOptions {
@@ -62,24 +65,36 @@ android {
 }
 
 dependencies {
-    // Original Termux dependencies
-    implementation 'androidx.annotation:annotation:1.7.0'
+    // AndroidX Core
+    implementation 'androidx.core:core-ktx:1.12.0'
     implementation 'androidx.core:core:1.12.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    
+    // UI & Material Design
+    implementation 'com.google.android.material:material:1.10.0'
+    implementation 'androidx.recyclerview:recyclerview:1.3.2'
+    implementation 'androidx.viewpager2:viewpager2:1.0.0'
+    implementation 'androidx.viewpager:viewpager:1.0.0'
     implementation 'androidx.drawerlayout:drawerlayout:1.2.0'
     implementation 'androidx.preference:preference:1.2.1'
-    implementation 'androidx.viewpager:viewpager:1.0.0'
-    implementation 'com.google.android.material:material:1.10.0'
-    implementation 'io.noties.markwon:core:4.6.2'
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
-
-    // AI Integration dependencies
+    
+    // Lifecycle components  
+    implementation 'androidx.lifecycle:lifecycle-viewmodel:2.6.2'
+    implementation 'androidx.lifecycle:lifecycle-livedata:2.6.2'
+    
+    // Networking & JSON
     implementation 'com.squareup.okhttp3:okhttp:4.11.0'
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
     implementation 'com.google.code.gson:gson:2.10.1'
+    
+    // Other UI
+    implementation 'androidx.annotation:annotation:1.7.0'
+    implementation 'io.noties.markwon:core:4.6.2'
+
+    // Background work
     implementation 'androidx.work:work-runtime:2.8.1'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel:2.6.2'
-    implementation 'androidx.lifecycle:lifecycle-livedata:2.6.2'
     
     // OAuth and Authentication
     implementation 'net.openid:appauth:0.11.1'
@@ -97,9 +112,6 @@ dependencies {
     // Reactive programming for AI streams
     implementation 'io.reactivex.rxjava3:rxjava:3.1.6'
     implementation 'io.reactivex.rxjava3:rxandroid:3.0.2'
-    
-    // WebSocket for real-time AI communication  
-    implementation 'com.squareup.okhttp3:okhttp:4.11.0'
     
     // Testing
     testImplementation 'junit:junit:4.13.2'

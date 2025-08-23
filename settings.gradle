@@ -17,5 +17,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Termux AI"
+rootProject.name = "termux-ai-app"
 include ':app'
