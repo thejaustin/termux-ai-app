@@ -1,4 +1,9 @@
 // Top-level build file for Termux AI app
+// 
+// TEMPORARY CONFIGURATION: This build uses minimal stub implementations
+// for missing Termux terminal classes to enable compilation after Gradle
+// modernization. These stubs should be replaced with real Termux terminal
+// sources in a future update.
 
 buildscript {
     ext.kotlin_version = '1.8.10'
@@ -8,7 +13,7 @@ buildscript {
         gradlePluginPortal()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.6.0'
+        classpath 'com.android.tools.build:gradle:8.0.2'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
     }
 }
