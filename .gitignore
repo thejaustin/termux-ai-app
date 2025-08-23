@@ -23,6 +23,9 @@ local.properties
 # Log Files
 *.log
 
+# Java bytecode
+*.class
+
 # Android Studio Navigation editor temp files
 .navigation/
 
