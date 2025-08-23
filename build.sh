@@ -69,12 +69,17 @@ echo "✅ Project structure validated"
 echo "🔨 Building debug APK..."
 BUILD_CMD="assembleDebug"
 
-if [ -f "gradlew" ]; then
+# Use gradlew if available, otherwise fallback to system gradle
+if [ -f "gradlew" ] && [ -f "gradle/wrapper/gradle-wrapper.jar" ]; then
     echo "Using project Gradle wrapper..."
     ./gradlew $BUILD_CMD
-else
+elif command -v gradle >/dev/null 2>&1; then
     echo "Using system Gradle..."
     gradle $BUILD_CMD
+else
+    echo "❌ No Gradle installation found"
+    echo "Please install gradle or ensure wrapper is properly configured"
+    exit 1
 fi
 
 # Check if build was successful

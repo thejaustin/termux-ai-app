@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "🔧 Fixing Gradle wrapper..."
+echo "🔧 Using existing Gradle wrapper (no manual downloads)..."
 
 # Set environment
 export ANDROID_HOME=/home/android-sdk  
@@ -10,22 +10,35 @@ export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-arm64
 
 cd /data/data/com.termux/files/home/termux-ai-app
 
-# Remove broken wrapper jar
-rm -f gradle/wrapper/gradle-wrapper.jar
-
-# Download the correct wrapper jar for the version specified in properties
-echo "📦 Downloading Gradle 8.10.2 wrapper jar..."
-curl -L -o gradle/wrapper/gradle-wrapper.jar "https://services.gradle.org/distributions/gradle-8.10.2-wrapper.jar"
-
 # Make gradlew executable
 chmod +x gradlew
 
-# Verify the jar is valid
-echo "🔍 Verifying wrapper jar..."
-file gradle/wrapper/gradle-wrapper.jar
+# Check if wrapper exists and is valid
+if [ -f "gradle/wrapper/gradle-wrapper.jar" ]; then
+    echo "🔍 Verifying existing wrapper jar..."
+    file gradle/wrapper/gradle-wrapper.jar
+    
+    if file gradle/wrapper/gradle-wrapper.jar | grep -q "Zip archive\|Java archive"; then
+        echo "✅ Valid wrapper jar found"
+    else
+        echo "❌ Wrapper jar is not valid"
+        echo "Please run: gradle wrapper --gradle-version 8.9"
+        exit 1
+    fi
+else
+    echo "❌ No wrapper jar found"
+    echo "Please run: gradle wrapper --gradle-version 8.9"
+    exit 1
+fi
 
-# Try a simple gradle command to test
+# Try using the wrapper or fallback to system gradle
 echo "🧪 Testing Gradle wrapper..."
-./gradlew --version
-
-echo "✅ Gradle wrapper fixed!"
+if ./gradlew --version; then
+    echo "✅ Gradle wrapper is working!"
+elif command -v gradle >/dev/null 2>&1; then
+    echo "⚠️ Wrapper failed, using system gradle"
+    gradle --version
+else
+    echo "❌ No working Gradle installation found"
+    exit 1
+fi

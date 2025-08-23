@@ -1,3 +1,15 @@
+// App-level build configuration for Termux AI
+// 
+// TEMPORARY CONFIGURATION: This build currently uses stub implementations
+// for Termux terminal classes located in:
+// - com.termux.view.TerminalView
+// - com.termux.view.TerminalViewInputConnection  
+// - com.termux.terminal.TerminalSession
+// - com.termux.terminal.TerminalEmulator
+// - com.termux.terminal.TerminalSessionClient
+//
+// TODO: Replace these stubs with real upstream Termux terminal sources
+//
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 
