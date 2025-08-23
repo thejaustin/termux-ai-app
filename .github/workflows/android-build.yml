@@ -1,15 +1,24 @@
 name: Android Build
 
+# TEMPORARY workflow for javac error extraction and debugging
+# This workflow captures build output and extracts compilation errors for easier debugging
+# Adjust error extraction filters below as needed for your project
+
 on:
   push:
-    branches: [ main, master, develop ]
+    branches: [ main, feature/* ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main ]
   workflow_dispatch:  # Allow manual trigger
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    
+    # Single API level matrix for fast builds - expand as needed
+    strategy:
+      matrix:
+        api-level: [34]
 
     steps:
     - name: Checkout code
@@ -20,27 +29,131 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
+        cache: gradle
 
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
-    - name: Setup Gradle
-      uses: gradle/gradle-build-action@v3
-      with:
-        gradle-version: 8.10.2
-
     - name: Create local.properties
       run: echo "sdk.dir=$ANDROID_HOME" > local.properties
 
-    - name: Build Debug APK
-      run: gradle assembleDebug --stacktrace --no-daemon
+    - name: Gradle version check
+      run: ./gradlew --version
+
+    # Optional: Gradle configuration cache diagnostics (commented out for performance)
+    # - name: Configuration cache diagnostics
+    #   run: ./gradlew help --configuration-cache-problems=warn
+
+    - name: Build Debug APK with error capture
+      run: |
+        set -o pipefail
+        ./gradlew --no-daemon clean assembleDebug 2>&1 | tee full-build.log
+      continue-on-error: true
+
+    - name: Extract javac errors
+      if: always()
+      run: |
+        # Create javac-errors.txt with extracted compilation errors
+        # This is a TEMPORARY implementation for debugging - adjust filters as needed
+        # Robust to multiple modules and incremental builds using grep/awk
+        
+        echo "Extracting javac compilation errors..."
+        
+        # Use grep to extract error patterns, then awk for additional processing
+        {
+          # Pattern 1: Direct error messages with context
+          grep -n -B2 -A2 -E "(error:|cannot find symbol|compilation failed)" full-build.log 2>/dev/null || true
+          
+          # Pattern 2: Compilation task failures for multi-module support
+          grep -n -B1 -A3 -E "(compileDebugJavaWithJavac|compileReleaseJavaWithJavac).*FAILED" full-build.log 2>/dev/null || true
+          
+          # Pattern 3: Additional error context using awk for precise extraction
+          awk '/compileDebugJavaWithJavac|compileReleaseJavaWithJavac/ {
+            if ($0 ~ /FAILED/) {
+              print NR ":" $0
+              # Print next few lines for context
+              for (i=1; i<=2; i++) {
+                if ((getline next) > 0) {
+                  print (NR+i) "-" next
+                }
+              }
+            }
+          }' full-build.log 2>/dev/null || true
+          
+        } > javac-errors-raw.txt
+        
+        # Clean up and deduplicate extracted errors while preserving order and context
+        if [ -f javac-errors-raw.txt ] && [ -s javac-errors-raw.txt ]; then
+          # Remove exact duplicates while preserving context lines
+          awk '!seen[$0]++' javac-errors-raw.txt > javac-errors.txt
+          echo "Javac errors extracted and cleaned ($(wc -l < javac-errors.txt) lines)"
+        else
+          echo "No javac compilation errors found in build log" > javac-errors.txt
+        fi
+        
+        # Ensure the file is not empty (add placeholder if needed)
+        if [ ! -s javac-errors.txt ]; then
+          echo "No javac compilation errors found in build log" > javac-errors.txt
+          echo "Build completed but no javac-specific errors detected" >> javac-errors.txt
+        fi
+        
+        # Clean up temporary file
+        rm -f javac-errors-raw.txt || true
+        
+        echo "=== Javac Errors File Content Preview ==="
+        head -20 javac-errors.txt || echo "No content to show"
+
+    - name: Upload build artifacts
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-logs
+        path: |
+          full-build.log
+          javac-errors.txt
+        retention-days: 7
 
     - name: Upload APK artifact
+      if: success()
       uses: actions/upload-artifact@v4
       with:
         name: termux-ai-debug-apk
         path: app/build/outputs/apk/debug/*.apk
         retention-days: 7
+
+    - name: Add Javac Errors to Job Summary
+      if: always()
+      run: |
+        echo "## 📋 Build Summary" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ -f full-build.log ]; then
+          echo "✅ Full build log captured" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "❌ Full build log not found" >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🔍 Javac Errors" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        
+        if [ -f javac-errors.txt ] && [ -s javac-errors.txt ]; then
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          # Show first 400 lines of javac errors
+          head -400 javac-errors.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          
+          # Add note if file is longer than 400 lines
+          if [ $(wc -l < javac-errors.txt) -gt 400 ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "_Note: Showing first 400 lines. Download the build-logs artifact for complete output._" >> $GITHUB_STEP_SUMMARY
+          fi
+        else
+          echo "No javac compilation errors detected in this build." >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "📦 **Artifacts**: Download 'build-logs' for full-build.log and javac-errors.txt" >> $GITHUB_STEP_SUMMARY
 
     - name: List build output
       if: always()
@@ -48,3 +161,6 @@ jobs:
         echo "=== Build Output Directory ==="
         find app/build/outputs -name "*.apk" -type f || echo "No APK files found"
         ls -la app/build/outputs/apk/debug/ || echo "Debug directory not found"
+        
+        echo "=== Log Files Status ==="
+        ls -la full-build.log javac-errors.txt || echo "Log files not found"
