@@ -1,4 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Termux AI Color Definitions
+    
+    This file defines all colors used throughout the application, carefully chosen
+    to align with Termux's terminal aesthetic while incorporating modern design
+    principles and accessibility guidelines.
+    
+    Color scheme features:
+    - GitHub Dark theme inspired terminal colors
+    - Claude AI brand colors for consistency
+    - High contrast ratios for accessibility
+    - ANSI color palette for terminal compatibility
+    - Dynamic theming support with fallback colors
+-->
 <resources>
     <!-- Primary theme colors -->
     <color name="colorPrimary">#FF10A37F</color>
@@ -30,6 +44,11 @@
     <color name="tab_text_selected">#FFF0F6FC</color>
     <color name="tab_indicator">#FF58A6FF</color>
     <color name="tab_ripple">#FF30363D</color>
+    
+    <!-- AI specific colors for EnhancedTerminalView -->
+    <color name="ai_green">#FF10A37F</color>
+    <color name="ai_overlay">#88000000</color>
+    <color name="ai_highlight">#4410A37F</color>
     
     <!-- Status and progress colors -->
     <color name="progress_background">#FF21262D</color>
