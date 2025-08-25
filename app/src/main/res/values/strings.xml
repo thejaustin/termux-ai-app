@@ -139,4 +139,14 @@
         <p><b>License:</b> GPLv3</p>
         ]]>
     </string>
+    
+    <!-- String arrays -->
+    <string-array name="project_types">
+        <item>General Terminal</item>
+        <item>Node.js Project</item>
+        <item>Python Project</item>
+        <item>Rust Project</item>
+        <item>Go Project</item>
+        <item>Java Project</item>
+    </string-array>
 </resources>

@@ -187,6 +187,26 @@ public class EnhancedTerminalView extends TerminalView {
                     }
                 });
             }
+            
+            @Override
+            public void onErrorDetected(String error) {
+                mainHandler.post(() -> {
+                    // Handle Claude error detection
+                    if (claudeListener != null) {
+                        claudeListener.onClaudeErrorDetected(error);
+                    }
+                });
+            }
+            
+            @Override
+            public void onTokenUsageUpdated(int used, int total) {
+                mainHandler.post(() -> {
+                    // Handle token usage updates
+                    if (claudeListener != null) {
+                        claudeListener.onClaudeTokenUsageUpdated(used, total);
+                    }
+                });
+            }
         });
     }
     
@@ -395,6 +415,15 @@ public class EnhancedTerminalView extends TerminalView {
         sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ESCAPE));
         
         Toast.makeText(getContext(), "Stopping Claude operation...", Toast.LENGTH_SHORT).show();
+    }
+    
+    /**
+     * Send a key event to the terminal
+     * @param keyEvent The key event to send
+     */
+    private void sendKeyEvent(KeyEvent keyEvent) {
+        // Dispatch the key event to be processed by the terminal
+        dispatchKeyEvent(keyEvent);
     }
     
     private void startEnhancedTextSelection(MotionEvent e) {

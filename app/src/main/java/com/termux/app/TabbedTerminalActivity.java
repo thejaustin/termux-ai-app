@@ -237,6 +237,18 @@ public class TabbedTerminalActivity extends AppCompatActivity {
         return getFilesDir().getParent() + "/files/home";
     }
     
+    /**
+     * Get a tab by index
+     * @param index The tab index
+     * @return The terminal tab or null if index is invalid
+     */
+    public TerminalTab getTab(int index) {
+        if (index >= 0 && index < terminalTabs.size()) {
+            return terminalTabs.get(index);
+        }
+        return null;
+    }
+    
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.terminal_menu, menu);
