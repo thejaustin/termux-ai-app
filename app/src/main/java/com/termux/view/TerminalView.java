@@ -81,9 +81,9 @@ public class TerminalView extends View {
     }
     
     /**
-     * Method for enhanced terminal view compatibility
+     * Enhanced method for handling text changes with terminal display
      */
-    public void onTextChanged(CharSequence text, int start, int lengthBefore, int lengthAfter) {
+    public void handleTextInput(CharSequence text, int start, int lengthBefore, int lengthAfter) {
         // Handle text changes - placeholder implementation
         // Update display text to show what's being typed
         if (text != null && text.length() > 0) {
