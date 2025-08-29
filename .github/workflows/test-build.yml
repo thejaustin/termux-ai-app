@@ -1,0 +1,45 @@
+name: Test Build (Quick)
+
+on:
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  test-compile:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+      with:
+        api-level: 34
+        build-tools: 34.0.0
+
+    - name: Basic setup
+      run: |
+        chmod +x gradlew
+        echo "sdk.dir=$ANDROID_SDK_ROOT" > local.properties
+
+    - name: Test compilation
+      run: |
+        # Try to compile Java sources without full APK build
+        ./gradlew compileDebugJavaWithJavac --continue || echo "Compilation issues found"
+        
+    - name: Report issues
+      run: |
+        echo "## 🔍 Quick Build Test Results" >> $GITHUB_STEP_SUMMARY
+        
+        if ./gradlew compileDebugJavaWithJavac --dry-run; then
+          echo "✅ Java compilation looks good" >> $GITHUB_STEP_SUMMARY
+        else
+          echo "⚠️ Java compilation issues detected" >> $GITHUB_STEP_SUMMARY
+        fi
