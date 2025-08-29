@@ -114,6 +114,21 @@ public class TerminalFragment extends Fragment implements TerminalSessionClient 
                 }
                 Toast.makeText(getContext(), "✅ Claude operation completed", Toast.LENGTH_SHORT).show();
             }
+            
+            @Override
+            public void onClaudeErrorDetected(String error) {
+                Toast.makeText(getContext(), "❌ Claude Error: " + error, Toast.LENGTH_LONG).show();
+            }
+            
+            @Override
+            public void onClaudeTokenUsageUpdated(int used, int total) {
+                // Update token usage display - could be shown in status bar
+                String tokenInfo = used + "/" + total + " tokens";
+                // For now, just log it - could be displayed in UI later
+                if (getContext() != null && used > total * 0.8) {
+                    Toast.makeText(getContext(), "⚠️ Token usage: " + tokenInfo, Toast.LENGTH_SHORT).show();
+                }
+            }
         });
     }
     
