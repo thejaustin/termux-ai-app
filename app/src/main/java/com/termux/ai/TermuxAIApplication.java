@@ -8,6 +8,8 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatDelegate;
 
+import com.termux.ai.BuildConfig;
+
 /**
  * Main Application class for Termux AI
  * 

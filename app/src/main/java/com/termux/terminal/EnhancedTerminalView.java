@@ -77,6 +77,8 @@ public class EnhancedTerminalView extends TerminalView {
         void onClaudeProgressUpdated(float progress);
         void onClaudeFileGenerated(String filePath, String action);
         void onClaudeOperationCompleted();
+        void onClaudeErrorDetected(String error);
+        void onClaudeTokenUsageUpdated(int used, int total);
     }
     
     private ClaudeCodeListener claudeListener;
