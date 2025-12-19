@@ -430,31 +430,27 @@ jobs:
       if: success() && github.ref == 'refs/heads/main' && github.event_name == 'push'
       uses: softprops/action-gh-release@v2
       with:
-        tag_name: v2.0.0-${{ github.run_number }}
-        name: Termux AI v2.0.0 Build ${{ github.run_number }}
+        tag_name: v0.1.0-build-${{ github.run_number }}
+        name: Termux AI v0.1.0 Build ${{ github.run_number }}
         body: |
-          🤖 **Termux AI - AI-Enhanced Terminal for Android**
-          
-          ## Features in this build:
-          - ✅ Native Claude Code integration
-          - ✅ Native Gemini Support (Google)
-          - ✅ Gboard autocomplete in terminal
-          - ✅ Multi-tab terminal interface  
-          - ✅ Mobile gesture controls
-          - ✅ AI progress tracking
-          - ✅ Touch-optimized UI
-          
-          ## Installation:
-          1. Download the APK below
-          2. Enable "Install from unknown sources"
-          3. Install and enjoy!
-          
+          This is an automatically generated build for Termux AI.
+
+          Key features of this release:
+          - Initial integration of AI capabilities (Claude, Gemini)
+          - Real-time command assistance and error analysis
+          - Enhanced terminal UI/UX
+
+          Installation:
+          1. Download the APK from the assets below.
+          2. Enable "Install from unknown sources" in your Android settings if prompted.
+          3. Install the APK and enjoy!
+
           Built automatically with GitHub Actions 🚀
         files: |
           app/build/outputs/apk/debug/*.apk
           app/build/outputs/apk/release/*.apk
         draft: false
-        prerelease: true
+        prerelease: false
         
     - name: Build Summary
       if: always()
