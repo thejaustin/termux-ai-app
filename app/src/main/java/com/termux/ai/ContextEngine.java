@@ -14,6 +14,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.lang.ProcessBuilder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -166,39 +168,87 @@ public class ContextEngine {
         return gson.toJson(getCurrentSnapshot());
     }
     
-    private void updateProjectInfo() {
-        File workingDir = new File(currentWorkingDirectory);
-        if (!workingDir.exists() || !workingDir.isDirectory()) {
-            currentProject = null;
-            return;
-        }
-        
-        ProjectInfo project = new ProjectInfo();
-        project.path = currentWorkingDirectory;
-        project.name = workingDir.getName();
-        
-        // Detect project type and language
-        File[] files = workingDir.listFiles();
-        if (files != null) {
-            List<String> fileNames = new ArrayList<>();
-            for (File file : files) {
-                fileNames.add(file.getName());
+        private void updateProjectInfo() {
+            File workingDir = new File(currentWorkingDirectory);
+            if (!workingDir.exists() || !workingDir.isDirectory()) {
+                currentProject = null;
+                return;
             }
-            
-            project.type = detectProjectType(fileNames);
-            project.language = detectPrimaryLanguage(files);
-            project.framework = detectFramework(fileNames, project.language);
-        }
-        
-        // Check if project changed
-        if (currentProject == null || !project.equals(currentProject)) {
-            currentProject = project;
-            if (listener != null) {
-                listener.onProjectDetected(project);
-            }
-        }
-    }
     
+            ProjectInfo project = new ProjectInfo();
+            project.path = currentWorkingDirectory;
+            project.name = workingDir.getName();
+    
+            // Detect project type and language
+            File[] files = workingDir.listFiles();
+            if (files != null) {
+                List<String> fileNames = new ArrayList<>();
+                for (File file : files) {
+                    fileNames.add(file.getName());
+                }
+    
+                project.type = detectProjectType(fileNames);
+                project.language = detectPrimaryLanguage(files);
+                project.framework = detectFramework(fileNames, project.language);
+    
+                if ("nodejs".equals(project.type)) {
+                    readPackageJson(project);
+                } else if ("java".equals(project.type)) {
+                    readBuildGradle(project);
+                }
+            }
+    
+            // Check if project changed
+            if (currentProject == null || !project.equals(currentProject)) {
+                currentProject = project;
+                if (listener != null) {
+                    listener.onProjectDetected(project);
+                }
+            }
+        }
+    
+        private void readPackageJson(ProjectInfo project) {
+            File packageJsonFile = new File(project.path, "package.json");
+            if (packageJsonFile.exists()) {
+                try {
+                    BufferedReader reader = new BufferedReader(new FileReader(packageJsonFile));
+                    JsonObject packageJson = gson.fromJson(reader, JsonObject.class);
+                    reader.close();
+    
+                    if (packageJson.has("description")) {
+                        project.description = packageJson.get("description").getAsString();
+                    }
+                    if (packageJson.has("version")) {
+                        project.version = packageJson.get("version").getAsString();
+                    }
+                    if (packageJson.has("dependencies")) {
+                        project.dependencies = new ArrayList<>(packageJson.getAsJsonObject("dependencies").keySet());
+                    }
+                } catch (IOException e) {
+                    Log.e(TAG, "Failed to read package.json", e);
+                }
+            }
+        }
+    
+        private void readBuildGradle(ProjectInfo project) {
+            File buildGradleFile = new File(project.path, "build.gradle");
+            if (buildGradleFile.exists()) {
+                try {
+                    BufferedReader reader = new BufferedReader(new FileReader(buildGradleFile));
+                    String line;
+                    project.dependencies = new ArrayList<>();
+                    while ((line = reader.readLine()) != null) {
+                        if (line.trim().startsWith("implementation")) {
+                            String dependency = line.substring(line.indexOf("'") + 1, line.lastIndexOf("'"));
+                            project.dependencies.add(dependency);
+                        }
+                    }
+                    reader.close();
+                } catch (IOException e) {
+                    Log.e(TAG, "Failed to read build.gradle", e);
+                }
+            }
+        }    
     private String detectProjectType(List<String> fileNames) {
         if (fileNames.contains("package.json")) return "nodejs";
         if (fileNames.contains("requirements.txt") || fileNames.contains("pyproject.toml")) return "python";
@@ -258,6 +308,10 @@ public class ContextEngine {
     }
     
     private void updateGitStatus() {
+        if (!isGitInstalled()) {
+            gitStatus = null;
+            return;
+        }
         File gitDir = new File(currentWorkingDirectory, ".git");
         if (!gitDir.exists()) {
             gitStatus = null;
@@ -297,19 +351,50 @@ public class ContextEngine {
         }
         return "unknown";
     }
-    
-    private boolean hasUnstagedChanges() {
-        // This is a simplified check - in a real implementation,
-        // you might want to execute git commands or use JGit library
-        return false;
+
+    private boolean isGitInstalled() {
+        try {
+            ProcessBuilder processBuilder = new ProcessBuilder("git", "--version");
+            Process process = processBuilder.start();
+            return process.waitFor() == 0;
+        } catch (IOException | InterruptedException e) {
+            return false;
+        }
     }
     
-    private boolean hasStagedChanges() {
-        // This is a simplified check - in a real implementation,
-        // you might want to execute git commands or use JGit library
-        return false;
-    }
+        private boolean hasUnstagedChanges() {
+            String output = executeCommand("git", "status", "--porcelain");
+            return output != null && !output.trim().isEmpty();
+        }
     
+        private boolean hasStagedChanges() {
+            String output = executeCommand("git", "diff", "--name-only", "--cached");
+            return output != null && !output.trim().isEmpty();
+        }
+    
+        private String executeCommand(String... command) {
+            Log.d(TAG, "Executing command: " + Arrays.toString(command));
+            try {
+                ProcessBuilder processBuilder = new ProcessBuilder(command);
+                processBuilder.directory(new File(currentWorkingDirectory));
+                Process process = processBuilder.start();
+                BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                StringBuilder output = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    output.append(line).append("\n");
+                }
+                int exitCode = process.waitFor();
+                if (exitCode != 0) {
+                    Log.w(TAG, "Command failed with exit code " + exitCode + ": " + Arrays.toString(command));
+                    return null;
+                }
+                return output.toString();
+            } catch (IOException | InterruptedException e) {
+                Log.e(TAG, "Failed to execute command: " + Arrays.toString(command), e);
+                return null;
+            }
+        }    
     private void updateSystemInfo() {
         SystemInfo info = new SystemInfo();
         info.timestamp = System.currentTimeMillis();
@@ -348,6 +433,9 @@ public class ContextEngine {
     public static class ProjectInfo {
         public String path;
         public String name;
+        public String description;
+        public String version;
+        public List<String> dependencies;
         public String type;
         public String language;
         public String framework;

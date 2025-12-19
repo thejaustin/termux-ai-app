@@ -21,6 +21,8 @@ import java.util.regex.Pattern;
  * - Mobile-optimized Claude workflows
  */
 public class ClaudeCodeIntegration {
+    // Using regular expressions to parse the output of the Claude Code CLI is a bit fragile and could break if the output format of the CLI changes.
+    // A more robust solution would be to have the CLI produce a structured output format, such as JSON.
     private static final String TAG = "ClaudeCodeIntegration";
     
     // Claude Code detection patterns
@@ -34,13 +36,13 @@ public class ClaudeCodeIntegration {
         Pattern.compile("\\[([▓=]+)([░\\-]*)\\]\\s*(\\d+)%");
         
     private static final Pattern CLAUDE_FILE_PATTERN = 
-        Pattern.compile("(?:├─|\\s*)(\\S+\\.\\w+)\\s*(✨|🆕|📝)\\s*(NEW|MODIFIED|CREATED|UPDATED)");
+        Pattern.compile("(?:├─|\\s*)(\\S+\\.\\w+)\\s*(?:✨|🆕|📝)\\s*(NEW|MODIFIED|CREATED|UPDATED)");
         
     private static final Pattern CLAUDE_ERROR_PATTERN = 
-        Pattern.compile("❌\\s*(Error|Failed|Exception):\\s*(.+)");
+        Pattern.compile("❌\\s+(?:Error|Failed|Exception):\\s*(.+)");
         
     private static final Pattern CLAUDE_SUCCESS_PATTERN = 
-        Pattern.compile("✅\\s*(Success|Complete|Done|Finished)");
+        Pattern.compile("✅\\s+(?:Success|Complete|Done|Finished)");
         
     private static final Pattern CLAUDE_TOKEN_PATTERN = 
         Pattern.compile("Token[s]?:\\s*(\\d+)/(\\d+)\\s*(?:K|k)?");
@@ -108,26 +110,45 @@ public class ClaudeCodeIntegration {
         }
     }
     
-    private void processLine(String line, int tabIndex) {
-        // Detect Claude Code start
-        if (detectClaudeStart(line, tabIndex)) {
-            return;
-        }
-        
-        ClaudeSession session = getSession(tabIndex);
-        if (session == null || !session.isActive) {
-            return;
-        }
-        
-        // Process Claude operations
-        if (detectProgress(line, session)) return;
-        if (detectFileOperation(line, session)) return;
-        if (detectError(line, session)) return;
-        if (detectSuccess(line, session)) return;
-        if (detectTokenUsage(line, session)) return;
-        if (detectOperation(line, session)) return;
-    }
+        private void processLine(String line, int tabIndex) {
+            Log.d(TAG, "Processing line: " + line);
+            // Detect Claude Code start
+            if (detectClaudeStart(line, tabIndex)) {
+                Log.d(TAG, "Claude start detected");
+                return;
+            }
     
+            ClaudeSession session = getSession(tabIndex);
+            if (session == null || !session.isActive) {
+                return;
+            }
+    
+            // Process Claude operations
+            if (detectProgress(line, session)) {
+                Log.d(TAG, "Progress detected");
+                return;
+            }
+            if (detectFileOperation(line, session)) {
+                Log.d(TAG, "File operation detected");
+                return;
+            }
+            if (detectError(line, session)) {
+                Log.d(TAG, "Error detected");
+                return;
+            }
+            if (detectSuccess(line, session)) {
+                Log.d(TAG, "Success detected");
+                return;
+            }
+            if (detectTokenUsage(line, session)) {
+                Log.d(TAG, "Token usage detected");
+                return;
+            }
+            if (detectOperation(line, session)) {
+                Log.d(TAG, "Operation detected");
+                return;
+            }
+        }    
     private boolean detectClaudeStart(String line, int tabIndex) {
         Matcher matcher = CLAUDE_START_PATTERN.matcher(line);
         if (matcher.find()) {

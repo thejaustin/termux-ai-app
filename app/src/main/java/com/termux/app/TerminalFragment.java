@@ -1,11 +1,14 @@
 package com.termux.app;
 
 import android.content.Context;
+import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -15,6 +18,14 @@ import com.termux.ai.R;
 import com.termux.terminal.EnhancedTerminalView;
 import com.termux.terminal.TerminalSession;
 import com.termux.terminal.TerminalSessionClient;
+
+import org.json.JSONObject;
+
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Fragment containing an enhanced terminal with Claude Code integration
@@ -73,6 +84,11 @@ public class TerminalFragment extends Fragment implements TerminalSessionClient 
     }
     
     private void setupTerminalView() {
+        // Disable autofill for the terminal view
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            terminalView.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO);
+        }
+
         // Enable Gboard autocomplete
         terminalView.setGboardAutoCompleteEnabled(true);
         
@@ -133,7 +149,7 @@ public class TerminalFragment extends Fragment implements TerminalSessionClient 
     }
     
     private void createTerminalSession() {
-        String[] env = buildEnvironment();
+        String[] env = buildEnvironmentFromJson();
         String[] args = {"/system/bin/sh", "-"};
         
         terminalSession = new TerminalSession(
@@ -150,7 +166,34 @@ public class TerminalFragment extends Fragment implements TerminalSessionClient 
         sendInitialCommands();
     }
     
+    private String[] buildEnvironmentFromJson() {
+        try {
+            InputStream is = getContext().getAssets().open("env.json");
+            int size = is.available();
+            byte[] buffer = new byte[size];
+            is.read(buffer);
+            is.close();
+            String json = new String(buffer, StandardCharsets.UTF_8);
+            JSONObject jsonObject = new JSONObject(json);
+            List<String> env = new ArrayList<>();
+            for (Iterator<String> it = jsonObject.keys(); it.hasNext(); ) {
+                String key = it.next();
+                String value = jsonObject.getString(key);
+                if (key.equals("HOME")) {
+                    value = workingDirectory;
+                }
+                env.add(key + "=" + value);
+            }
+            env.add("TERMUX_AI_TAB=" + tabName);
+            return env.toArray(new String[0]);
+        } catch (Exception e) {
+            Log.e("TermuxAI", "Failed to build environment from JSON", e);
+            return buildEnvironment(); // fallback to default
+        }
+    }
+
     private String[] buildEnvironment() {
+        // It would be better to make these environment variables configurable, so that the user can customize their terminal environment.
         // Build environment variables for the session
         return new String[]{
             "TERM=xterm-256color",
@@ -167,19 +210,37 @@ public class TerminalFragment extends Fragment implements TerminalSessionClient 
     private void sendInitialCommands() {
         // Send commands to set up the terminal environment
         if (terminalSession != null) {
-            // Change to working directory
-            terminalSession.write("cd \"" + workingDirectory + "\"\r");
-            
-            // Clear the screen
-            terminalSession.write("clear\r");
-            
-            // Show welcome message
-            terminalSession.write("echo 'Welcome to Termux AI - " + tabName + "'\r");
-            terminalSession.write("echo 'Type \"claude code\" to start AI-enhanced coding'\r");
-            terminalSession.write("echo 'Gestures: Swipe down=stop, Double-tap=history'\r");
+            try {
+                // Change to working directory
+                terminalSession.write("cd \"" + workingDirectory + "\"\r");
+
+                // Clear the screen
+                terminalSession.write("clear\r");
+
+                // Show welcome message
+                terminalSession.write("echo 'Welcome to Termux AI - " + tabName + "'\r");
+                terminalSession.write("echo 'Type \"claude code\" to start AI-enhanced coding'\r");
+                terminalSession.write("echo 'Gestures: Swipe down=stop, Double-tap=history'\r");
+            } catch (Exception e) {
+                Log.e("TermuxAI", "Failed to send initial commands", e);
+            }
         }
     }
     
+    public void shareTranscript() {
+        if (terminalView != null) {
+            String transcriptText = terminalView.getTranscriptText();
+            if (transcriptText != null && !transcriptText.isEmpty()) {
+                Intent intent = new Intent(Intent.ACTION_SEND);
+                intent.setType("text/plain");
+                intent.putExtra(Intent.EXTRA_TEXT, transcriptText);
+                startActivity(Intent.createChooser(intent, "Share Transcript"));
+            } else {
+                Toast.makeText(getContext(), "No transcript to share", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
     public boolean isClaudeActive() {
         return terminalView != null && terminalView.isClaudeCodeActive();
     }

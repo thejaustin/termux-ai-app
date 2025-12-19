@@ -21,6 +21,14 @@ import com.google.android.material.tabs.TabLayoutMediator;
 import com.termux.ai.ClaudeCodeIntegration;
 import com.termux.ai.R;
 
+import android.util.Log;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
+
+import android.content.SharedPreferences;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,9 +42,14 @@ import java.util.List;
  * - Project workspace management
  * - Enhanced mobile UI
  */
+import java.io.Serializable;
+import java.lang.reflect.Type;
+
 public class TabbedTerminalActivity extends AppCompatActivity {
     private static final String TAG = "TabbedTerminalActivity";
     private static final int MAX_TABS = 8;
+    private static final String PREFS_NAME = "terminal_tabs";
+    private static final String KEY_TABS = "tabs";
     
     private ViewPager2 viewPager;
     private TabLayout tabLayout;
@@ -48,19 +61,24 @@ public class TabbedTerminalActivity extends AppCompatActivity {
     private ClaudeCodeIntegration claudeIntegration;
     
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_tabbed_terminal);
-        
-        initializeViews();
-        setupTerminalTabs();
-        setupClaudeIntegration();
-        setupFloatingActionButtons();
-        
-        // Create initial tab
-        createNewTab("home", getDefaultDirectory());
-    }
+        protected void onCreate(Bundle savedInstanceState) {
+            // It would be better to save the state of the tabs, including the working directory and the command history, so that the user can resume their session.
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.activity_tabbed_terminal);
     
+            initializeViews();
+            setupTerminalTabs();
+            setupClaudeIntegration();
+            setupFloatingActionButtons();
+    
+            loadTabs();
+        }
+    
+        @Override
+        protected void onPause() {
+            super.onPause();
+            saveTabs();
+        }    
     private void initializeViews() {
         viewPager = findViewById(R.id.terminal_viewpager);
         tabLayout = findViewById(R.id.terminal_tablayout);
@@ -271,6 +289,12 @@ public class TabbedTerminalActivity extends AppCompatActivity {
         } else if (id == R.id.action_claude_help) {
             showClaudeHelp();
             return true;
+        } else if (id == R.id.action_share) {
+            TerminalFragment currentFragment = (TerminalFragment) getSupportFragmentManager().findFragmentByTag("f" + viewPager.getCurrentItem());
+            if (currentFragment != null) {
+                currentFragment.shareTranscript();
+            }
+            return true;
         }
         
         return super.onOptionsItemSelected(item);
@@ -279,6 +303,38 @@ public class TabbedTerminalActivity extends AppCompatActivity {
     private void showClaudeHelp() {
         ClaudeHelpDialog dialog = new ClaudeHelpDialog();
         dialog.show(getSupportFragmentManager(), "claude_help");
+    }
+
+    private void saveTabs() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        Gson gson = new Gson();
+        String json = gson.toJson(terminalTabs);
+        editor.putString(KEY_TABS, json);
+        editor.apply();
+    }
+
+    private void loadTabs() {
+        try {
+            SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+            Gson gson = new Gson();
+            String json = prefs.getString(KEY_TABS, null);
+            Type type = new TypeToken<ArrayList<TerminalTab>>() {}.getType();
+            List<TerminalTab> loadedTabs = gson.fromJson(json, type);
+
+            if (loadedTabs != null && !loadedTabs.isEmpty()) {
+                terminalTabs.clear();
+                terminalTabs.addAll(loadedTabs);
+                tabAdapter.notifyDataSetChanged();
+            } else {
+                // Create initial tab if no tabs were loaded
+                createNewTab("home", getDefaultDirectory());
+            }
+        } catch (JsonSyntaxException e) {
+            Log.e(TAG, "Failed to load tabs from SharedPreferences", e);
+            // Create initial tab if loading fails
+            createNewTab("home", getDefaultDirectory());
+        }
     }
     
     @Override
@@ -328,7 +384,7 @@ public class TabbedTerminalActivity extends AppCompatActivity {
     /**
      * Represents a terminal tab
      */
-    public static class TerminalTab {
+    public static class TerminalTab implements Serializable {
         private static long nextId = 1;
         
         private final long id;
