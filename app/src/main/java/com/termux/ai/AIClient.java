@@ -213,16 +213,24 @@ public class AIClient {
                         "\nProvide a suggestion for improvement or explanation. " + 
                         "Return ONLY JSON with 'suggestion' (string) and 'confidence' (float 0.0-1.0) fields. No markdown.";
 
-        sendGeminiRequest(prompt, response -> {
-            try {
-                JsonObject json = parseGeminiResponse(response);
-                String suggestion = json.get("suggestion").getAsString();
-                float confidence = json.has("confidence") ? json.get("confidence").getAsFloat() : 0.8f;
-                
-                callback.onSuggestion(suggestion, confidence);
-                if (listener != null) listener.onSuggestionReceived(suggestion, confidence);
-            } catch (Exception e) {
-                callback.onError("Failed to parse Gemini response: " + e.getMessage());
+        sendGeminiRequest(prompt, new RequestCallback() {
+            @Override
+            public void onSuccess(JsonObject response) {
+                try {
+                    JsonObject json = parseGeminiResponse(response);
+                    String suggestion = json.get("suggestion").getAsString();
+                    float confidence = json.has("confidence") ? json.get("confidence").getAsFloat() : 0.8f;
+
+                    callback.onSuggestion(suggestion, confidence);
+                    if (listener != null) listener.onSuggestionReceived(suggestion, confidence);
+                } catch (Exception e) {
+                    callback.onError("Failed to parse Gemini response: " + e.getMessage());
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                callback.onError(error);
             }
         }, callback::onError);
     }
@@ -278,16 +286,24 @@ public class AIClient {
         String prompt = "Command: " + command + "\nError: " + errorOutput + "\nContext: " + context + 
                         "\nAnalyze and provide solutions. Return ONLY JSON with 'analysis' (string) and 'solutions' (string array). No markdown.";
 
-        sendGeminiRequest(prompt, response -> {
-            try {
-                JsonObject json = parseGeminiResponse(response);
-                String analysis = json.get("analysis").getAsString();
-                String[] solutions = gson.fromJson(json.get("solutions"), String[].class);
-                
-                callback.onAnalysis(analysis, solutions);
-                if (listener != null) listener.onErrorAnalysis(errorOutput, analysis, solutions);
-            } catch (Exception e) {
-                callback.onError("Failed to parse Gemini response: " + e.getMessage());
+        sendGeminiRequest(prompt, new RequestCallback() {
+            @Override
+            public void onSuccess(JsonObject response) {
+                try {
+                    JsonObject json = parseGeminiResponse(response);
+                    String analysis = json.get("analysis").getAsString();
+                    String[] solutions = gson.fromJson(json.get("solutions"), String[].class);
+
+                    callback.onAnalysis(analysis, solutions);
+                    if (listener != null) listener.onErrorAnalysis(errorOutput, analysis, solutions);
+                } catch (Exception e) {
+                    callback.onError("Failed to parse Gemini response: " + e.getMessage());
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                callback.onError(error);
             }
         }, callback::onError);
     }
@@ -344,16 +360,24 @@ public class AIClient {
         String prompt = "Write " + language + " code for: " + description + "\nContext: " + context + 
                         "\nReturn ONLY JSON with 'code' (string) and 'language' (string). No markdown.";
 
-        sendGeminiRequest(prompt, response -> {
-            try {
-                JsonObject json = parseGeminiResponse(response);
-                String code = json.get("code").getAsString();
-                String detectedLanguage = json.has("language") ? json.get("language").getAsString() : language;
-                
-                callback.onCodeGenerated(code, detectedLanguage);
-                if (listener != null) listener.onCodeGenerated(code, detectedLanguage);
-            } catch (Exception e) {
-                callback.onError("Failed to parse Gemini response: " + e.getMessage());
+        sendGeminiRequest(prompt, new RequestCallback() {
+            @Override
+            public void onSuccess(JsonObject response) {
+                try {
+                    JsonObject json = parseGeminiResponse(response);
+                    String code = json.get("code").getAsString();
+                    String detectedLanguage = json.has("language") ? json.get("language").getAsString() : language;
+
+                    callback.onCodeGenerated(code, detectedLanguage);
+                    if (listener != null) listener.onCodeGenerated(code, detectedLanguage);
+                } catch (Exception e) {
+                    callback.onError("Failed to parse Gemini response: " + e.getMessage());
+                }
+            }
+
+            @Override
+            public void onError(String error) {
+                callback.onError(error);
             }
         }, callback::onError);
     }
