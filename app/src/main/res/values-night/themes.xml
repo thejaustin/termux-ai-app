@@ -49,7 +49,13 @@
         </style>
     
         <!-- Custom AlertDialog style for Dark Theme -->
-        <style name="Theme.TermuxAI.AlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog.Dark" />
+        <style name="Theme.TermuxAI.AlertDialog" parent="Theme.Material3.DayNight.Dialog" />
+
+        <!-- Action bar theme overlay -->
+        <style name="ThemeOverlay.TermuxAI.ActionBar" parent="Theme.AppCompat">
+            <item name="colorPrimary">@color/claude_accent</item>
+            <item name="android:textColorPrimary">@color/text_primary</item>
+        </style>
     
     <!-- Terminal specific styles -->
     <style name="TerminalTextStyle">
