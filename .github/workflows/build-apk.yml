@@ -91,6 +91,10 @@ jobs:
                 android:id="@+id/action_claude_help"
                 android:title="@string/menu_help"
                 android:showAsAction="never" />
+            <item
+                android:id="@+id/action_share"
+                android:title="Share"
+                android:showAsAction="never" />
         </menu>
         EOF
         
