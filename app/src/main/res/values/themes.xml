@@ -44,19 +44,18 @@
         <item name="windowNoTitle">true</item>
     </style>
 
-    <!-- Dialog theme -->
-    <style name="Theme.TermuxAI.Dialog" parent="Theme.Material3.Light.Dialog">
-        <item name="colorPrimary">@color/claude_accent</item>
-        <item name="android:colorBackground">@color/panel_background</item>
-        <item name="colorSurface">@color/panel_background</item>
-    </style>
-
-    <!-- Action bar theme overlay -->
-    <style name="ThemeOverlay.TermuxAI.ActionBar" parent="ThemeOverlay.Material3.Light.ActionBar">
-        <item name="colorPrimary">@color/claude_accent</item>
-        <item name="android:textColorPrimary">@color/text_primary</item>
-    </style>
-
+        <!-- Dialog theme -->
+        <style name="Theme.TermuxAI.Dialog" parent="Theme.Material3.MaterialComponents.Light.Dialog">
+            <item name="colorPrimary">@color/claude_accent</item>
+            <item name="android:colorBackground">@color/panel_background</item>
+            <item name="colorSurface">@color/panel_background</item>
+        </style>
+        
+        <!-- Action bar theme overlay -->
+        <style name="ThemeOverlay.TermuxAI.ActionBar" parent="ThemeOverlay.AppCompat.ActionBar">
+            <item name="colorPrimary">@color/claude_accent</item>
+            <item name="android:textColorPrimary">@color/text_primary</item>
+        </style>
     <!-- Terminal specific styles -->
     <style name="TerminalTextStyle">
         <item name="android:fontFamily">monospace</item>

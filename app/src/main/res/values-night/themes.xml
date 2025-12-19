@@ -45,14 +45,14 @@
     </style>
     
     <!-- Dialog theme -->
-    <style name="Theme.TermuxAI.Dialog" parent="Theme.Material3.Dark">
+    <style name="Theme.TermuxAI.Dialog" parent="Theme.Material3.MaterialComponents.Dark.Dialog">
         <item name="colorPrimary">@color/claude_accent</item>
         <item name="android:colorBackground">@color/panel_background</item>
         <item name="colorSurface">@color/panel_background</item>
     </style>
     
     <!-- Action bar theme overlay -->
-    <style name="ThemeOverlay.TermuxAI.ActionBar" parent="ThemeOverlay.Material3.Dark.ActionBar">
+    <style name="ThemeOverlay.TermuxAI.ActionBar" parent="ThemeOverlay.AppCompat.ActionBar">
         <item name="colorPrimary">@color/claude_accent</item>
         <item name="android:textColorPrimary">@color/text_primary</item>
     </style>
