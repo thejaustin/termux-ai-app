@@ -1,61 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Base application theme -->
-    <style name="Theme.TermuxAI" parent="Theme.Material3.DynamicColors.Dark">
-        <!-- Primary brand color -->
-        <item name="colorPrimary">@color/claude_accent</item>
-        <item name="colorPrimaryVariant">@color/claude_accent_dark</item>
-        <item name="colorOnPrimary">@color/white</item>
-        
-        <!-- Secondary brand color -->
-        <item name="colorSecondary">@color/tab_indicator</item>
-        <item name="colorSecondaryVariant">@color/teal_700</item>
-        <item name="colorOnSecondary">@color/black</item>
-        
-        <!-- Background colors -->
-        <item name="android:colorBackground">@color/terminal_background</item>
-        <item name="colorSurface">@color/panel_background</item>
-        <item name="colorOnBackground">@color/text_primary</item>
-        <item name="colorOnSurface">@color/text_primary</item>
-        
-        <!-- Status bar -->
-        <item name="android:statusBarColor">@color/terminal_background</item>
-        <item name="android:windowLightStatusBar">false</item>
-        
-        <!-- Navigation bar -->
-        <item name="android:navigationBarColor">@color/terminal_background</item>
-        <item name="android:windowLightNavigationBar">false</item>
-        
-        <!-- Window background -->
-        <item name="android:windowBackground">@color/terminal_background</item>
-        
-        <!-- Text colors -->
-        <item name="android:textColorPrimary">@color/text_primary</item>
-        <item name="android:textColorSecondary">@color/text_secondary</item>
-        <item name="android:textColorHint">@color/text_tertiary</item>
-        
-        <!-- Action bar -->
-        <item name="actionBarTheme">@style/ThemeOverlay.TermuxAI.ActionBar</item>
-    </style>
+        <!-- Base application theme -->
+        <style name="Theme.TermuxAI" parent="Theme.Material3.DynamicColors.Dark">
+            <!-- Primary brand color -->
+            <item name="colorPrimary">@color/claude_accent</item>
+            <item name="colorPrimaryVariant">@color/claude_accent_dark</item>
+            <item name="colorOnPrimary">@color/white</item>
     
-    <!-- Theme without action bar -->
-    <style name="Theme.TermuxAI.NoActionBar">
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
-    </style>
+            <!-- Secondary brand color -->
+            <item name="colorSecondary">@color/tab_indicator</item>
+            <item name="colorSecondaryVariant">@color/teal_700</item>
+            <item name="colorOnSecondary">@color/black</item>
     
-    <!-- Dialog theme -->
-    <style name="Theme.TermuxAI.Dialog" parent="Theme.Material3.AlertDialog.Dark">
-        <item name="colorPrimary">@color/claude_accent</item>
-        <item name="android:colorBackground">@color/panel_background</item>
-        <item name="colorSurface">@color/panel_background</item>
-    </style>
+            <!-- Background colors -->
+            <item name="android:colorBackground">@color/terminal_background</item>
+            <item name="colorSurface">@color/panel_background</item>
+            <item name="colorOnBackground">@color/text_primary</item>
+            <item name="colorOnSurface">@color/text_primary</item>
     
-    <!-- Action bar theme overlay -->
-    <style name="ThemeOverlay.TermuxAI.ActionBar" parent="ThemeOverlay.AppCompat.ActionBar">
-        <item name="colorPrimary">@color/claude_accent</item>
-        <item name="android:textColorPrimary">@color/text_primary</item>
-    </style>
+            <!-- Status bar -->
+            <item name="android:statusBarColor">@color/terminal_background</item>
+            <item name="android:windowLightStatusBar">false</item>
+    
+            <!-- Navigation bar -->
+            <item name="android:navigationBarColor">@color/terminal_background</item>
+            <item name="android:windowLightNavigationBar">false</item>
+    
+            <!-- Window background -->
+            <item name="android:windowBackground">@color/terminal_background</item>
+    
+            <!-- Text colors -->
+            <item name="android:textColorPrimary">@color/text_primary</item>
+            <item name="android:textColorSecondary">@color/text_secondary</item>
+            <item name="android:textColorHint">@color/text_tertiary</item>
+    
+            <!-- Dialog themes -->
+            <item name="android:dialogTheme">@style/Theme.TermuxAI.AlertDialog</item>
+            <item name="android:alertDialogTheme">@style/Theme.TermuxAI.AlertDialog</item>
+    
+            <!-- Action bar -->
+            <item name="actionBarTheme">@style/ThemeOverlay.TermuxAI.ActionBar</item>
+        </style>
+    
+        <!-- Theme without action bar -->
+        <style name="Theme.TermuxAI.NoActionBar">
+            <item name="windowActionBar">false</item>
+            <item name="windowNoTitle">true</item>
+        </style>
+    
+        <!-- Custom AlertDialog style for Dark Theme -->
+        <style name="Theme.TermuxAI.AlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog.Dark" />
     
     <!-- Terminal specific styles -->
     <style name="TerminalTextStyle">
