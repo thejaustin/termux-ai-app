@@ -145,8 +145,7 @@ public class TabbedTerminalActivity extends AppCompatActivity {
                     }
                 });
             }
-            
-            @Override
+
             public void onOperationDetected(String operation) {
                 runOnUiThread(() -> {
                     // Show overlay with slide-down animation
@@ -159,8 +158,7 @@ public class TabbedTerminalActivity extends AppCompatActivity {
                     binding.claudeProgressText.setText("0%");
                 });
             }
-            
-            @Override
+
             public void onProgressUpdated(float progress) {
                 runOnUiThread(() -> {
                     int percent = (int) (progress * 100);
@@ -200,8 +198,7 @@ public class TabbedTerminalActivity extends AppCompatActivity {
                     }
                 });
             }
-            
-            @Override
+
             public void onClaudeErrorDetected(String error) {
                 runOnUiThread(() -> {
                     // Hide overlay with slide-up animation on error
@@ -212,8 +209,7 @@ public class TabbedTerminalActivity extends AppCompatActivity {
                     Toast.makeText(TabbedTerminalActivity.this, "❌ Claude Error: " + error, Toast.LENGTH_LONG).show();
                 });
             }
-            
-            @Override
+
             public void onClaudeTokenUsageUpdated(int used, int total) {
                 runOnUiThread(() -> {
                     // This could be displayed in the status overlay if space allows, or in a separate element
