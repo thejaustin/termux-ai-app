@@ -18,7 +18,7 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
     
     <application
-        android:name=".TermuxAIApplication"
+        android:name="com.termux.ai.TermuxAIApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -31,7 +31,7 @@
 
         <!-- Main Terminal Activity with Tabs -->
         <activity
-            android:name=".app.TabbedTerminalActivity"
+            android:name="com.termux.app.TabbedTerminalActivity"
             android:exported="true"
             android:launchMode="singleTask"
             android:theme="@style/Theme.TermuxAI.NoActionBar"
@@ -51,7 +51,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".app.TermuxViewActivity"
+        <activity android:name="com.termux.app.TermuxViewActivity"
                   android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW"/>
@@ -60,7 +60,7 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".app.TermuxSendActivity"
+        <activity android:name="com.termux.app.TermuxSendActivity"
                   android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.SEND"/>
@@ -71,35 +71,35 @@
 
         <!-- Settings Activity -->
         <activity
-            android:name=".app.TermuxAISettingsActivity"
+            android:name="com.termux.app.TermuxAISettingsActivity"
             android:exported="false"
             android:label="@string/settings_title"
-            android:parentActivityName=".app.TabbedTerminalActivity" />
+            android:parentActivityName="com.termux.app.TabbedTerminalActivity" />
 
         <!-- Claude Code Setup Activity -->
         <activity
-            android:name=".ai.ClaudeSetupActivity"
+            android:name="com.termux.ai.ClaudeSetupActivity"
             android:exported="false"
             android:label="@string/claude_setup_title"
-            android:parentActivityName=".app.TabbedTerminalActivity" />
+            android:parentActivityName="com.termux.app.TabbedTerminalActivity" />
 
         <!-- File Picker Activity -->
         <activity
-            android:name=".ui.FilePickerActivity"
+            android:name="com.termux.ui.FilePickerActivity"
             android:exported="false"
             android:label="@string/file_picker_title"
             android:theme="@style/Theme.TermuxAI.Dialog" />
 
         <!-- Terminal Service for background operations -->
         <service
-            android:name=".terminal.TermuxAIService"
+            android:name="com.termux.terminal.TermuxAIService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="dataSync" />
 
         <!-- Claude Code Integration Service -->
         <service
-            android:name=".ai.ClaudeCodeService"
+            android:name="com.termux.ai.ClaudeCodeService"
             android:enabled="true"
             android:exported="false" />
 
@@ -116,7 +116,7 @@
 
         <!-- Receiver for system events -->
         <receiver
-            android:name=".receivers.TermuxAIReceiver"
+            android:name="com.termux.receivers.TermuxAIReceiver"
             android:enabled="true"
             android:exported="false">
             <intent-filter>
