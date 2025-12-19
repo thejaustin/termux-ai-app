@@ -1,68 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!-- Primary theme colors -->
-    <color name="colorPrimary">#FF10A37F</color>
-    <color name="colorPrimaryDark">#FF0F7A5C</color>
-    <color name="purple_200">#FFBB86FC</color>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="teal_200">#FF03DAC5</color>
-    <color name="teal_700">#FF018786</color>
+    <color name="colorPrimary">#FF006A4E</color> <!-- Darker green for primary in light mode -->
+    <color name="colorPrimaryDark">#FF003828</color>
+    <color name="purple_200">#FF6750A4</color>
+    <color name="purple_500">#FF6750A4</color>
+    <color name="purple_700">#FF6750A4</color>
+    <color name="teal_200">#FF4FD8EB</color>
+    <color name="teal_700">#FF00796B</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    
+
     <!-- Terminal colors -->
-    <color name="terminal_background">#FF0D1117</color>
-    <color name="terminal_foreground">#FFC9D1D9</color>
-    <color name="terminal_cursor">#FF58A6FF</color>
-    <color name="terminal_selection">#FF264F78</color>
-    
+    <color name="terminal_background">#FFFFFFFF</color>
+    <color name="terminal_foreground">#FF1C1B1F</color>
+    <color name="terminal_cursor">#FF006A4E</color>
+    <color name="terminal_selection">#FFCCE8E0</color>
+
     <!-- Claude AI accent colors -->
-    <color name="claude_accent">#FF10A37F</color>
-    <color name="claude_accent_light">#FF1ED760</color>
-    <color name="claude_accent_dark">#FF0F7A5C</color>
-    <color name="claude_background">#FF1A1A1A</color>
-    <color name="claude_text">#FFECEDEE</color>
-    
+    <color name="claude_accent">#FF006A4E</color> <!-- Keep primary green for Claude accent -->
+    <color name="claude_accent_light">#FF4DCC9E</color>
+    <color name="claude_accent_dark">#FF003828</color>
+    <color name="claude_background">#FFF5F5F5</color>
+    <color name="claude_text">#FF1C1B1F</color>
+
     <!-- Tab colors -->
-    <color name="tab_background">#FF161B22</color>
-    <color name="tab_text_normal">#FF8B949E</color>
-    <color name="tab_text_selected">#FFF0F6FC</color>
-    <color name="tab_indicator">#FF58A6FF</color>
-    <color name="tab_ripple">#FF30363D</color>
-    
+    <color name="tab_background">#FFFFFFFF</color>
+    <color name="tab_text_normal">#FF4A454E</color>
+    <color name="tab_text_selected">#FF1C1B1F</color>
+    <color name="tab_indicator">#FF006A4E</color>
+    <color name="tab_ripple">#FFEEE0FF</color>
+
     <!-- Status and progress colors -->
-    <color name="progress_background">#FF21262D</color>
-    <color name="progress_foreground">#FF10A37F</color>
-    <color name="success_color">#FF238636</color>
-    <color name="error_color">#FFDA3633</color>
-    <color name="warning_color">#FFF85149</color>
-    <color name="info_color">#FF58A6FF</color>
-    
+    <color name="progress_background">#FFEDE0FF</color>
+    <color name="progress_foreground">#FF006A4E</color>
+    <color name="success_color">#FF1A5A2B</color>
+    <color name="error_color">#FFBA1A1A</color>
+    <color name="warning_color">#FF7F5200</color>
+    <color name="info_color">#FF006A4E</color>
+
     <!-- File operation colors -->
-    <color name="file_created">#FF238636</color>
-    <color name="file_modified">#FFD29922</color>
-    <color name="file_deleted">#FFDA3633</color>
-    <color name="file_highlight_bg">#4D238636</color>
-    
+    <color name="file_created">#FF1A5A2B</color>
+    <color name="file_modified">#FF7F5200</color>
+    <color name="file_deleted">#FFBA1A1A</color>
+    <color name="file_highlight_bg">#4DE0FFE8</color>
+
     <!-- UI element colors -->
-    <color name="fab_background">#FF58A6FF</color>
+    <color name="fab_background">#FF006A4E</color>
     <color name="fab_icon">#FFFFFFFF</color>
-    <color name="icon_tint">#FF8B949E</color>
-    <color name="icon_tint_active">#FF58A6FF</color>
-    
+    <color name="icon_tint">#FF4A454E</color>
+    <color name="icon_tint_active">#FF006A4E</color>
+
     <!-- Overlay and panel colors -->
-    <color name="overlay_background">#E6000000</color>
-    <color name="panel_background">#FF0D1117</color>
-    <color name="panel_border">#FF30363D</color>
-    <color name="divider_color">#FF21262D</color>
-    
+    <color name="overlay_background">#E6FFFFFF</color>
+    <color name="panel_background">#FFFFFFFF</color>
+    <color name="panel_border">#FFC9C5CA</color>
+    <color name="divider_color">#FFE7E0EC</color>
+
     <!-- Text colors -->
-    <color name="text_primary">#FFF0F6FC</color>
-    <color name="text_secondary">#FF8B949E</color>
-    <color name="text_tertiary">#FF6E7681</color>
-    <color name="text_disabled">#FF484F58</color>
-    
+    <color name="text_primary">#FF1C1B1F</color>
+    <color name="text_secondary">#FF4A454E</color>
+    <color name="text_tertiary">#FF7B757F</color>
+    <color name="text_disabled">#FF9C96A1</color>
+
     <!-- Project type colors -->
     <color name="nodejs_color">#FF68A063</color>
     <color name="python_color">#FF3776AB</color>
@@ -70,41 +70,41 @@
     <color name="go_color">#FF00ADD8</color>
     <color name="java_color">#FFED8B00</color>
     <color name="general_color">#FF8B949E</color>
-    
+
     <!-- Gesture hint colors -->
-    <color name="hint_background">#CC000000</color>
-    <color name="hint_text">#FFFFFFFF</color>
-    <color name="hint_accent">#FF58A6FF</color>
-    
+    <color name="hint_background">#CCFFFFFF</color>
+    <color name="hint_text">#FF1C1B1F</color>
+    <color name="hint_accent">#FF006A4E</color>
+
     <!-- Button colors -->
-    <color name="button_primary">#FF238636</color>
-    <color name="button_secondary">#FF21262D</color>
-    <color name="button_danger">#FFDA3633</color>
+    <color name="button_primary">#FF006A4E</color>
+    <color name="button_secondary">#FF6750A4</color>
+    <color name="button_danger">#FFBA1A1A</color>
     <color name="button_text">#FFFFFFFF</color>
-    
+
     <!-- Input field colors -->
-    <color name="input_background">#FF0D1117</color>
-    <color name="input_border">#FF30363D</color>
-    <color name="input_border_focused">#FF58A6FF</color>
-    <color name="input_text">#FFF0F6FC</color>
-    <color name="input_hint">#FF8B949E</color>
-    
+    <color name="input_background">#FFFFFFFF</color>
+    <color name="input_border">#FFC9C5CA</color>
+    <color name="input_border_focused">#FF006A4E</color>
+    <color name="input_text">#FF1C1B1F</color>
+    <color name="input_hint">#FF4A454E</color>
+
     <!-- ANSI terminal colors for syntax highlighting -->
-    <color name="ansi_black">#FF484F58</color>
-    <color name="ansi_red">#FFFF7B72</color>
-    <color name="ansi_green">#FF7EE787</color>
-    <color name="ansi_yellow">#FFE3B341</color>
-    <color name="ansi_blue">#FF79C0FF</color>
-    <color name="ansi_magenta">#FFBC8CFF</color>
-    <color name="ansi_cyan">#FF56D4DD</color>
-    <color name="ansi_white">#FFF0F6FC</color>
-    
-    <color name="ansi_bright_black">#FF6E7681</color>
-    <color name="ansi_bright_red">#FFFFA198</color>
-    <color name="ansi_bright_green">#FF9BE9A8</color>
-    <color name="ansi_bright_yellow">#FFE3B341</color>
-    <color name="ansi_bright_blue">#FF58A6FF</color>
-    <color name="ansi_bright_magenta">#FFBC8CFF</color>
-    <color name="ansi_bright_cyan">#FF39D0D8</color>
+    <color name="ansi_black">#FF4A454E</color>
+    <color name="ansi_red">#FFBA1A1A</color>
+    <color name="ansi_green">#FF006A4E</color>
+    <color name="ansi_yellow">#FF7F5200</color>
+    <color name="ansi_blue">#FF006A4E</color>
+    <color name="ansi_magenta">#FF9D44B5</color>
+    <color name="ansi_cyan">#FF006A4E</color>
+    <color name="ansi_white">#FF1C1B1F</color>
+
+    <color name="ansi_bright_black">#FF7B757F</color>
+    <color name="ansi_bright_red">#FFFF5149</color>
+    <color name="ansi_bright_green">#FF4DCC9E</color>
+    <color name="ansi_bright_yellow">#FFC48800</color>
+    <color name="ansi_bright_blue">#FF4DCC9E</color>
+    <color name="ansi_bright_magenta">#FFD071E7</color>
+    <color name="ansi_bright_cyan">#FF4DCC9E</color>
     <color name="ansi_bright_white">#FFFFFFFF</color>
 </resources>

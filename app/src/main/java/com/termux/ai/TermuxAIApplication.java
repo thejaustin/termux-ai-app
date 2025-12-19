@@ -42,8 +42,8 @@ public class TermuxAIApplication extends Application {
             Log.d(TAG, "Dynamic Colors (Material You) enabled");
         }
         
-        // Set up dark theme (always dark for terminal app)
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        // Set up theme to follow system (light/dark)
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
         
         // Initialize global components
         initializeClaudeIntegration();

@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Primary theme colors -->
+    <color name="colorPrimary">#FF10A37F</color>
+    <color name="colorPrimaryDark">#FF0F7A5C</color>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    
+    <!-- Terminal colors -->
+    <color name="terminal_background">#FF0D1117</color>
+    <color name="terminal_foreground">#FFC9D1D9</color>
+    <color name="terminal_cursor">#FF58A6FF</color>
+    <color name="terminal_selection">#FF264F78</color>
+    
+    <!-- Claude AI accent colors -->
+    <color name="claude_accent">#FF10A37F</color>
+    <color name="claude_accent_light">#FF1ED760</color>
+    <color name="claude_accent_dark">#FF0F7A5C</color>
+    <color name="claude_background">#FF1A1A1A</color>
+    <color name="claude_text">#FFECEDEE</color>
+    
+    <!-- Tab colors -->
+    <color name="tab_background">#FF161B22</color>
+    <color name="tab_text_normal">#FF8B949E</color>
+    <color name="tab_text_selected">#FFF0F6FC</color>
+    <color name="tab_indicator">#FF58A6FF</color>
+    <color name="tab_ripple">#FF30363D</color>
+    
+    <!-- Status and progress colors -->
+    <color name="progress_background">#FF21262D</color>
+    <color name="progress_foreground">#FF10A37F</color>
+    <color name="success_color">#FF238636</color>
+    <color name="error_color">#FFDA3633</color>
+    <color name="warning_color">#FFF85149</color>
+    <color name="info_color">#FF58A6FF</color>
+    
+    <!-- File operation colors -->
+    <color name="file_created">#FF238636</color>
+    <color name="file_modified">#FFD29922</color>
+    <color name="file_deleted">#FFDA3633</color>
+    <color name="file_highlight_bg">#4D238636</color>
+    
+    <!-- UI element colors -->
+    <color name="fab_background">#FF58A6FF</color>
+    <color name="fab_icon">#FFFFFFFF</color>
+    <color name="icon_tint">#FF8B949E</color>
+    <color name="icon_tint_active">#FF58A6FF</color>
+    
+    <!-- Overlay and panel colors -->
+    <color name="overlay_background">#E6000000</color>
+    <color name="panel_background">#FF0D1117</color>
+    <color name="panel_border">#FF30363D</color>
+    <color name="divider_color">#FF21262D</color>
+    
+    <!-- Text colors -->
+    <color name="text_primary">#FFF0F6FC</color>
+    <color name="text_secondary">#FF8B949E</color>
+    <color name="text_tertiary">#FF6E7681</color>
+    <color name="text_disabled">#FF484F58</color>
+    
+    <!-- Project type colors -->
+    <color name="nodejs_color">#FF68A063</color>
+    <color name="python_color">#FF3776AB</color>
+    <color name="rust_color">#FFCE422B</color>
+    <color name="go_color">#FF00ADD8</color>
+    <color name="java_color">#FFED8B00</color>
+    <color name="general_color">#FF8B949E</color>
+    
+    <!-- Gesture hint colors -->
+    <color name="hint_background">#CC000000</color>
+    <color name="hint_text">#FFFFFFFF</color>
+    <color name="hint_accent">#FF58A6FF</color>
+    
+    <!-- Button colors -->
+    <color name="button_primary">#FF238636</color>
+    <color name="button_secondary">#FF21262D</color>
+    <color name="button_danger">#FFDA3633</color>
+    <color name="button_text">#FFFFFFFF</color>
+    
+    <!-- Input field colors -->
+    <color name="input_background">#FF0D1117</color>
+    <color name="input_border">#FF30363D</color>
+    <color name="input_border_focused">#FF58A6FF</color>
+    <color name="input_text">#FFF0F6FC</color>
+    <color name="input_hint">#FF8B949E</color>
+    
+    <!-- ANSI terminal colors for syntax highlighting -->
+    <color name="ansi_black">#FF484F58</color>
+    <color name="ansi_red">#FFFF7B72</color>
+    <color name="ansi_green">#FF7EE787</color>
+    <color name="ansi_yellow">#FFE3B341</color>
+    <color name="ansi_blue">#FF79C0FF</color>
+    <color name="ansi_magenta">#FFBC8CFF</color>
+    <color name="ansi_cyan">#FF56D4DD</color>
+    <color name="ansi_white">#FFF0F6FC</color>
+    
+    <color name="ansi_bright_black">#FF6E7681</color>
+    <color name="ansi_bright_red">#FFFFA198</color>
+    <color name="ansi_bright_green">#FF9BE9A8</color>
+    <color name="ansi_bright_yellow">#FFE3B341</color>
+    <color name="ansi_bright_blue">#FF58A6FF</color>
+    <color name="ansi_bright_magenta">#FFBC8CFF</color>
+    <color name="ansi_bright_cyan">#FF39D0D8</color>
+    <color name="ansi_bright_white">#FFFFFFFF</color>
+</resources>

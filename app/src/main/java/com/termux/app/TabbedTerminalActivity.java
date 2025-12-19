@@ -5,45 +5,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.viewpager2.adapter.FragmentStateAdapter;
-import androidx.viewpager2.widget.ViewPager2;
-
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.tabs.TabLayout;
-import com.google.android.material.tabs.TabLayoutMediator;
-import com.termux.ai.ClaudeCodeIntegration;
-import com.termux.ai.R;
-
-import android.util.Log;
-
-import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
-import com.google.gson.reflect.TypeToken;
-
-import android.content.SharedPreferences;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
-/**
- * Main Activity for Termux AI with tabbed terminal interface
- * 
- * Features:
- * - Multiple terminal tabs for different projects
- * - Claude Code integration across tabs
- * - Project workspace management
- * - Enhanced mobile UI
- */
-import java.io.Serializable;
-import java.lang.reflect.Type;
+import com.termux.ai.databinding.ActivityTabbedTerminalBinding;
 
 public class TabbedTerminalActivity extends AppCompatActivity {
     private static final String TAG = "TabbedTerminalActivity";
@@ -51,6 +13,7 @@ public class TabbedTerminalActivity extends AppCompatActivity {
     private static final String PREFS_NAME = "terminal_tabs";
     private static final String KEY_TABS = "tabs";
     
+    private ActivityTabbedTerminalBinding binding;
     private ViewPager2 viewPager;
     private TabLayout tabLayout;
     private FloatingActionButton fabNewTab;
@@ -60,43 +23,54 @@ public class TabbedTerminalActivity extends AppCompatActivity {
     private List<TerminalTab> terminalTabs;
     private ClaudeCodeIntegration claudeIntegration;
     
-    @Override
+        private void toggleBottomPanelVisibility() {
+            if (binding.bottomPanel.getVisibility() == View.VISIBLE) {
+                binding.bottomPanel.startAnimation(android.view.animation.AnimationUtils.loadAnimation(this, R.anim.slide_out_bottom));
+                binding.bottomPanel.setVisibility(View.GONE);
+            } else {
+                binding.bottomPanel.startAnimation(android.view.animation.AnimationUtils.loadAnimation(this, R.anim.slide_in_bottom));
+                binding.bottomPanel.setVisibility(View.VISIBLE);
+            }
+        }
+    
+        @Override
         protected void onCreate(Bundle savedInstanceState) {
             // It would be better to save the state of the tabs, including the working directory and the command history, so that the user can resume their session.
             super.onCreate(savedInstanceState);
-            setContentView(R.layout.activity_tabbed_terminal);
-
-            androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
-            setSupportActionBar(toolbar);
+            binding = ActivityTabbedTerminalBinding.inflate(getLayoutInflater());
+            setContentView(binding.getRoot());
+    
+            setSupportActionBar(binding.toolbar);
             if (getSupportActionBar() != null) {
                 getSupportActionBar().setDisplayShowTitleEnabled(false); // Hide default title
             }
-
-            ImageButton settingsButton = findViewById(R.id.btn_settings);
-            if (settingsButton != null) {
-                settingsButton.setOnClickListener(v -> {
-                    startActivity(new Intent(TabbedTerminalActivity.this, TermuxAISettingsActivity.class));
-                });
-            }
+    
+            binding.btnSettings.setOnClickListener(v -> {
+                startActivity(new Intent(TabbedTerminalActivity.this, TermuxAISettingsActivity.class));
+            });
     
             initializeViews();
             setupTerminalTabs();
             setupClaudeIntegration();
             setupFloatingActionButtons();
     
-            loadTabs();
-        }
+            // Initially hide bottom panel with animation
+            binding.bottomPanel.setVisibility(View.GONE); // Ensure it's GONE before animation if not already
+            // No animation on initial hide, as it's already GONE by default in XML,
+            // and we want it to be initially hidden without a "slide out" effect on app start.
     
+            loadTabs();
+        }    
         @Override
         protected void onPause() {
             super.onPause();
             saveTabs();
         }    
     private void initializeViews() {
-        viewPager = findViewById(R.id.terminal_viewpager);
-        tabLayout = findViewById(R.id.terminal_tablayout);
-        fabNewTab = findViewById(R.id.fab_new_tab);
-        fabClaudeCode = findViewById(R.id.fab_claude_code);
+        viewPager = binding.terminalViewpager;
+        tabLayout = binding.terminalTablayout;
+        fabNewTab = binding.fabNewTab;
+        fabClaudeCode = binding.fabClaudeCode;
         
         // Customize tab layout for mobile
         tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
@@ -129,6 +103,8 @@ public class TabbedTerminalActivity extends AppCompatActivity {
     
     private void setupClaudeIntegration() {
         claudeIntegration = new ClaudeCodeIntegration();
+        binding.claudeStatusOverlay.setVisibility(View.GONE); // Initially hide the overlay
+
         claudeIntegration.setGlobalListener(new ClaudeCodeIntegration.GlobalListener() {
             @Override
             public void onClaudeDetected(int tabIndex) {
@@ -140,7 +116,33 @@ public class TabbedTerminalActivity extends AppCompatActivity {
                     }
                     
                     // Show Claude FAB
-                    fabClaudeCode.show();
+                    if (fabClaudeCode.getVisibility() != View.VISIBLE) {
+                        fabClaudeCode.startAnimation(android.view.animation.AnimationUtils.loadAnimation(TabbedTerminalActivity.this, R.anim.fab_fade_in));
+                        fabClaudeCode.setVisibility(View.VISIBLE);
+                    }
+                });
+            }
+            
+            @Override
+            public void onOperationDetected(String operation) {
+                runOnUiThread(() -> {
+                    // Show overlay with slide-down animation
+                    if (binding.claudeStatusOverlay.getVisibility() != View.VISIBLE) {
+                        binding.claudeStatusOverlay.setVisibility(View.VISIBLE);
+                        binding.claudeStatusOverlay.startAnimation(android.view.animation.AnimationUtils.loadAnimation(TabbedTerminalActivity.this, R.anim.slide_in_top));
+                    }
+                    binding.claudeStatusText.setText("Claude: " + operation + "...");
+                    binding.claudeProgressBar.setProgress(0);
+                    binding.claudeProgressText.setText("0%");
+                });
+            }
+            
+            @Override
+            public void onProgressUpdated(float progress) {
+                runOnUiThread(() -> {
+                    int percent = (int) (progress * 100);
+                    binding.claudeProgressBar.setProgress(percent);
+                    binding.claudeProgressText.setText(percent + "%");
                 });
             }
             
@@ -154,6 +156,12 @@ public class TabbedTerminalActivity extends AppCompatActivity {
                         tab.setIcon(terminalTab.getIcon());
                     }
                     
+                    // Hide overlay with slide-up animation
+                    if (binding.claudeStatusOverlay.getVisibility() == View.VISIBLE) {
+                        binding.claudeStatusOverlay.startAnimation(android.view.animation.AnimationUtils.loadAnimation(TabbedTerminalActivity.this, R.anim.slide_out_top));
+                        binding.claudeStatusOverlay.setVisibility(View.GONE);
+                    }
+
                     // Check if any other tabs have Claude active
                     boolean anyClaudeActive = false;
                     for (TerminalTab termTab : terminalTabs) {
@@ -164,8 +172,29 @@ public class TabbedTerminalActivity extends AppCompatActivity {
                     }
                     
                     if (!anyClaudeActive) {
-                        fabClaudeCode.hide();
+                        fabClaudeCode.startAnimation(android.view.animation.AnimationUtils.loadAnimation(TabbedTerminalActivity.this, R.anim.fab_fade_out));
+                        fabClaudeCode.setVisibility(View.GONE);
                     }
+                });
+            }
+            
+            @Override
+            public void onClaudeErrorDetected(String error) {
+                runOnUiThread(() -> {
+                    // Hide overlay with slide-up animation on error
+                    if (binding.claudeStatusOverlay.getVisibility() == View.VISIBLE) {
+                        binding.claudeStatusOverlay.startAnimation(android.view.animation.AnimationUtils.loadAnimation(TabbedTerminalActivity.this, R.anim.slide_out_top));
+                        binding.claudeStatusOverlay.setVisibility(View.GONE);
+                    }
+                    Toast.makeText(TabbedTerminalActivity.this, "❌ Claude Error: " + error, Toast.LENGTH_LONG).show();
+                });
+            }
+            
+            @Override
+            public void onClaudeTokenUsageUpdated(int used, int total) {
+                runOnUiThread(() -> {
+                    // This could be displayed in the status overlay if space allows, or in a separate element
+                    // For now, no direct UI update in the overlay for this.
                 });
             }
         });
@@ -173,6 +202,10 @@ public class TabbedTerminalActivity extends AppCompatActivity {
     
     private void setupFloatingActionButtons() {
         fabNewTab.setOnClickListener(v -> showNewTabDialog());
+        fabNewTab.setOnLongClickListener(v -> {
+            toggleBottomPanelVisibility();
+            return true;
+        });
         
         fabClaudeCode.setOnClickListener(v -> {
             TerminalTab currentTab = getCurrentTab();
@@ -181,8 +214,8 @@ public class TabbedTerminalActivity extends AppCompatActivity {
             }
         });
         
-        // Initially hide Claude FAB
-        fabClaudeCode.hide();
+        fabClaudeCode.startAnimation(android.view.animation.AnimationUtils.loadAnimation(TabbedTerminalActivity.this, R.anim.fab_fade_out));
+        fabClaudeCode.setVisibility(View.GONE);
     }
     
     private void createNewTab(String name, String workingDirectory) {
@@ -223,9 +256,11 @@ public class TabbedTerminalActivity extends AppCompatActivity {
             
             // Update Claude FAB visibility
             if (tab.isClaudeActive()) {
-                fabClaudeCode.show();
+                fabClaudeCode.startAnimation(android.view.animation.AnimationUtils.loadAnimation(TabbedTerminalActivity.this, R.anim.fab_fade_in));
+                fabClaudeCode.setVisibility(View.VISIBLE);
             } else if (!anyTabHasClaude()) {
-                fabClaudeCode.hide();
+                fabClaudeCode.startAnimation(android.view.animation.AnimationUtils.loadAnimation(TabbedTerminalActivity.this, R.anim.fab_fade_out));
+                fabClaudeCode.setVisibility(View.GONE);
             }
         }
     }

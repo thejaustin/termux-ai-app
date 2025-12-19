@@ -1,62 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Base application theme (Light) -->
-    <style name="Theme.TermuxAI" parent="Theme.Material3.DynamicColors.Light">
+    <!-- Base application theme -->
+    <style name="Theme.TermuxAI" parent="Theme.Material3.DynamicColors.Dark">
         <!-- Primary brand color -->
         <item name="colorPrimary">@color/claude_accent</item>
-        <item name="colorPrimaryVariant">@color/claude_accent_light</item>
+        <item name="colorPrimaryVariant">@color/claude_accent_dark</item>
         <item name="colorOnPrimary">@color/white</item>
-
+        
         <!-- Secondary brand color -->
         <item name="colorSecondary">@color/tab_indicator</item>
         <item name="colorSecondaryVariant">@color/teal_700</item>
         <item name="colorOnSecondary">@color/black</item>
-
+        
         <!-- Background colors -->
         <item name="android:colorBackground">@color/terminal_background</item>
         <item name="colorSurface">@color/panel_background</item>
         <item name="colorOnBackground">@color/text_primary</item>
         <item name="colorOnSurface">@color/text_primary</item>
-
+        
         <!-- Status bar -->
         <item name="android:statusBarColor">@color/terminal_background</item>
-        <item name="android:windowLightStatusBar">true</item>
-
+        <item name="android:windowLightStatusBar">false</item>
+        
         <!-- Navigation bar -->
         <item name="android:navigationBarColor">@color/terminal_background</item>
-        <item name="android:windowLightNavigationBar">true</item>
-
+        <item name="android:windowLightNavigationBar">false</item>
+        
         <!-- Window background -->
         <item name="android:windowBackground">@color/terminal_background</item>
-
+        
         <!-- Text colors -->
         <item name="android:textColorPrimary">@color/text_primary</item>
         <item name="android:textColorSecondary">@color/text_secondary</item>
         <item name="android:textColorHint">@color/text_tertiary</item>
-
+        
         <!-- Action bar -->
         <item name="actionBarTheme">@style/ThemeOverlay.TermuxAI.ActionBar</item>
     </style>
-
+    
     <!-- Theme without action bar -->
     <style name="Theme.TermuxAI.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
-
+    
     <!-- Dialog theme -->
-    <style name="Theme.TermuxAI.Dialog" parent="Theme.Material3.Light.Dialog">
+    <style name="Theme.TermuxAI.Dialog" parent="Theme.Material3.Dark">
         <item name="colorPrimary">@color/claude_accent</item>
         <item name="android:colorBackground">@color/panel_background</item>
         <item name="colorSurface">@color/panel_background</item>
     </style>
-
+    
     <!-- Action bar theme overlay -->
-    <style name="ThemeOverlay.TermuxAI.ActionBar" parent="ThemeOverlay.Material3.Light.ActionBar">
+    <style name="ThemeOverlay.TermuxAI.ActionBar" parent="ThemeOverlay.Material3.Dark.ActionBar">
         <item name="colorPrimary">@color/claude_accent</item>
         <item name="android:textColorPrimary">@color/text_primary</item>
     </style>
-
+    
     <!-- Terminal specific styles -->
     <style name="TerminalTextStyle">
         <item name="android:fontFamily">monospace</item>
@@ -64,7 +64,7 @@
         <item name="android:textColor">@color/terminal_foreground</item>
         <item name="android:background">@color/terminal_background</item>
     </style>
-
+    
     <!-- Tab layout styles -->
     <style name="TabLayoutStyle" parent="Widget.Material3.TabLayout">
         <item name="tabBackground">@color/tab_background</item>
@@ -74,33 +74,33 @@
         <item name="tabRippleColor">@color/tab_ripple</item>
         <item name="tabMode">scrollable</item>
     </style>
-
+    
     <!-- Floating Action Button styles -->
     <style name="FABStyle" parent="Widget.Material3.FloatingActionButton.Primary">
         <item name="backgroundTint">@color/fab_background</item>
         <item name="tint">@color/fab_icon</item>
         <item name="elevation">6dp</item>
     </style>
-
+    
     <style name="ClaudeFABStyle" parent="Widget.Material3.FloatingActionButton.Primary">
         <item name="backgroundTint">@color/claude_accent</item>
         <item name="tint">@color/white</item>
         <item name="elevation">8dp</item>
     </style>
-
+    
     <!-- Button styles -->
     <style name="PrimaryButtonStyle" parent="Widget.Material3.Button">
         <item name="backgroundTint">@color/button_primary</item>
         <item name="android:textColor">@color/button_text</item>
         <item name="cornerRadius">8dp</item>
     </style>
-
+    
     <style name="SecondaryButtonStyle" parent="Widget.Material3.Button.OutlinedButton">
         <item name="strokeColor">@color/button_secondary</item>
         <item name="android:textColor">@color/text_primary</item>
         <item name="cornerRadius">8dp</item>
     </style>
-
+    
     <!-- Input field styles -->
     <style name="InputFieldStyle" parent="Widget.Material3.TextInputLayout.OutlinedBox">
         <item name="boxBackgroundColor">@color/input_background</item>
@@ -108,14 +108,14 @@
         <item name="boxStrokeColorStateList">@color/box_stroke_color</item>
         <item name="android:textColorHint">@color/input_hint</item>
     </style>
-
+    
     <!-- Progress bar styles -->
     <style name="ClaudeProgressStyle" parent="Widget.Material3.LinearProgressIndicator">
         <item name="trackColor">@color/progress_background</item>
         <item name="indicatorColor">@color/claude_accent</item>
         <item name="trackThickness">4dp</item>
     </style>
-
+    
     <!-- Card styles -->
     <style name="InfoCardStyle" parent="Widget.Material3.CardView.Elevated">
         <item name="cardBackgroundColor">@color/panel_background</item>
@@ -124,13 +124,13 @@
         <item name="strokeColor">@color/panel_border</item>
         <item name="strokeWidth">1dp</item>
     </style>
-
+    
     <!-- Icon styles -->
     <style name="IconButtonStyle" parent="Widget.Material3.Button.IconButton">
         <item name="iconTint">@color/icon_tint</item>
         <item name="backgroundTint">@android:color/transparent</item>
     </style>
-
+    
     <!-- Claude status overlay styles -->
     <style name="ClaudeStatusStyle">
         <item name="android:background">@drawable/claude_status_background</item>
@@ -138,7 +138,7 @@
         <item name="android:textSize">14sp</item>
         <item name="android:padding">12dp</item>
     </style>
-
+    
     <!-- Gesture hint styles -->
     <style name="GestureHintStyle">
         <item name="android:background">@drawable/hint_background</item>
