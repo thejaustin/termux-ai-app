@@ -45,7 +45,7 @@
     </style>
     
     <!-- Dialog theme -->
-    <style name="Theme.TermuxAI.Dialog" parent="Theme.Material3.MaterialComponents.Dark.Dialog">
+    <style name="Theme.TermuxAI.Dialog" parent="Theme.Material3.AlertDialog.Dark">
         <item name="colorPrimary">@color/claude_accent</item>
         <item name="android:colorBackground">@color/panel_background</item>
         <item name="colorSurface">@color/panel_background</item>
