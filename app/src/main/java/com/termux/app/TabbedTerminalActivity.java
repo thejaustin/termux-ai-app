@@ -22,6 +22,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import com.termux.ai.ClaudeCodeIntegration;
+import com.termux.ai.R;
 import com.termux.ai.databinding.ActivityTabbedTerminalBinding;
 import java.io.File;
 import java.io.Serializable;
