@@ -160,8 +160,14 @@ public class EnhancedTerminalView extends TerminalView {
             @Override
             public void onProgressUpdated(float progress) {
                 mainHandler.post(() -> {
+                    // Throttle updates: only redraw if significant change or completion
+                    if (Math.abs(progress - claudeProgress) < 0.01f && progress < 1.0f && progress > 0.0f) {
+                        return;
+                    }
+                    
                     claudeProgress = progress;
-                    invalidate(); // Trigger redraw for progress bar
+                    // Only invalidate the bottom part where progress bar is (height - 50 pixels)
+                    invalidate(0, getHeight() - 50, getWidth(), getHeight()); 
                     if (claudeListener != null) {
                         claudeListener.onClaudeProgressUpdated(progress);
                     }
@@ -183,7 +189,7 @@ public class EnhancedTerminalView extends TerminalView {
                 mainHandler.post(() -> {
                     currentClaudeOperation = "";
                     claudeProgress = 0.0f;
-                    invalidate();
+                    invalidate(0, getHeight() - 50, getWidth(), getHeight()); // Clear progress bar
                     if (claudeListener != null) {
                         claudeListener.onClaudeOperationCompleted();
                     }
@@ -281,6 +287,7 @@ public class EnhancedTerminalView extends TerminalView {
     
     private void drawFileHighlights(Canvas canvas) {
         long currentTime = System.currentTimeMillis();
+        boolean needsInvalidate = false;
         
         // Remove expired highlights
         fileHighlights.removeIf(highlight -> 
@@ -292,11 +299,12 @@ public class EnhancedTerminalView extends TerminalView {
             if (alpha > 0) {
                 highlightPaint.setAlpha((int)(alpha * 68)); // Fade out
                 canvas.drawRect(highlight.rect, highlightPaint);
+                needsInvalidate = true;
             }
         }
         
-        if (!fileHighlights.isEmpty()) {
-            invalidate(); // Continue animation
+        if (needsInvalidate) {
+            postInvalidateOnAnimation(); // Smoother animation loop
         }
     }
     

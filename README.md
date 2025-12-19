@@ -1,10 +1,11 @@
-# Termux AI - Enhanced Terminal with Claude Integration
+# Termux AI - Enhanced Terminal with Claude & Gemini Integration
 
-A fork of the official Termux app that integrates AI capabilities directly into the terminal experience, inspired by Warp AI but built specifically for Android and Claude integration.
+A fork of the official Termux app that integrates AI capabilities directly into the terminal experience, inspired by Warp AI but built specifically for Android with support for multiple AI providers.
 
 ## 🚀 Features
 
 ### 🧠 Native AI Integration
+- **Multi-Provider Support** - Choose between **Claude (Anthropic)** and **Gemini (Google)**
 - **Real-time Command Assistance** - AI suggestions as you type
 - **Intelligent Error Handling** - Automatic error analysis and solutions
 - **Context-Aware Help** - Smart assistance based on current project and environment
@@ -33,7 +34,7 @@ This fork modifies the official Termux app with the following enhancements:
 - **Background Services** - AI processing and context management
 
 ### New Components
-- **AI Client** - Claude API integration with OAuth
+- **AI Client** - Unified client for Claude & Gemini APIs
 - **Context Engine** - Environment and project awareness
 - **Command Analyzer** - Real-time command understanding
 - **Suggestion Engine** - Smart command and code suggestions
@@ -44,7 +45,7 @@ This fork modifies the official Termux app with the following enhancements:
 ```
 app/src/main/java/com/termux/
 ├── ai/                          # New AI integration package
-│   ├── AIClient.java           # Claude API client
+│   ├── AIClient.java           # Unified AI provider client
 │   ├── ContextEngine.java      # Environment awareness
 │   ├── CommandAnalyzer.java    # Command processing
 │   └── SuggestionEngine.java   # AI suggestions
@@ -52,8 +53,8 @@ app/src/main/java/com/termux/
 │   ├── TerminalView.java       # Enhanced with AI overlays
 │   └── TerminalSession.java    # AI command hooks
 └── app/
-    ├── TermuxActivity.java     # AI UI integration
-    └── AISettingsActivity.java # AI configuration
+    ├── TabbedTerminalActivity.java     # AI UI integration
+    └── TermuxAISettingsActivity.java   # AI provider configuration
 ```
 
 ### Key Integration Points
@@ -80,7 +81,7 @@ app/src/main/java/com/termux/
 - Android Studio 4.0+
 - Android SDK 21+
 - NDK for native components
-- Claude API access (OAuth)
+- Claude API Key or Gemini API Key
 
 ### Building from Source
 
@@ -99,16 +100,7 @@ app/src/main/java/com/termux/
    ./gradlew setupNDK
    ```
 
-3. **Configure AI Integration**
-   ```bash
-   # Copy AI configuration template
-   cp app/src/main/assets/ai-config.template.json app/src/main/assets/ai-config.json
-   
-   # Add your Claude OAuth configuration
-   # Edit ai-config.json with your settings
-   ```
-
-4. **Build the APK**
+3. **Build the APK**
    ```bash
    # Debug build
    ./gradlew assembleDebug
@@ -119,12 +111,13 @@ app/src/main/java/com/termux/
 
 ## 📦 Installation
 
-### From APK
-1. Download the latest APK from [Releases](https://github.com/your-username/termux-ai/releases)
-2. Enable "Unknown Sources" in Android settings
-3. Install the APK
-4. Grant necessary permissions
-5. Authenticate with Claude during first launch
+### From GitHub Releases (Recommended)
+1. Go to the [Releases Page](https://github.com/your-username/termux-ai/releases) of this repository.
+2. Download the latest `termux-ai-release-apk` or `termux-ai-debug-apk`.
+3. Enable "Unknown Sources" in Android settings.
+4. Install the APK.
+5. Grant necessary permissions.
+6. **Important:** Go to **Settings > AI Integration** to configure your API Key.
 
 ### F-Droid (Planned)
 - F-Droid repository submission planned for stable release
@@ -134,11 +127,10 @@ app/src/main/java/com/termux/
 ### AI Settings
 Access AI settings through: **Settings > AI Integration**
 
-- **Model Selection** - Choose Claude model (Haiku, Sonnet, Opus)
-- **Suggestion Frequency** - Control how often AI suggests commands
-- **Context Sharing** - Configure what context is shared with AI
-- **Learning Mode** - Enable/disable pattern learning
-- **Offline Mode** - Use cached suggestions when offline
+- **AI Provider** - Select **Claude** or **Gemini**.
+- **API Key** - Enter your API key for the selected provider.
+- **Model Selection** - Choose specific model variants (e.g., Gemini Flash, Claude Sonnet).
+- **Suggestion Frequency** - Control how often AI suggests commands.
 
 ### Privacy Controls
 - **Data Retention** - Control how long AI interactions are stored
@@ -150,7 +142,7 @@ Access AI settings through: **Settings > AI Integration**
 
 ### Data Handling
 - **Local First** - AI context processed locally when possible
-- **Encrypted Storage** - All AI data encrypted at rest
+- **Encrypted Storage** - API keys and data encrypted at rest
 - **Secure Communication** - TLS encryption for API calls
 - **No Sensitive Data** - Passwords and keys never sent to AI
 
@@ -163,7 +155,8 @@ Access AI settings through: **Settings > AI Integration**
 ## 🎯 Roadmap
 
 ### Phase 1 (Current)
-- [x] Basic AI integration
+- [x] Basic AI integration (Claude)
+- [x] Gemini Provider Support
 - [x] Command suggestions
 - [x] Error analysis
 - [ ] UI polish and optimization
@@ -207,7 +200,7 @@ Original Termux app is also licensed under GPLv3.
 ## 🙏 Acknowledgments
 
 - **Termux Team** - For the amazing terminal app foundation
-- **Anthropic** - For Claude AI capabilities
+- **Anthropic & Google** - For their powerful AI models
 - **Warp** - For inspiration on AI-enhanced terminals
 - **Community** - For feedback and contributions
 

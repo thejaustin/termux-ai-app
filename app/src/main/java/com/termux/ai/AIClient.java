@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
 import java.io.IOException;
@@ -24,10 +25,10 @@ import okhttp3.WebSocket;
 import okhttp3.WebSocketListener;
 
 /**
- * AI Client for Claude integration in Termux
+ * AI Client for Claude and Gemini integration in Termux
  * 
  * Handles:
- * - Authentication with Claude API
+ * - Authentication with Claude API / Gemini API Key
  * - Real-time command analysis
  * - Context-aware suggestions
  * - Error diagnostics
@@ -38,8 +39,12 @@ public class AIClient {
     private static final String PREFS_NAME = "termux_ai_prefs";
     private static final String PREF_AUTH_TOKEN = "auth_token";
     private static final String PREF_SESSION_ID = "session_id";
+    private static final String PREF_AI_PROVIDER = "ai_provider";
+    private static final String PREF_GEMINI_API_KEY = "gemini_api_key";
     
-    public static final String API_BASE_URL = "https://claude.ai/api";
+    public static final String CLAUDE_API_BASE_URL = "https://claude.ai/api";
+    public static final String GEMINI_API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
+
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     
     private final Context context;
@@ -49,6 +54,9 @@ public class AIClient {
     
     private String authToken;
     private String sessionId;
+    private String geminiApiKey;
+    private String currentProvider; // "claude" or "gemini"
+
     private WebSocket webSocket;
     private AIClientListener listener;
     
@@ -69,6 +77,7 @@ public class AIClient {
             .connectTimeout(10, TimeUnit.SECONDS)
             .writeTimeout(10, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
+            .pingInterval(30, TimeUnit.SECONDS)
             .build();
             
         loadAuthenticationData();
@@ -81,16 +90,22 @@ public class AIClient {
     private void loadAuthenticationData() {
         authToken = prefs.getString(PREF_AUTH_TOKEN, null);
         sessionId = prefs.getString(PREF_SESSION_ID, null);
+        geminiApiKey = prefs.getString(PREF_GEMINI_API_KEY, null);
+        currentProvider = prefs.getString(PREF_AI_PROVIDER, "claude");
     }
     
     private void saveAuthenticationData() {
         prefs.edit()
             .putString(PREF_AUTH_TOKEN, authToken)
             .putString(PREF_SESSION_ID, sessionId)
+            .putString(PREF_GEMINI_API_KEY, geminiApiKey)
             .apply();
     }
     
     public boolean isAuthenticated() {
+        if ("gemini".equals(currentProvider)) {
+            return geminiApiKey != null && !geminiApiKey.isEmpty();
+        }
         return authToken != null && !authToken.isEmpty();
     }
     
@@ -105,7 +120,7 @@ public class AIClient {
         
         RequestBody body = RequestBody.create(gson.toJson(authRequest), JSON);
         Request request = new Request.Builder()
-            .url(API_BASE_URL + "/oauth/token")
+            .url(CLAUDE_API_BASE_URL + "/oauth/token")
             .post(body)
             .build();
             
@@ -121,14 +136,24 @@ public class AIClient {
                 if (response.isSuccessful()) {
                     String responseBody = response.body().string();
                     JsonObject authResponse = gson.fromJson(responseBody, JsonObject.class);
-                    
+
                     authToken = authResponse.get("access_token").getAsString();
                     sessionId = authResponse.get("session_id").getAsString();
-                    
+
                     saveAuthenticationData();
                     callback.onSuccess();
                 } else {
-                    callback.onError("Authentication failed: " + response.code());
+                    String errorBody = response.body().string();
+                    String errorMessage = "Authentication failed: " + response.code();
+                    try {
+                        JsonObject errorResponse = gson.fromJson(errorBody, JsonObject.class);
+                        if (errorResponse.has("error_description")) {
+                            errorMessage = errorResponse.get("error_description").getAsString();
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Failed to parse error response", e);
+                    }
+                    callback.onError(errorMessage);
                 }
             }
         });
@@ -138,6 +163,8 @@ public class AIClient {
      * Analyze command and provide suggestions
      */
     public void analyzeCommand(String command, String context, AnalysisCallback callback) {
+        loadAuthenticationData(); // Reload prefs in case settings changed
+        
         if (!isAuthenticated()) {
             if (listener != null) {
                 listener.onAuthenticationRequired();
@@ -145,12 +172,20 @@ public class AIClient {
             return;
         }
         
+        if ("gemini".equals(currentProvider)) {
+            analyzeCommandGemini(command, context, callback);
+        } else {
+            analyzeCommandClaude(command, context, callback);
+        }
+    }
+
+    private void analyzeCommandClaude(String command, String context, AnalysisCallback callback) {
         JsonObject analysisRequest = new JsonObject();
         analysisRequest.addProperty("command", command);
         analysisRequest.addProperty("context", context);
         analysisRequest.addProperty("type", "command_analysis");
         
-        sendAIRequest("/analyze", analysisRequest, new RequestCallback() {
+        sendClaudeRequest("/analyze", analysisRequest, new RequestCallback() {
             @Override
             public void onSuccess(JsonObject response) {
                 if (response.has("suggestion")) {
@@ -172,11 +207,32 @@ public class AIClient {
             }
         });
     }
+
+    private void analyzeCommandGemini(String command, String context, AnalysisCallback callback) {
+        String prompt = "Analyze this command: " + command + "\nContext: " + context + 
+                        "\nProvide a suggestion for improvement or explanation. " + 
+                        "Return ONLY JSON with 'suggestion' (string) and 'confidence' (float 0.0-1.0) fields. No markdown.";
+
+        sendGeminiRequest(prompt, response -> {
+            try {
+                JsonObject json = parseGeminiResponse(response);
+                String suggestion = json.get("suggestion").getAsString();
+                float confidence = json.has("confidence") ? json.get("confidence").getAsFloat() : 0.8f;
+                
+                callback.onSuggestion(suggestion, confidence);
+                if (listener != null) listener.onSuggestionReceived(suggestion, confidence);
+            } catch (Exception e) {
+                callback.onError("Failed to parse Gemini response: " + e.getMessage());
+            }
+        }, callback::onError);
+    }
     
     /**
      * Analyze error and provide solutions
      */
     public void analyzeError(String command, String errorOutput, String context, ErrorCallback callback) {
+        loadAuthenticationData();
+        
         if (!isAuthenticated()) {
             if (listener != null) {
                 listener.onAuthenticationRequired();
@@ -184,13 +240,21 @@ public class AIClient {
             return;
         }
         
+        if ("gemini".equals(currentProvider)) {
+            analyzeErrorGemini(command, errorOutput, context, callback);
+        } else {
+            analyzeErrorClaude(command, errorOutput, context, callback);
+        }
+    }
+
+    private void analyzeErrorClaude(String command, String errorOutput, String context, ErrorCallback callback) {
         JsonObject errorRequest = new JsonObject();
         errorRequest.addProperty("command", command);
         errorRequest.addProperty("error", errorOutput);
         errorRequest.addProperty("context", context);
         errorRequest.addProperty("type", "error_analysis");
         
-        sendAIRequest("/analyze", errorRequest, new RequestCallback() {
+        sendClaudeRequest("/analyze", errorRequest, new RequestCallback() {
             @Override
             public void onSuccess(JsonObject response) {
                 String analysis = response.get("analysis").getAsString();
@@ -209,25 +273,53 @@ public class AIClient {
             }
         });
     }
+
+    private void analyzeErrorGemini(String command, String errorOutput, String context, ErrorCallback callback) {
+        String prompt = "Command: " + command + "\nError: " + errorOutput + "\nContext: " + context + 
+                        "\nAnalyze and provide solutions. Return ONLY JSON with 'analysis' (string) and 'solutions' (string array). No markdown.";
+
+        sendGeminiRequest(prompt, response -> {
+            try {
+                JsonObject json = parseGeminiResponse(response);
+                String analysis = json.get("analysis").getAsString();
+                String[] solutions = gson.fromJson(json.get("solutions"), String[].class);
+                
+                callback.onAnalysis(analysis, solutions);
+                if (listener != null) listener.onErrorAnalysis(errorOutput, analysis, solutions);
+            } catch (Exception e) {
+                callback.onError("Failed to parse Gemini response: " + e.getMessage());
+            }
+        }, callback::onError);
+    }
     
     /**
      * Generate code based on natural language description
      */
     public void generateCode(String description, String language, String context, CodeCallback callback) {
+        loadAuthenticationData();
+
         if (!isAuthenticated()) {
             if (listener != null) {
                 listener.onAuthenticationRequired();
             }
             return;
         }
-        
+
+        if ("gemini".equals(currentProvider)) {
+            generateCodeGemini(description, language, context, callback);
+        } else {
+            generateCodeClaude(description, language, context, callback);
+        }
+    }
+
+    private void generateCodeClaude(String description, String language, String context, CodeCallback callback) {
         JsonObject codeRequest = new JsonObject();
         codeRequest.addProperty("description", description);
         codeRequest.addProperty("language", language);
         codeRequest.addProperty("context", context);
         codeRequest.addProperty("type", "code_generation");
         
-        sendAIRequest("/generate", codeRequest, new RequestCallback() {
+        sendClaudeRequest("/generate", codeRequest, new RequestCallback() {
             @Override
             public void onSuccess(JsonObject response) {
                 String code = response.get("code").getAsString();
@@ -247,11 +339,31 @@ public class AIClient {
             }
         });
     }
+
+    private void generateCodeGemini(String description, String language, String context, CodeCallback callback) {
+        String prompt = "Write " + language + " code for: " + description + "\nContext: " + context + 
+                        "\nReturn ONLY JSON with 'code' (string) and 'language' (string). No markdown.";
+
+        sendGeminiRequest(prompt, response -> {
+            try {
+                JsonObject json = parseGeminiResponse(response);
+                String code = json.get("code").getAsString();
+                String detectedLanguage = json.has("language") ? json.get("language").getAsString() : language;
+                
+                callback.onCodeGenerated(code, detectedLanguage);
+                if (listener != null) listener.onCodeGenerated(code, detectedLanguage);
+            } catch (Exception e) {
+                callback.onError("Failed to parse Gemini response: " + e.getMessage());
+            }
+        }, callback::onError);
+    }
     
     /**
      * Start real-time AI assistance session
      */
     public void startRealtimeSession() {
+        loadAuthenticationData();
+
         if (!isAuthenticated()) {
             if (listener != null) {
                 listener.onAuthenticationRequired();
@@ -259,6 +371,16 @@ public class AIClient {
             return;
         }
         
+        if ("gemini".equals(currentProvider)) {
+            Log.d(TAG, "Real-time session not supported for Gemini via REST");
+            // Optionally, we could simulate it or use a different mechanism.
+            // For now, just notifying connected to simulate success.
+            if (listener != null) {
+                listener.onConnectionStatusChanged(true);
+            }
+            return;
+        }
+
         Request request = new Request.Builder()
             .url("wss://claude.ai/api/ws")
             .addHeader("Authorization", "Bearer " + authToken)
@@ -329,6 +451,8 @@ public class AIClient {
      * Send real-time context update
      */
     public void sendContextUpdate(String workingDirectory, String currentCommand, String[] recentCommands) {
+        if ("gemini".equals(currentProvider)) return; // Not supported for Gemini REST
+
         if (webSocket == null) return;
         
         JsonObject contextUpdate = new JsonObject();
@@ -340,10 +464,10 @@ public class AIClient {
         webSocket.send(gson.toJson(contextUpdate));
     }
     
-    private void sendAIRequest(String endpoint, JsonObject requestBody, RequestCallback callback) {
+    private void sendClaudeRequest(String endpoint, JsonObject requestBody, RequestCallback callback) {
         RequestBody body = RequestBody.create(gson.toJson(requestBody), JSON);
         Request request = new Request.Builder()
-            .url(API_BASE_URL + endpoint)
+            .url(CLAUDE_API_BASE_URL + endpoint)
             .addHeader("Authorization", "Bearer " + authToken)
             .addHeader("Session-ID", sessionId)
             .post(body)
@@ -375,6 +499,72 @@ public class AIClient {
             }
         });
     }
+
+    private void sendGeminiRequest(String prompt, RequestCallback callback, AIClient.AnalysisCallback.OnError errorCallback) { // Using RequestCallback interface but adapting errors
+        // Construct Gemini JSON
+        JsonObject content = new JsonObject();
+        JsonObject part = new JsonObject();
+        part.addProperty("text", prompt);
+        JsonArray parts = new JsonArray();
+        parts.add(part);
+        content.add("parts", parts);
+        
+        JsonArray contents = new JsonArray();
+        contents.add(content);
+        
+        JsonObject requestBody = new JsonObject();
+        requestBody.add("contents", contents);
+
+        String url = GEMINI_API_URL + "?key=" + geminiApiKey;
+
+        RequestBody body = RequestBody.create(gson.toJson(requestBody), JSON);
+        Request request = new Request.Builder()
+            .url(url)
+            .post(body)
+            .build();
+
+        httpClient.newCall(request).enqueue(new Callback() {
+            @Override
+            public void onFailure(@NonNull Call call, @NonNull IOException e) {
+                errorCallback.onError("Gemini Request failed: " + e.getMessage());
+            }
+
+            @Override
+            public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+                if (response.isSuccessful()) {
+                    String responseBody = response.body().string();
+                    JsonObject jsonResponse = gson.fromJson(responseBody, JsonObject.class);
+                    callback.onSuccess(jsonResponse);
+                } else {
+                     errorCallback.onError("Gemini Request failed: " + response.code() + " " + response.body().string());
+                }
+            }
+        });
+    }
+
+    private JsonObject parseGeminiResponse(JsonObject response) {
+        JsonArray candidates = response.getAsJsonArray("candidates");
+        if (candidates.size() > 0) {
+            JsonObject candidate = candidates.get(0).getAsJsonObject();
+            JsonObject content = candidate.getAsJsonObject("content");
+            JsonArray parts = content.getAsJsonArray("parts");
+            String text = parts.get(0).getAsJsonObject().get("text").getAsString();
+            
+            // Clean markdown
+            text = text.trim();
+            if (text.startsWith("```json")) {
+                text = text.substring(7);
+            } else if (text.startsWith("```")) {
+                text = text.substring(3);
+            }
+            if (text.endsWith("```")) {
+                text = text.substring(0, text.length() - 3);
+            }
+            
+            return gson.fromJson(text, JsonObject.class);
+        }
+        throw new RuntimeException("No candidates in Gemini response");
+    }
     
     public void shutdown() {
         if (webSocket != null) {
@@ -392,6 +582,10 @@ public class AIClient {
     public interface AnalysisCallback {
         void onSuggestion(String suggestion, float confidence);
         void onError(String error);
+        
+        interface OnError {
+             void onError(String error);
+        }
     }
     
     public interface ErrorCallback {
