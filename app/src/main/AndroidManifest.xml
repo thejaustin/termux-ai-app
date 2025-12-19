@@ -88,7 +88,7 @@
             android:name="com.termux.ui.FilePickerActivity"
             android:exported="false"
             android:label="@string/file_picker_title"
-            android:theme="@style/Theme.TermuxAI.Dialog" />
+            android:theme="@style/Theme.TermuxAI" />
 
         <!-- Terminal Service for background operations -->
         <service
