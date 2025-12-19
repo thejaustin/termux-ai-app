@@ -7,6 +7,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,13 +18,15 @@ public class TermuxAISettingsActivity extends AppCompatActivity {
     private static final String PREFS_NAME = "termux_ai_prefs";
     private static final String PREF_AI_PROVIDER = "ai_provider";
     private static final String PREF_GEMINI_API_KEY = "gemini_api_key";
-    private static final String PREF_CLAUDE_API_KEY = "auth_token"; // Reusing existing
+    private static final String PREF_CLAUDE_API_KEY = "auth_token";
+    private static final String PREF_DYNAMIC_COLORS = "dynamic_colors_enabled";
 
     private RadioGroup providerGroup;
     private RadioButton claudeButton;
     private RadioButton geminiButton;
     private EditText apiKeyInput;
     private Button saveButton;
+    private Switch dynamicColorsSwitch;
     private SharedPreferences prefs;
 
     @Override
@@ -42,6 +45,7 @@ public class TermuxAISettingsActivity extends AppCompatActivity {
         geminiButton = findViewById(R.id.provider_gemini);
         apiKeyInput = findViewById(R.id.api_key_input);
         saveButton = findViewById(R.id.save_button);
+        dynamicColorsSwitch = findViewById(R.id.dynamic_colors_switch);
 
         loadSettings();
 
@@ -61,6 +65,10 @@ public class TermuxAISettingsActivity extends AppCompatActivity {
             claudeButton.setChecked(true);
             apiKeyInput.setText(prefs.getString(PREF_CLAUDE_API_KEY, ""));
         }
+        
+        boolean dynamicColors = prefs.getBoolean(PREF_DYNAMIC_COLORS, false);
+        dynamicColorsSwitch.setChecked(dynamicColors);
+
         updateApiKeyHint(providerGroup.getCheckedRadioButtonId());
     }
 
@@ -75,6 +83,8 @@ public class TermuxAISettingsActivity extends AppCompatActivity {
     private void saveSettings() {
         String provider = geminiButton.isChecked() ? "gemini" : "claude";
         String apiKey = apiKeyInput.getText().toString().trim();
+        boolean dynamicColors = dynamicColorsSwitch.isChecked();
+        boolean dynamicColorsChanged = dynamicColors != prefs.getBoolean(PREF_DYNAMIC_COLORS, false);
 
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(PREF_AI_PROVIDER, provider);
@@ -85,8 +95,16 @@ public class TermuxAISettingsActivity extends AppCompatActivity {
             editor.putString(PREF_CLAUDE_API_KEY, apiKey);
         }
         
+        editor.putBoolean(PREF_DYNAMIC_COLORS, dynamicColors);
+        
         editor.apply();
-        Toast.makeText(this, "Settings saved", Toast.LENGTH_SHORT).show();
+        
+        if (dynamicColorsChanged) {
+             Toast.makeText(this, "Settings saved. Restart app for theme changes.", Toast.LENGTH_LONG).show();
+        } else {
+             Toast.makeText(this, "Settings saved", Toast.LENGTH_SHORT).show();
+        }
+        
         finish();
     }
     

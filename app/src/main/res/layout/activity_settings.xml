@@ -17,10 +17,39 @@
             android:textStyle="bold"
             android:layout_marginBottom="24dp" />
 
+        <!-- Appearance Section -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Appearance"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="?attr/colorPrimary"
+            android:layout_marginBottom="16dp" />
+
+        <Switch
+            android:id="@+id/dynamic_colors_switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Material You (Dynamic Colors)"
+            android:textSize="16sp"
+            android:padding="8dp"
+            android:layout_marginBottom="24dp" />
+
+        <!-- AI Provider Section -->
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="AI Provider"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="?attr/colorPrimary"
+            android:layout_marginBottom="16dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Select Provider"
             android:textSize="16sp"
             android:textStyle="bold"
             android:layout_marginBottom="8dp" />
@@ -35,13 +64,15 @@
                 android:id="@+id/provider_claude"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Claude (Anthropic)" />
+                android:text="Claude (Anthropic)"
+                android:padding="8dp"/>
 
             <RadioButton
                 android:id="@+id/provider_gemini"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Gemini (Google)" />
+                android:text="Gemini (Google)"
+                android:padding="8dp"/>
         </RadioGroup>
 
         <TextView

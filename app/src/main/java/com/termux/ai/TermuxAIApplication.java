@@ -8,6 +8,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatDelegate;
 
+import com.google.android.material.color.DynamicColors;
 import com.termux.ai.BuildConfig;
 
 /**
@@ -18,6 +19,7 @@ import com.termux.ai.BuildConfig;
 public class TermuxAIApplication extends Application {
     private static final String TAG = "TermuxAIApplication";
     private static final String PREFS_NAME = "termux_ai_prefs";
+    private static final String PREF_DYNAMIC_COLORS = "dynamic_colors_enabled";
     
     private static TermuxAIApplication instance;
     private SharedPreferences preferences;
@@ -32,6 +34,13 @@ public class TermuxAIApplication extends Application {
         
         // Initialize preferences
         preferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        
+        // Apply Dynamic Colors (Material You) if enabled
+        boolean dynamicColorsEnabled = preferences.getBoolean(PREF_DYNAMIC_COLORS, false);
+        if (dynamicColorsEnabled) {
+            DynamicColors.applyToActivitiesIfAvailable(this);
+            Log.d(TAG, "Dynamic Colors (Material You) enabled");
+        }
         
         // Set up dark theme (always dark for terminal app)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
