@@ -136,6 +136,8 @@ public class TerminalView extends View {
      */
     public void requestRedraw() {
         invalidate();
+    }
+
     /**
      * Get the entire transcript text currently displayed in the terminal.
      */
