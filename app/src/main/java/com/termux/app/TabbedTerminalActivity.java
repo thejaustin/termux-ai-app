@@ -65,6 +65,19 @@ public class TabbedTerminalActivity extends AppCompatActivity {
             // It would be better to save the state of the tabs, including the working directory and the command history, so that the user can resume their session.
             super.onCreate(savedInstanceState);
             setContentView(R.layout.activity_tabbed_terminal);
+
+            androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+            setSupportActionBar(toolbar);
+            if (getSupportActionBar() != null) {
+                getSupportActionBar().setDisplayShowTitleEnabled(false); // Hide default title
+            }
+
+            ImageButton settingsButton = findViewById(R.id.btn_settings);
+            if (settingsButton != null) {
+                settingsButton.setOnClickListener(v -> {
+                    startActivity(new Intent(TabbedTerminalActivity.this, TermuxAISettingsActivity.class));
+                });
+            }
     
             initializeViews();
             setupTerminalTabs();

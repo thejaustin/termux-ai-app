@@ -21,7 +21,20 @@
             android:layout_height="?attr/actionBarSize"
             android:background="@color/terminal_background"
             app:layout_scrollFlags="scroll|enterAlways"
-            app:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+            app:popupTheme="@style/ThemeOverlay.AppCompat.Light">
+
+            <ImageButton
+                android:id="@+id/btn_settings"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:padding="12dp"
+                android:src="@drawable/ic_settings"
+                android:contentDescription="@string/menu_settings"
+                android:tint="@color/icon_tint" />
+
+        </androidx.appcompat.widget.Toolbar>
 
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/terminal_tablayout"
