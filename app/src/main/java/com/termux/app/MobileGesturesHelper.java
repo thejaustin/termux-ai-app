@@ -3,7 +3,6 @@ package com.termux.app;
 import android.content.Context;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
-import android.view.View;
 
 /**
  * Helper class to handle mobile-specific gestures for the terminal
@@ -77,7 +76,7 @@ public class MobileGesturesHelper {
         }
     }
 
-    public static void setupTouchTarget(View view, int minSize) {
+    public static void setupTouchTarget(android.view.View view, int minSize) {
         // Ensure minimum touch target size for accessibility
         int size = Math.max(minSize, (int) (48 * view.getContext().getResources().getDisplayMetrics().density));
         view.setMinimumWidth(size);

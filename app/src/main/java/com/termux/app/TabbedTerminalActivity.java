@@ -7,7 +7,11 @@ import android.os.Environment;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
@@ -305,7 +309,7 @@ public class TabbedTerminalActivity extends AppCompatActivity {
 
         // Add swipe gestures to the main coordinator layout for mobile navigation
         CoordinatorLayout coordinatorLayout = binding.getRoot();
-        coordinatorLayout.setOnTouchListener(new MobileGesturesHelper(this, new MobileGesturesHelper.GestureCallback() {
+        MobileGesturesHelper gesturesHelper = new MobileGesturesHelper(this, new MobileGesturesHelper.GestureCallback() {
             @Override
             public void onSwipeUp() {
                 // Could be used to show notifications or quick access panel
@@ -344,7 +348,12 @@ public class TabbedTerminalActivity extends AppCompatActivity {
             public void onLongPress() {
                 // Could show context menu
             }
-        }));
+        });
+
+        coordinatorLayout.setOnTouchListener((v, event) -> {
+            gesturesHelper.onTouchEvent(event);
+            return false; // Return false to allow other touch events to propagate
+        });
 
         fabClaudeCode.setOnClickListener(v -> {
             TerminalTab currentTab = getCurrentTab();
