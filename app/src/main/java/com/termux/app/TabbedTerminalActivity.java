@@ -308,7 +308,7 @@ public class TabbedTerminalActivity extends AppCompatActivity {
         });
 
         // Add swipe gestures to the main coordinator layout for mobile navigation
-        CoordinatorLayout coordinatorLayout = binding.getRoot();
+        CoordinatorLayout coordinatorLayout = (CoordinatorLayout) binding.getRoot();
         MobileGesturesHelper gesturesHelper = new MobileGesturesHelper(this, new MobileGesturesHelper.GestureCallback() {
             @Override
             public void onSwipeUp() {
@@ -350,10 +350,7 @@ public class TabbedTerminalActivity extends AppCompatActivity {
             }
         });
 
-        coordinatorLayout.setOnTouchListener((v, event) -> {
-            gesturesHelper.onTouchEvent(event);
-            return false; // Return false to allow other touch events to propagate
-        });
+        coordinatorLayout.setOnTouchListener(gesturesHelper);
 
         fabClaudeCode.setOnClickListener(v -> {
             TerminalTab currentTab = getCurrentTab();

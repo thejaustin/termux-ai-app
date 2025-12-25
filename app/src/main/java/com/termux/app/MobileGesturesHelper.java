@@ -3,11 +3,13 @@ package com.termux.app;
 import android.content.Context;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
+import android.view.View;
 
 /**
  * Helper class to handle mobile-specific gestures for the terminal
+ * Implements View.OnTouchListener to be used directly as a touch listener
  */
-public class MobileGesturesHelper {
+public class MobileGesturesHelper implements View.OnTouchListener {
     private GestureDetector gestureDetector;
     private Context context;
     private GestureCallback callback;
@@ -27,7 +29,8 @@ public class MobileGesturesHelper {
         this.gestureDetector = new GestureDetector(context, new GestureListener());
     }
 
-    public boolean onTouchEvent(MotionEvent event) {
+    @Override
+    public boolean onTouch(View v, MotionEvent event) {
         return gestureDetector.onTouchEvent(event);
     }
 
@@ -76,7 +79,7 @@ public class MobileGesturesHelper {
         }
     }
 
-    public static void setupTouchTarget(android.view.View view, int minSize) {
+    public static void setupTouchTarget(View view, int minSize) {
         // Ensure minimum touch target size for accessibility
         int size = Math.max(minSize, (int) (48 * view.getContext().getResources().getDisplayMetrics().density));
         view.setMinimumWidth(size);
