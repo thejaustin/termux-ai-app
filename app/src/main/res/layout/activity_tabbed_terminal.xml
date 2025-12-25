@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout 
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    android:id="@+id/coordinator_layout"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -41,6 +42,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/tab_background"
+            android:contentDescription="@string/tab_layout_desc"
+            android:accessibilityTraversalBefore="@id/terminal_viewpager"
             app:tabGravity="start"
             app:tabMode="scrollable"
             app:tabIndicatorColor="@color/claude_accent"
@@ -70,6 +73,8 @@
         android:orientation="horizontal"
         android:padding="8dp"
         android:visibility="gone"
+        android:importantForAccessibility="yes"
+        android:accessibilityLiveRegion="polite"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <ImageView
@@ -79,7 +84,8 @@
             android:layout_gravity="center_vertical"
             android:layout_marginEnd="8dp"
             android:src="@drawable/ic_claude_thinking"
-            android:tint="@color/claude_accent" />
+            android:tint="@color/claude_accent"
+            android:contentDescription="@string/claude_status_icon_desc" />
 
         <TextView
             android:id="@+id/claude_status_text"
@@ -89,7 +95,8 @@
             android:layout_weight="1"
             android:text="Claude is thinking..."
             android:textColor="@color/claude_accent"
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            android:importantForAccessibility="yes" />
 
         <ProgressBar
             android:id="@+id/claude_progress_bar"
@@ -97,7 +104,8 @@
             android:layout_width="100dp"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
-            android:progressTint="@color/claude_accent" />
+            android:progressTint="@color/claude_accent"
+            android:contentDescription="@string/claude_progress_desc" />
 
         <TextView
             android:id="@+id/claude_progress_text"
@@ -107,7 +115,8 @@
             android:layout_marginStart="8dp"
             android:text="0%"
             android:textColor="@color/claude_accent"
-            android:textSize="12sp" />
+            android:textSize="12sp"
+            android:importantForAccessibility="no" />
 
     </LinearLayout>
 
@@ -120,14 +129,17 @@
         android:background="@drawable/bottom_panel_background"
         android:orientation="vertical"
         android:padding="16dp"
-        android:visibility="gone">
+        android:visibility="gone"
+        android:importantForAccessibility="yes"
+        android:accessibilityHeading="true">
 
         <!-- Quick actions bar -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:gravity="center">
+            android:gravity="center"
+            android:importantForAccessibility="no">
 
             <ImageButton
                 android:id="@+id/btn_file_picker"
@@ -137,7 +149,9 @@
                 android:background="@drawable/circle_button_background"
                 android:src="@drawable/ic_folder"
                 android:contentDescription="@string/file_picker_desc"
-                android:tint="@color/icon_tint" />
+                android:tint="@color/icon_tint"
+                android:minWidth="48dp"
+                android:minHeight="48dp" />
 
             <ImageButton
                 android:id="@+id/btn_voice_input"
@@ -147,7 +161,9 @@
                 android:background="@drawable/circle_button_background"
                 android:src="@drawable/ic_mic"
                 android:contentDescription="@string/voice_input_desc"
-                android:tint="@color/icon_tint" />
+                android:tint="@color/icon_tint"
+                android:minWidth="48dp"
+                android:minHeight="48dp" />
 
             <ImageButton
                 android:id="@+id/btn_quick_commands"
@@ -157,7 +173,9 @@
                 android:background="@drawable/circle_button_background"
                 android:src="@drawable/ic_quick_commands"
                 android:contentDescription="@string/quick_commands_desc"
-                android:tint="@color/icon_tint" />
+                android:tint="@color/icon_tint"
+                android:minWidth="48dp"
+                android:minHeight="48dp" />
 
             <ImageButton
                 android:id="@+id/btn_project_info"
@@ -167,7 +185,9 @@
                 android:background="@drawable/circle_button_background"
                 android:src="@drawable/ic_info"
                 android:contentDescription="@string/project_info_desc"
-                android:tint="@color/icon_tint" />
+                android:tint="@color/icon_tint"
+                android:minWidth="48dp"
+                android:minHeight="48dp" />
 
         </LinearLayout>
 
@@ -183,6 +203,7 @@
         android:layout_marginBottom="80dp"
         android:contentDescription="@string/new_tab_desc"
         android:src="@drawable/ic_add"
+        android:importantForAccessibility="yes"
         app:backgroundTint="@color/fab_background"
         app:tint="@color/fab_icon" />
 
@@ -196,6 +217,7 @@
         android:contentDescription="@string/claude_actions_desc"
         android:src="@drawable/ic_claude"
         android:visibility="gone"
+        android:importantForAccessibility="yes"
         app:backgroundTint="@color/claude_accent"
         app:tint="@android:color/white" />
 
@@ -215,6 +237,7 @@
         android:textAlignment="center"
         android:textColor="@android:color/white"
         android:textSize="14sp"
-        android:visibility="gone" />
+        android:visibility="gone"
+        android:importantForAccessibility="no" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

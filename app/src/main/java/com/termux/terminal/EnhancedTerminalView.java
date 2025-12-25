@@ -121,10 +121,19 @@ public class EnhancedTerminalView extends TerminalView {
                 if (isClaudeCodeActive) {
                     showClaudeHistory();
                     return true;
+                } else {
+                    // Double tap for zooming or other terminal actions
+                    performDoubleTapAction();
                 }
                 return false;
             }
-            
+
+            @Override
+            public boolean onSingleTapConfirmed(MotionEvent e) {
+                // Handle single tap actions
+                return handleSingleTap(e);
+            }
+
             @Override
             public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
                 // Swipe down to stop Claude operation (replaces Escape key)
@@ -134,15 +143,51 @@ public class EnhancedTerminalView extends TerminalView {
                         return true;
                     }
                 }
+
+                // Swipe right to show side panel
+                if (e2.getX() - e1.getX() > 100 && Math.abs(velocityX) > 1000) {
+                    showSidePanel();
+                    return true;
+                }
+
+                // Swipe left to hide side panel
+                if (e1.getX() - e2.getX() > 100 && Math.abs(velocityX) > 1000) {
+                    hideSidePanel();
+                    return true;
+                }
+
                 return false;
             }
-            
+
             @Override
             public void onLongPress(MotionEvent e) {
                 // Enhanced text selection for mobile
                 startEnhancedTextSelection(e);
             }
         });
+    }
+
+    private boolean handleSingleTap(MotionEvent e) {
+        // Handle single tap actions like dismissing overlays
+        if (isClaudeCodeActive) {
+            // Maybe show quick actions or expand status
+            return false;
+        }
+        return false;
+    }
+
+    private void performDoubleTapAction() {
+        // Default double tap action could be zooming or showing quick menu
+        // This could be context-dependent
+    }
+
+    private void showSidePanel() {
+        // This would trigger showing a side panel with quick actions
+        // Could be implemented in the parent activity
+    }
+
+    private void hideSidePanel() {
+        // Hide the side panel
     }
     
     private void setupClaudeIntegration() {

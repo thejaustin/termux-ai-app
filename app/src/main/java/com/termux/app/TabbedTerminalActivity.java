@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
@@ -104,16 +105,59 @@ public class TabbedTerminalActivity extends AppCompatActivity {
         terminalTabs = new ArrayList<>();
         tabAdapter = new TerminalTabAdapter(this);
         viewPager.setAdapter(tabAdapter);
-        
+
         // Connect tabs with ViewPager2
         new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
             if (position < terminalTabs.size()) {
                 TerminalTab terminalTab = terminalTabs.get(position);
-                tab.setText(terminalTab.getDisplayName());
-                tab.setIcon(terminalTab.getIcon());
+
+                // Create custom tab view with close button
+                View customTabView = getLayoutInflater().inflate(R.layout.custom_tab_layout, null);
+                ImageView tabIcon = customTabView.findViewById(R.id.tab_icon);
+                TextView tabTitle = customTabView.findViewById(R.id.tab_title);
+                ImageButton closeBtn = customTabView.findViewById(R.id.tab_close_button);
+
+                tabTitle.setText(terminalTab.getDisplayName());
+                tabIcon.setImageResource(terminalTab.getIcon());
+
+                // Ensure minimum touch target size for mobile
+                MobileGesturesHelper.setupTouchTarget(customTabView, 48);
+                MobileGesturesHelper.setupTouchTarget(closeBtn, 48);
+
+                // Show close button on long press
+                customTabView.setOnLongClickListener(v -> {
+                    closeBtn.setVisibility(View.VISIBLE);
+                    // Auto-hide after 3 seconds
+                    customTabView.postDelayed(() -> {
+                        if (closeBtn.getVisibility() == View.VISIBLE) {
+                            closeBtn.setVisibility(View.GONE);
+                        }
+                    }, 3000);
+                    return true;
+                });
+
+                // Handle tab selection
+                customTabView.setOnClickListener(v -> {
+                    if (closeBtn.getVisibility() == View.VISIBLE) {
+                        // If close button is visible and user taps again, close the tab
+                        closeTab(position);
+                        closeBtn.setVisibility(View.GONE);
+                    } else {
+                        // Select the tab normally
+                        viewPager.setCurrentItem(position);
+                    }
+                });
+
+                // Set up close button click
+                closeBtn.setOnClickListener(v -> {
+                    closeTab(position);
+                    closeBtn.setVisibility(View.GONE);
+                });
+
+                tab.setCustomView(customTabView);
             }
         }).attach();
-        
+
         // Handle tab selection
         viewPager.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
             @Override
@@ -137,11 +181,16 @@ public class TabbedTerminalActivity extends AppCompatActivity {
                     if (tab != null) {
                         tab.setIcon(R.drawable.ic_claude_active);
                     }
-                    
+
                     // Show Claude FAB
                     if (fabClaudeCode.getVisibility() != View.VISIBLE) {
                         fabClaudeCode.startAnimation(android.view.animation.AnimationUtils.loadAnimation(TabbedTerminalActivity.this, R.anim.fab_fade_in));
                         fabClaudeCode.setVisibility(View.VISIBLE);
+                    }
+
+                    // Update tab to show Claude is active
+                    if (tabIndex < terminalTabs.size()) {
+                        terminalTabs.get(tabIndex).setClaudeActive(true);
                     }
                 });
             }
@@ -153,9 +202,23 @@ public class TabbedTerminalActivity extends AppCompatActivity {
                         binding.claudeStatusOverlay.setVisibility(View.VISIBLE);
                         binding.claudeStatusOverlay.startAnimation(android.view.animation.AnimationUtils.loadAnimation(TabbedTerminalActivity.this, R.anim.slide_in_top));
                     }
-                    binding.claudeStatusText.setText("Claude: " + operation + "...");
+                    binding.claudeStatusText.setText("🤖 Claude: " + operation + "...");
                     binding.claudeProgressBar.setProgress(0);
                     binding.claudeProgressText.setText("0%");
+
+                    // Update the custom tab to show Claude is active
+                    int currentItem = viewPager.getCurrentItem();
+                    if (currentItem < terminalTabs.size()) {
+                        terminalTabs.get(currentItem).setClaudeActive(true);
+                        // Update the tab view
+                        TabLayout.Tab tab = tabLayout.getTabAt(currentItem);
+                        if (tab != null && tab.getCustomView() != null) {
+                            ImageView tabIcon = tab.getCustomView().findViewById(R.id.tab_icon);
+                            if (tabIcon != null) {
+                                tabIcon.setImageResource(R.drawable.ic_claude_active);
+                            }
+                        }
+                    }
                 });
             }
 
@@ -164,19 +227,33 @@ public class TabbedTerminalActivity extends AppCompatActivity {
                     int percent = (int) (progress * 100);
                     binding.claudeProgressBar.setProgress(percent);
                     binding.claudeProgressText.setText(percent + "%");
+
+                    // Update the progress bar to be more visually appealing
+                    binding.claudeProgressBar.setIndeterminate(false);
+                    binding.claudeProgressBar.setVisibility(View.VISIBLE);
                 });
             }
-            
+
             @Override
             public void onClaudeCompleted(int tabIndex) {
                 runOnUiThread(() -> {
                     // Restore normal tab icon
                     TabLayout.Tab tab = tabLayout.getTabAt(tabIndex);
                     if (tab != null) {
-                        TerminalTab terminalTab = terminalTabs.get(tabIndex);
-                        tab.setIcon(terminalTab.getIcon());
+                        if (tabIndex < terminalTabs.size()) {
+                            TerminalTab terminalTab = terminalTabs.get(tabIndex);
+                            terminalTab.setClaudeActive(false);
+
+                            // Update the tab view
+                            if (tab.getCustomView() != null) {
+                                ImageView tabIcon = tab.getCustomView().findViewById(R.id.tab_icon);
+                                if (tabIcon != null) {
+                                    tabIcon.setImageResource(terminalTab.getIcon());
+                                }
+                            }
+                        }
                     }
-                    
+
                     // Hide overlay with slide-up animation
                     if (binding.claudeStatusOverlay.getVisibility() == View.VISIBLE) {
                         binding.claudeStatusOverlay.startAnimation(android.view.animation.AnimationUtils.loadAnimation(TabbedTerminalActivity.this, R.anim.slide_out_top));
@@ -191,7 +268,7 @@ public class TabbedTerminalActivity extends AppCompatActivity {
                             break;
                         }
                     }
-                    
+
                     if (!anyClaudeActive) {
                         fabClaudeCode.startAnimation(android.view.animation.AnimationUtils.loadAnimation(TabbedTerminalActivity.this, R.anim.fab_fade_out));
                         fabClaudeCode.setVisibility(View.GONE);
@@ -212,8 +289,8 @@ public class TabbedTerminalActivity extends AppCompatActivity {
 
             public void onClaudeTokenUsageUpdated(int used, int total) {
                 runOnUiThread(() -> {
-                    // This could be displayed in the status overlay if space allows, or in a separate element
-                    // For now, no direct UI update in the overlay for this.
+                    // Update token usage in the status overlay
+                    binding.claudeStatusText.setText("🤖 Claude: Tokens " + used + "/" + total);
                 });
             }
         });
@@ -225,14 +302,57 @@ public class TabbedTerminalActivity extends AppCompatActivity {
             toggleBottomPanelVisibility();
             return true;
         });
-        
+
+        // Add swipe gestures to the main coordinator layout for mobile navigation
+        CoordinatorLayout coordinatorLayout = binding.getRoot();
+        coordinatorLayout.setOnTouchListener(new MobileGesturesHelper(this, new MobileGesturesHelper.GestureCallback() {
+            @Override
+            public void onSwipeUp() {
+                // Could be used to show notifications or quick access panel
+            }
+
+            @Override
+            public void onSwipeDown() {
+                // If Claude is active, this might stop the operation
+                if (binding.claudeStatusOverlay.getVisibility() == View.VISIBLE) {
+                    // Hide Claude status overlay
+                    binding.claudeStatusOverlay.startAnimation(android.view.animation.AnimationUtils.loadAnimation(TabbedTerminalActivity.this, R.anim.slide_out_top));
+                    binding.claudeStatusOverlay.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onSwipeLeft() {
+                // Navigate to next tab
+                int nextTab = (viewPager.getCurrentItem() + 1) % terminalTabs.size();
+                viewPager.setCurrentItem(nextTab);
+            }
+
+            @Override
+            public void onSwipeRight() {
+                // Navigate to previous tab
+                int prevTab = (viewPager.getCurrentItem() - 1 + terminalTabs.size()) % terminalTabs.size();
+                viewPager.setCurrentItem(prevTab);
+            }
+
+            @Override
+            public void onDoubleTap() {
+                // Could show quick settings or expand current tab info
+            }
+
+            @Override
+            public void onLongPress() {
+                // Could show context menu
+            }
+        }));
+
         fabClaudeCode.setOnClickListener(v -> {
             TerminalTab currentTab = getCurrentTab();
             if (currentTab != null) {
                 showClaudeQuickActions(currentTab);
             }
         });
-        
+
         fabClaudeCode.startAnimation(android.view.animation.AnimationUtils.loadAnimation(TabbedTerminalActivity.this, R.anim.fab_fade_out));
         fabClaudeCode.setVisibility(View.GONE);
     }

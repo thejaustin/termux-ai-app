@@ -12,6 +12,7 @@
     <string name="claude_actions_desc">Claude Code quick actions</string>
     <string name="close_tab">Close Tab</string>
     <string name="new_tab">New Tab</string>
+    <string name="tab_layout_desc">Terminal tabs for different projects and tasks</string>
     
     <!-- Claude Code integration -->
     <string name="claude_detected">Claude Code Detected!</string>
@@ -20,6 +21,8 @@
     <string name="claude_analyzing">Analyzing project...</string>
     <string name="claude_error">Claude Error</string>
     <string name="claude_success">Operation completed successfully</string>
+    <string name="claude_status_icon_desc">Claude AI status indicator</string>
+    <string name="claude_progress_desc">Claude AI operation progress</string>
     
     <!-- File operations -->
     <string name="file_picker_desc">Pick files for Claude context</string>
