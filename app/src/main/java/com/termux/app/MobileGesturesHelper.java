@@ -13,6 +13,8 @@ public class MobileGesturesHelper implements View.OnTouchListener {
     private GestureDetector gestureDetector;
     private Context context;
     private GestureCallback callback;
+    private long lastDoubleTapTime = 0;
+    private static final long TAP_TIME_THRESHOLD = 300; // milliseconds
 
     public interface GestureCallback {
         void onSwipeUp();
@@ -21,6 +23,7 @@ public class MobileGesturesHelper implements View.OnTouchListener {
         void onSwipeRight();
         void onDoubleTap();
         void onLongPress();
+        void onTripleTap();
     }
 
     public MobileGesturesHelper(Context context, GestureCallback callback) {
@@ -71,6 +74,21 @@ public class MobileGesturesHelper implements View.OnTouchListener {
         public boolean onDoubleTap(MotionEvent e) {
             if (callback != null) callback.onDoubleTap();
             return true;
+        }
+
+        @Override
+        public boolean onDoubleTapEvent(MotionEvent e) {
+            if (e.getAction() == MotionEvent.ACTION_UP) {
+                long currentTime = System.currentTimeMillis();
+                if (currentTime - lastDoubleTapTime < TAP_TIME_THRESHOLD) {
+                    // This is the third tap in a sequence
+                    if (callback != null) callback.onTripleTap();
+                    lastDoubleTapTime = 0; // Reset after triple tap
+                    return true;
+                }
+                lastDoubleTapTime = currentTime;
+            }
+            return false;
         }
 
         @Override

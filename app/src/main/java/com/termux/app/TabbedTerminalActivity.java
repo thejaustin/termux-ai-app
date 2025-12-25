@@ -23,6 +23,7 @@ import androidx.viewpager2.widget.ViewPager2;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
+import com.termux.app.QuickSettingsPanel;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
@@ -40,12 +41,14 @@ public class TabbedTerminalActivity extends AppCompatActivity {
     private static final int MAX_TABS = 8;
     private static final String PREFS_NAME = "terminal_tabs";
     private static final String KEY_TABS = "tabs";
-    
+    private long lastDoubleTapTime = 0;
+
     private ActivityTabbedTerminalBinding binding;
     private ViewPager2 viewPager;
     private TabLayout tabLayout;
     private FloatingActionButton fabNewTab;
     private FloatingActionButton fabClaudeCode;
+    private QuickSettingsPanel quickSettingsPanel;
     
     private TerminalTabAdapter tabAdapter;
     private List<TerminalTab> terminalTabs;
@@ -75,6 +78,21 @@ public class TabbedTerminalActivity extends AppCompatActivity {
     
             binding.btnSettings.setOnClickListener(v -> {
                 startActivity(new Intent(TabbedTerminalActivity.this, TermuxAISettingsActivity.class));
+            });
+
+            // Initialize quick settings panel
+            quickSettingsPanel = binding.quickSettingsPanel;
+            quickSettingsPanel.setCallback(new QuickSettingsPanel.QuickSettingsPanelCallback() {
+                @Override
+                public void onSettingsApplied() {
+                    // Handle settings applied
+                    Toast.makeText(TabbedTerminalActivity.this, "Settings updated", Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void onPanelClosed() {
+                    toggleQuickSettingsPanel(); // Hide the panel
+                }
             });
     
             initializeViews();
@@ -352,6 +370,23 @@ public class TabbedTerminalActivity extends AppCompatActivity {
 
         coordinatorLayout.setOnTouchListener(gesturesHelper);
 
+        // Also handle triple tap gesture for voice input
+        gestureDetector.setOnDoubleTapListener(new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public boolean onDoubleTapEvent(MotionEvent e) {
+                if (e.getAction() == MotionEvent.ACTION_UP) {
+                    // Track if we're in a triple tap sequence
+                    long currentTime = System.currentTimeMillis();
+                    if (currentTime - lastDoubleTapTime < 300) { // Within triple tap window
+                        performTripleTap();
+                        return true;
+                    }
+                    lastDoubleTapTime = currentTime;
+                }
+                return false;
+            }
+        });
+
         fabClaudeCode.setOnClickListener(v -> {
             TerminalTab currentTab = getCurrentTab();
             if (currentTab != null) {
@@ -361,6 +396,67 @@ public class TabbedTerminalActivity extends AppCompatActivity {
 
         fabClaudeCode.startAnimation(android.view.animation.AnimationUtils.loadAnimation(TabbedTerminalActivity.this, R.anim.fab_fade_out));
         fabClaudeCode.setVisibility(View.GONE);
+
+        // Set up bottom panel button listeners
+        binding.btnFilePicker.setOnClickListener(v -> {
+            // Show file picker for Claude context
+            Toast.makeText(this, "File picker - coming soon!", Toast.LENGTH_SHORT).show();
+        });
+
+        binding.btnVoiceInput.setOnClickListener(v -> {
+            // Show voice input for Claude
+            showVoiceInputDialog();
+        });
+
+        binding.btnQuickCommands.setOnClickListener(v -> {
+            // Show quick command templates
+            Toast.makeText(this, "Quick commands - coming soon!", Toast.LENGTH_SHORT).show();
+        });
+
+        binding.btnProjectInfo.setOnClickListener(v -> {
+            // Show project insights dialog
+            TerminalTab currentTab = getCurrentTab();
+            if (currentTab != null) {
+                showProjectInsights(currentTab);
+            }
+        });
+
+        // Set up long press for settings panel
+        binding.btnSettings.setOnLongClickListener(v -> {
+            toggleQuickSettingsPanel();
+            return true;
+        });
+    }
+
+    private void performTripleTap() {
+        // Triple tap action - show voice input dialog
+        showVoiceInputDialog();
+    }
+
+    public void showVoiceInputDialog() {
+        // Show a dialog or interface for voice input to Claude
+        Toast.makeText(this, "Voice input activated - would open microphone for Claude commands", Toast.LENGTH_SHORT).show();
+
+        // In a real implementation, this would use Android's SpeechRecognizer
+        // to capture voice input and send it to Claude
+    }
+
+    private void toggleQuickSettingsPanel() {
+        if (quickSettingsPanel.getVisibility() == View.VISIBLE) {
+            // Slide out animation
+            quickSettingsPanel.animate()
+                .translationX(300)
+                .setDuration(300)
+                .withEndAction(() -> quickSettingsPanel.setVisibility(View.GONE))
+                .start();
+        } else {
+            // Show and slide in animation
+            quickSettingsPanel.setVisibility(View.VISIBLE);
+            quickSettingsPanel.animate()
+                .translationX(0)
+                .setDuration(300)
+                .start();
+        }
     }
     
     private void createNewTab(String name, String workingDirectory) {
@@ -442,6 +538,12 @@ public class TabbedTerminalActivity extends AppCompatActivity {
         ClaudeQuickActionsDialog dialog = new ClaudeQuickActionsDialog();
         dialog.setTab(tab);
         dialog.show(getSupportFragmentManager(), "claude_actions");
+    }
+
+    private void showProjectInsights(TerminalTab tab) {
+        ProjectInsightsDialog dialog = new ProjectInsightsDialog();
+        dialog.setTab(tab);
+        dialog.show(getSupportFragmentManager(), "project_insights");
     }
     
     private String getDefaultDirectory() {

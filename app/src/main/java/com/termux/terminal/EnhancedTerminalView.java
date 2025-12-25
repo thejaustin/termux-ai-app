@@ -181,6 +181,14 @@ public class EnhancedTerminalView extends TerminalView {
         // This could be context-dependent
     }
 
+    private void performTripleTapAction() {
+        // Triple tap could activate voice input for Claude
+        if (getContext() instanceof TabbedTerminalActivity) {
+            TabbedTerminalActivity activity = (TabbedTerminalActivity) getContext();
+            activity.showVoiceInputDialog();
+        }
+    }
+
     private void showSidePanel() {
         // This would trigger showing a side panel with quick actions
         // Could be implemented in the parent activity

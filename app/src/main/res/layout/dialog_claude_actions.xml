@@ -1,89 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
 
-    <LinearLayout
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:text="Quick Actions"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp"
+        android:textColor="?attr/colorPrimary" />
 
-        <TextView
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Quick actions for Claude Code CLI"
-            android:textAppearance="?android:attr/textAppearanceSmall"
-            android:layout_marginBottom="16dp"
-            android:gravity="center" />
+            android:orientation="vertical">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_file_operations"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="📁 File Operations"
-            android:layout_marginBottom="8dp"
-            app:icon="@drawable/ic_folder"
-            app:iconGravity="start" />
+            <Button
+                android:id="@+id/btn_file_operations"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="File Operations"
+                android:layout_marginBottom="8dp"
+                android:drawableStart="@drawable/ic_folder"
+                android:drawablePadding="8dp" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_code_generation"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="⚡ Code Generation"
-            android:layout_marginBottom="8dp"
-            app:icon="@drawable/ic_claude"
-            app:iconGravity="start" />
+            <Button
+                android:id="@+id/btn_code_generation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Code Generation"
+                android:layout_marginBottom="8dp"
+                android:drawableStart="@drawable/ic_code"
+                android:drawablePadding="8dp" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_project_analysis"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="🔍 Project Analysis"
-            android:layout_marginBottom="8dp"
-            app:icon="@drawable/ic_info"
-            app:iconGravity="start" />
+            <Button
+                android:id="@+id/btn_project_analysis"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Project Analysis"
+                android:layout_marginBottom="8dp"
+                android:drawableStart="@drawable/ic_info"
+                android:drawablePadding="8dp" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_debug_help"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="🐛 Debug Help"
-            android:layout_marginBottom="8dp"
-            app:icon="@drawable/ic_help"
-            app:iconGravity="start" />
+            <Button
+                android:id="@+id/btn_debug_help"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Debug Help"
+                android:layout_marginBottom="8dp"
+                android:drawableStart="@drawable/ic_bug_report"
+                android:drawablePadding="8dp" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_voice_input"
-            style="@style/Widget.Material3.Button.OutlinedButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="🎤 Voice Input"
-            android:layout_marginBottom="8dp"
-            app:icon="@drawable/ic_mic"
-            app:iconGravity="start" />
+            <Button
+                android:id="@+id/btn_voice_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Voice Input"
+                android:layout_marginBottom="8dp"
+                android:drawableStart="@drawable/ic_mic"
+                android:drawablePadding="8dp" />
 
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="?android:attr/listDivider"
-            android:layout_margin="8dp" />
+            <Button
+                android:id="@+id/btn_stop_claude"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Stop Claude Operation"
+                android:layout_marginBottom="8dp"
+                android:drawableStart="@drawable/ic_stop"
+                android:drawablePadding="8dp"
+                android:backgroundTint="@color/error_color"
+                android:textColor="@android:color/white" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_stop_claude"
-            style="@style/Widget.Material3.Button"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="🛑 Stop Claude Operation"
-            android:backgroundTint="?attr/colorError"
-            app:icon="@drawable/ic_stop"
-            app:iconGravity="start" />
+        </LinearLayout>
 
-    </LinearLayout>
+    </ScrollView>
 
-</ScrollView>
+</LinearLayout>

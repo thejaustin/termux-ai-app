@@ -240,4 +240,15 @@
         android:visibility="gone"
         android:importantForAccessibility="no" />
 
+    <!-- Quick Settings Panel (slides in from right) -->
+    <com.termux.app.QuickSettingsPanel
+        android:id="@+id/quick_settings_panel"
+        android:layout_width="300dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:translationX="300dp"
+        android:background="@drawable/bottom_panel_background"
+        android:elevation="16dp"
+        android:visibility="gone" />
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

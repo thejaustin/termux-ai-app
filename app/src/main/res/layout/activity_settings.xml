@@ -91,6 +91,87 @@
             android:hint="Enter API Key"
             android:layout_marginBottom="24dp" />
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Advanced Settings"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="?attr/colorPrimary"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Claude Model Selection -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Claude Model"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <Spinner
+            android:id="@+id/model_spinner"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Token Limit Settings -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Token Limit"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/token_limit_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:hint="Enter token limit (e.g., 100000)"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Auto Suggestions -->
+        <Switch
+            android:id="@+id/auto_suggestions_switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Auto Suggestions"
+            android:textSize="16sp"
+            android:padding="8dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Privacy Controls -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Privacy Controls"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="?attr/colorPrimary"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp" />
+
+        <Switch
+            android:id="@+id/command_filtering_switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Filter Sensitive Commands"
+            android:textSize="16sp"
+            android:padding="8dp"
+            android:layout_marginBottom="8dp" />
+
+        <Switch
+            android:id="@+id/local_processing_switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Prefer Local Processing"
+            android:textSize="16sp"
+            android:padding="8dp"
+            android:layout_marginBottom="16dp" />
+
         <Button
             android:id="@+id/save_button"
             android:layout_width="match_parent"

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/bottom_panel_background"
+    android:padding="16dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Quick Settings"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp"
+        android:textColor="?attr/colorPrimary" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Terminal Settings -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Terminal Settings"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"
+                android:textColor="?attr/colorPrimary" />
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/switch_auto_suggestions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Auto Suggestions"
+                android:layout_marginBottom="8dp"
+                android:minHeight="48dp" />
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/switch_gboard_autocomplete"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Gboard Autocomplete"
+                android:layout_marginBottom="8dp"
+                android:minHeight="48dp" />
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/switch_dynamic_colors"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Dynamic Colors"
+                android:layout_marginBottom="16dp"
+                android:minHeight="48dp" />
+
+            <!-- AI Settings -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="AI Settings"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"
+                android:textColor="?attr/colorPrimary" />
+
+            <Spinner
+                android:id="@+id/spinner_ai_model"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="8dp" />
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/switch_privacy_mode"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Privacy Mode"
+                android:layout_marginBottom="8dp"
+                android:minHeight="48dp" />
+
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/switch_local_processing"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Local Processing"
+                android:layout_marginBottom="16dp"
+                android:minHeight="48dp" />
+
+            <!-- Quick Actions -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Quick Actions"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="8dp"
+                android:textColor="?attr/colorPrimary" />
+
+            <Button
+                android:id="@+id/btn_reset_settings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Reset to Defaults"
+                android:layout_marginBottom="8dp"
+                style="@style/Widget.Material3.Button.OutlinedButton" />
+
+            <Button
+                android:id="@+id/btn_save_settings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Save Settings"
+                android:layout_marginBottom="8dp" />
+
+            <Button
+                android:id="@+id/btn_close_panel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Close Panel" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

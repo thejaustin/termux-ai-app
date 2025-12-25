@@ -152,4 +152,14 @@
         <item>Go Project</item>
         <item>Java Project</item>
     </string-array>
+
+    <string-array name="claude_models">
+        <item>Claude 3.5 Sonnet</item>
+        <item>Claude 3 Sonnet</item>
+        <item>Claude 3 Opus</item>
+        <item>Claude 3 Haiku</item>
+        <item>Claude 2.1</item>
+        <item>Claude 2.0</item>
+        <item>Claude 1.2</item>
+    </string-array>
 </resources>

@@ -83,10 +83,10 @@ public class ClaudeQuickActionsDialog extends DialogFragment {
                         ClaudeQuickActionsDialog.this.getDialog().cancel();
                     }
                 });
-                
+
         return builder.create();
     }
-    
+
     private void showQuickCommand(String command) {
         // This would typically send the command to the active terminal
         Toast.makeText(getContext(), "Quick command: " + command, Toast.LENGTH_LONG).show();

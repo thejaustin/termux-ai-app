@@ -63,6 +63,11 @@
     <color name="text_tertiary">#FF7B757F</color>
     <color name="text_disabled">#FF9C96A1</color>
 
+    <!-- Error and warning colors -->
+    <color name="error_color">#FFBA1A1A</color>
+    <color name="warning_color">#FF7F5200</color>
+    <color name="success_color">#FF1A5A2B</color>
+
     <!-- Project type colors -->
     <color name="nodejs_color">#FF68A063</color>
     <color name="python_color">#FF3776AB</color>
