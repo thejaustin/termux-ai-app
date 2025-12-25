@@ -24,6 +24,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.termux.app.QuickSettingsPanel;
+import com.termux.app.ShakeDetector;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
@@ -49,6 +50,7 @@ public class TabbedTerminalActivity extends AppCompatActivity {
     private FloatingActionButton fabNewTab;
     private FloatingActionButton fabClaudeCode;
     private QuickSettingsPanel quickSettingsPanel;
+    private ShakeDetector shakeDetector;
     
     private TerminalTabAdapter tabAdapter;
     private List<TerminalTab> terminalTabs;
@@ -366,6 +368,29 @@ public class TabbedTerminalActivity extends AppCompatActivity {
             public void onLongPress() {
                 // Could show context menu
             }
+
+            @Override
+            public void onTripleTap() {
+                // Triple tap activates voice input
+                showVoiceInputDialog();
+            }
+
+            @Override
+            public void onShake() {
+                // Handle device shake - could clear terminal or show quick actions
+                runOnUiThread(() -> {
+                    // Option 1: Clear the terminal
+                    // Get current terminal fragment and clear it
+                    TerminalFragment currentFragment = (TerminalFragment) getSupportFragmentManager()
+                        .findFragmentByTag("f" + viewPager.getCurrentItem());
+                    if (currentFragment != null) {
+                        currentFragment.clearTerminal();
+                    }
+
+                    // Option 2: Show a quick action toast
+                    Toast.makeText(TabbedTerminalActivity.this, "Device shaken - cleared terminal", Toast.LENGTH_SHORT).show();
+                });
+            }
         });
 
         coordinatorLayout.setOnTouchListener(gesturesHelper);
@@ -396,6 +421,27 @@ public class TabbedTerminalActivity extends AppCompatActivity {
 
         fabClaudeCode.startAnimation(android.view.animation.AnimationUtils.loadAnimation(TabbedTerminalActivity.this, R.anim.fab_fade_out));
         fabClaudeCode.setVisibility(View.GONE);
+
+        // Initialize and start shake detector
+        shakeDetector = new ShakeDetector(this, new ShakeDetector.ShakeCallback() {
+            @Override
+            public void onShake() {
+                // Handle device shake - could clear terminal or show quick actions
+                runOnUiThread(() -> {
+                    // Option 1: Clear the terminal
+                    // Get current terminal fragment and clear it
+                    TerminalFragment currentFragment = (TerminalFragment) getSupportFragmentManager()
+                        .findFragmentByTag("f" + viewPager.getCurrentItem());
+                    if (currentFragment != null) {
+                        currentFragment.clearTerminal();
+                    }
+
+                    // Option 2: Show a quick action toast
+                    Toast.makeText(TabbedTerminalActivity.this, "Device shaken - cleared terminal", Toast.LENGTH_SHORT).show();
+                });
+            }
+        });
+        shakeDetector.start();
 
         // Set up bottom panel button listeners
         binding.btnFilePicker.setOnClickListener(v -> {
@@ -637,6 +683,10 @@ public class TabbedTerminalActivity extends AppCompatActivity {
         super.onDestroy();
         if (claudeIntegration != null) {
             claudeIntegration.cleanup();
+        }
+
+        if (shakeDetector != null) {
+            shakeDetector.stop();
         }
     }
     

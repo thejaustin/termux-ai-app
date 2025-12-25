@@ -24,6 +24,7 @@ public class MobileGesturesHelper implements View.OnTouchListener {
         void onDoubleTap();
         void onLongPress();
         void onTripleTap();
+        void onShake();
     }
 
     public MobileGesturesHelper(Context context, GestureCallback callback) {

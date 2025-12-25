@@ -93,32 +93,66 @@
     
     <!-- Claude help -->
     <string name="claude_help_title">Claude Code Help</string>
+    <string name="claude_help_desc">Get help with Claude Code features and usage</string>
     <string name="claude_help_content">
         <![CDATA[
         <h3>Getting Started with Claude Code</h3>
         <p>1. Install Claude Code CLI:</p>
         <code>npm install -g @anthropic/claude-code</code>
-        
+
         <p>2. Start Claude Code:</p>
         <code>claude code</code>
-        
+
         <h3>Mobile Gestures</h3>
         <p>• <b>Swipe down</b> - Stop Claude operation</p>
         <p>• <b>Double tap</b> - Show message history</p>
         <p>• <b>Long press</b> - Enhanced text selection</p>
         <p>• <b>Shake device</b> - Quick clear (/clear)</p>
-        
+
         <h3>Quick Actions</h3>
         <p>• Tap 📁 to pick files for @-tagging</p>
         <p>• Tap 🎤 for voice input</p>
         <p>• Tap ⚡ for quick commands</p>
         <p>• Tap ℹ️ for project info</p>
-        
+
         <h3>Tab Management</h3>
         <p>• Create multiple tabs for different projects</p>
         <p>• Each tab has independent Claude sessions</p>
         <p>• Auto-detects project types and shows appropriate icons</p>
         ]]>
+    </string>
+
+    <!-- Detailed Claude help strings -->
+    <string name="claude_getting_started_help">
+        1. Install Claude Code CLI:\n   npm install -g @anthropic/claude-code\n\n
+        2. Start Claude Code:\n   claude code\n\n
+        3. Ask Claude to help with your project\n\n
+        4. Use @-tagging to reference files in your project
+    </string>
+
+    <string name="claude_mobile_gestures_help">
+        • Swipe down - Stop Claude operation\n
+        • Double tap terminal - Show Claude history\n
+        • Triple tap terminal - Activate voice input\n
+        • Long press tab - Show close button\n
+        • Swipe left/right on terminal - Navigate between tabs\n
+        • Long press New Tab FAB - Toggle bottom panel
+    </string>
+
+    <string name="claude_quick_commands_help">
+        • /help - Show Claude help\n
+        • /clear - Clear terminal\n
+        • /tokens - Check token usage\n
+        • /stop - Stop current operation\n
+        • /project - Analyze project structure
+    </string>
+
+    <string name="claude_tips_tricks_help">
+        • Claude will analyze your project context automatically\n
+        • Use @filename to reference specific files\n
+        • Claude can generate code, debug issues, and explain concepts\n
+        • Check Claude status overlay for progress updates\n
+        • Claude operations are project-specific per tab
     </string>
     
     <!-- About text -->

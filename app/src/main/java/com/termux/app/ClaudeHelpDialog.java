@@ -4,6 +4,7 @@ import android.app.Dialog;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -26,11 +27,14 @@ public class ClaudeHelpDialog extends DialogFragment {
         // Inflate the help dialog layout
         View view = inflater.inflate(R.layout.dialog_claude_help, null);
 
+        // Find the close button and set click listener
+        Button closeButton = view.findViewById(R.id.btn_close_help);
+        if (closeButton != null) {
+            closeButton.setOnClickListener(v -> dismiss());
+        }
+
         builder.setView(view)
-                .setTitle("Claude Code Help")
-                .setPositiveButton("OK", (dialog, id) -> {
-                    // Close the dialog
-                });
+                .setTitle(R.string.claude_help_title);
 
         return builder.create();
     }

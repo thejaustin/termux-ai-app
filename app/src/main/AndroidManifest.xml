@@ -16,7 +16,9 @@
     
     <!-- For enhanced terminal features -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    
+    <!-- For shake detection -->
+    <uses-permission android:name="android.permission.BODY_SENSORS" />
+
     <application
         android:name="com.termux.ai.TermuxAIApplication"
         android:allowBackup="true"

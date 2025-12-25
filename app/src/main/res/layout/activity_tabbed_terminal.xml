@@ -228,17 +228,19 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_margin="32dp"
-        android:alpha="0.7"
+        android:alpha="0.9"
         android:background="@drawable/hint_background"
         android:drawableTop="@drawable/ic_gesture_hint"
         android:drawablePadding="8dp"
-        android:padding="16dp"
+        android:padding="20dp"
         android:text="@string/gesture_hint_text"
         android:textAlignment="center"
         android:textColor="@android:color/white"
-        android:textSize="14sp"
+        android:textSize="16sp"
+        android:textStyle="bold"
         android:visibility="gone"
-        android:importantForAccessibility="no" />
+        android:importantForAccessibility="no"
+        android:elevation="8dp" />
 
     <!-- Quick Settings Panel (slides in from right) -->
     <com.termux.app.QuickSettingsPanel

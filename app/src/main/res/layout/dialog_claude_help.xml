@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp">
 
@@ -27,7 +27,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Getting Started"
+                android:text="Getting Started with Claude Code"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="8dp"
@@ -36,7 +36,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="1. Install Claude Code CLI: npm install -g @anthropic/claude-code\n\n2. Start Claude Code: claude code\n\n3. Ask Claude to help with your project"
+                android:text="@string/claude_getting_started_help"
                 android:textSize="14sp"
                 android:layout_marginBottom="16dp" />
 
@@ -52,7 +52,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="• Swipe down - Stop Claude operation\n• Double tap - Show Claude history\n• Long press - Enhanced text selection\n• Swipe left/right - Navigate between tabs\n• Long press New Tab FAB - Toggle bottom panel"
+                android:text="@string/claude_mobile_gestures_help"
                 android:textSize="14sp"
                 android:layout_marginBottom="16dp" />
 
@@ -68,14 +68,14 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="• /help - Show Claude help\n• /clear - Clear terminal\n• /tokens - Check token usage\n• /stop - Stop current operation"
+                android:text="@string/claude_quick_commands_help"
                 android:textSize="14sp"
                 android:layout_marginBottom="16dp" />
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Tips"
+                android:text="Tips & Tricks"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:layout_marginBottom="8dp"
@@ -84,11 +84,18 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="• Use @-tagging to reference files in your project\n• Claude will analyze your project context automatically\n• Check Claude status overlay for progress updates"
+                android:text="@string/claude_tips_tricks_help"
                 android:textSize="14sp" />
 
         </LinearLayout>
 
     </ScrollView>
+
+    <Button
+        android:id="@+id/btn_close_help"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Close Help"
+        android:layout_marginTop="16dp" />
 
 </LinearLayout>
