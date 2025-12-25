@@ -17,7 +17,8 @@
         android:width="8dp"
         android:height="8dp"
         android:gravity="top|end"
-        android:margin="2dp">
+        android:marginEnd="2dp"
+        android:marginTop="2dp">
         <shape
             android:shape="oval">
             <solid android:color="@color/claude_accent" />
