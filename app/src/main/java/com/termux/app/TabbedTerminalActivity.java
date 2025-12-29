@@ -55,13 +55,22 @@ public class TabbedTerminalActivity extends AppCompatActivity {
     private TerminalTabAdapter tabAdapter;
     private List<TerminalTab> terminalTabs;
     private ClaudeCodeIntegration claudeIntegration;
+    private android.view.GestureDetector gestureDetector;
+
+    // Cached animations to prevent lag from repeated resource loading
+    private android.view.animation.Animation slideInBottom;
+    private android.view.animation.Animation slideOutBottom;
+    private android.view.animation.Animation slideInTop;
+    private android.view.animation.Animation slideOutTop;
+    private android.view.animation.Animation fabFadeIn;
+    private android.view.animation.Animation fabFadeOut;
     
         private void toggleBottomPanelVisibility() {
             if (binding.bottomPanel.getVisibility() == View.VISIBLE) {
-                binding.bottomPanel.startAnimation(android.view.animation.AnimationUtils.loadAnimation(this, R.anim.slide_out_bottom));
+                binding.bottomPanel.startAnimation(slideOutBottom);
                 binding.bottomPanel.setVisibility(View.GONE);
             } else {
-                binding.bottomPanel.startAnimation(android.view.animation.AnimationUtils.loadAnimation(this, R.anim.slide_in_bottom));
+                binding.bottomPanel.startAnimation(slideInBottom);
                 binding.bottomPanel.setVisibility(View.VISIBLE);
             }
         }
@@ -119,10 +128,18 @@ public class TabbedTerminalActivity extends AppCompatActivity {
         tabLayout = binding.terminalTablayout;
         fabNewTab = binding.fabNewTab;
         fabClaudeCode = binding.fabClaudeCode;
-        
+
         // Customize tab layout for mobile
         tabLayout.setTabMode(TabLayout.MODE_SCROLLABLE);
         tabLayout.setTabGravity(TabLayout.GRAVITY_START);
+
+        // Load and cache animations to prevent lag
+        slideInBottom = android.view.animation.AnimationUtils.loadAnimation(this, R.anim.slide_in_bottom);
+        slideOutBottom = android.view.animation.AnimationUtils.loadAnimation(this, R.anim.slide_out_bottom);
+        slideInTop = android.view.animation.AnimationUtils.loadAnimation(this, R.anim.slide_in_top);
+        slideOutTop = android.view.animation.AnimationUtils.loadAnimation(this, R.anim.slide_out_top);
+        fabFadeIn = android.view.animation.AnimationUtils.loadAnimation(this, R.anim.fab_fade_in);
+        fabFadeOut = android.view.animation.AnimationUtils.loadAnimation(this, R.anim.fab_fade_out);
     }
     
     private void setupTerminalTabs() {
@@ -208,7 +225,7 @@ public class TabbedTerminalActivity extends AppCompatActivity {
 
                     // Show Claude FAB
                     if (fabClaudeCode.getVisibility() != View.VISIBLE) {
-                        fabClaudeCode.startAnimation(android.view.animation.AnimationUtils.loadAnimation(TabbedTerminalActivity.this, R.anim.fab_fade_in));
+                        fabClaudeCode.startAnimation(fabFadeIn);
                         fabClaudeCode.setVisibility(View.VISIBLE);
                     }
 
@@ -224,7 +241,7 @@ public class TabbedTerminalActivity extends AppCompatActivity {
                     // Show overlay with slide-down animation
                     if (binding.claudeStatusOverlay.getVisibility() != View.VISIBLE) {
                         binding.claudeStatusOverlay.setVisibility(View.VISIBLE);
-                        binding.claudeStatusOverlay.startAnimation(android.view.animation.AnimationUtils.loadAnimation(TabbedTerminalActivity.this, R.anim.slide_in_top));
+                        binding.claudeStatusOverlay.startAnimation(slideInTop);
                     }
                     binding.claudeStatusText.setText("🤖 Claude: " + operation + "...");
                     binding.claudeProgressBar.setProgress(0);
@@ -280,7 +297,7 @@ public class TabbedTerminalActivity extends AppCompatActivity {
 
                     // Hide overlay with slide-up animation
                     if (binding.claudeStatusOverlay.getVisibility() == View.VISIBLE) {
-                        binding.claudeStatusOverlay.startAnimation(android.view.animation.AnimationUtils.loadAnimation(TabbedTerminalActivity.this, R.anim.slide_out_top));
+                        binding.claudeStatusOverlay.startAnimation(slideOutTop);
                         binding.claudeStatusOverlay.setVisibility(View.GONE);
                     }
 
@@ -294,7 +311,7 @@ public class TabbedTerminalActivity extends AppCompatActivity {
                     }
 
                     if (!anyClaudeActive) {
-                        fabClaudeCode.startAnimation(android.view.animation.AnimationUtils.loadAnimation(TabbedTerminalActivity.this, R.anim.fab_fade_out));
+                        fabClaudeCode.startAnimation(fabFadeOut);
                         fabClaudeCode.setVisibility(View.GONE);
                     }
                 });
@@ -304,7 +321,7 @@ public class TabbedTerminalActivity extends AppCompatActivity {
                 runOnUiThread(() -> {
                     // Hide overlay with slide-up animation on error
                     if (binding.claudeStatusOverlay.getVisibility() == View.VISIBLE) {
-                        binding.claudeStatusOverlay.startAnimation(android.view.animation.AnimationUtils.loadAnimation(TabbedTerminalActivity.this, R.anim.slide_out_top));
+                        binding.claudeStatusOverlay.startAnimation(slideOutTop);
                         binding.claudeStatusOverlay.setVisibility(View.GONE);
                     }
                     Toast.makeText(TabbedTerminalActivity.this, "❌ Claude Error: " + error, Toast.LENGTH_LONG).show();
@@ -340,7 +357,7 @@ public class TabbedTerminalActivity extends AppCompatActivity {
                 // If Claude is active, this might stop the operation
                 if (binding.claudeStatusOverlay.getVisibility() == View.VISIBLE) {
                     // Hide Claude status overlay
-                    binding.claudeStatusOverlay.startAnimation(android.view.animation.AnimationUtils.loadAnimation(TabbedTerminalActivity.this, R.anim.slide_out_top));
+                    binding.claudeStatusOverlay.startAnimation(slideOutTop);
                     binding.claudeStatusOverlay.setVisibility(View.GONE);
                 }
             }
@@ -395,8 +412,11 @@ public class TabbedTerminalActivity extends AppCompatActivity {
 
         coordinatorLayout.setOnTouchListener(gesturesHelper);
 
+        // Initialize gesture detector for triple tap gesture
+        gestureDetector = new android.view.GestureDetector(this, new android.view.GestureDetector.SimpleOnGestureListener());
+
         // Also handle triple tap gesture for voice input
-        gestureDetector.setOnDoubleTapListener(new GestureDetector.SimpleOnGestureListener() {
+        gestureDetector.setOnDoubleTapListener(new android.view.GestureDetector.SimpleOnGestureListener() {
             @Override
             public boolean onDoubleTapEvent(MotionEvent e) {
                 if (e.getAction() == MotionEvent.ACTION_UP) {
@@ -419,7 +439,7 @@ public class TabbedTerminalActivity extends AppCompatActivity {
             }
         });
 
-        fabClaudeCode.startAnimation(android.view.animation.AnimationUtils.loadAnimation(TabbedTerminalActivity.this, R.anim.fab_fade_out));
+        fabClaudeCode.startAnimation(fabFadeOut);
         fabClaudeCode.setVisibility(View.GONE);
 
         // Initialize and start shake detector
@@ -543,10 +563,10 @@ public class TabbedTerminalActivity extends AppCompatActivity {
             
             // Update Claude FAB visibility
             if (tab.isClaudeActive()) {
-                fabClaudeCode.startAnimation(android.view.animation.AnimationUtils.loadAnimation(TabbedTerminalActivity.this, R.anim.fab_fade_in));
+                fabClaudeCode.startAnimation(fabFadeIn);
                 fabClaudeCode.setVisibility(View.VISIBLE);
             } else if (!anyTabHasClaude()) {
-                fabClaudeCode.startAnimation(android.view.animation.AnimationUtils.loadAnimation(TabbedTerminalActivity.this, R.anim.fab_fade_out));
+                fabClaudeCode.startAnimation(fabFadeOut);
                 fabClaudeCode.setVisibility(View.GONE);
             }
         }
@@ -701,6 +721,10 @@ public class TabbedTerminalActivity extends AppCompatActivity {
         @NonNull
         @Override
         public Fragment createFragment(int position) {
+            if (position < 0 || position >= terminalTabs.size()) {
+                // Fallback to prevent crash - create default fragment
+                return TerminalFragment.newInstance("home", getDefaultDirectory(), 0);
+            }
             TerminalTab tab = terminalTabs.get(position);
             return TerminalFragment.newInstance(tab.getName(), tab.getWorkingDirectory(), position);
         }
@@ -712,6 +736,9 @@ public class TabbedTerminalActivity extends AppCompatActivity {
         
         @Override
         public long getItemId(int position) {
+            if (position < 0 || position >= terminalTabs.size()) {
+                return -1; // Invalid ID
+            }
             return terminalTabs.get(position).getId();
         }
         

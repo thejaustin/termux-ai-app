@@ -71,16 +71,22 @@ public class QuickSettingsPanel extends LinearLayout {
     }
     
     private void setupListeners() {
-        btnSaveSettings.setOnClickListener(v -> {
-            saveSettings();
-            if (callback != null) callback.onSettingsApplied();
-        });
-        
-        btnResetSettings.setOnClickListener(v -> resetSettings());
-        
-        btnClosePanel.setOnClickListener(v -> {
-            if (callback != null) callback.onPanelClosed();
-        });
+        if (btnSaveSettings != null) {
+            btnSaveSettings.setOnClickListener(v -> {
+                saveSettings();
+                if (callback != null) callback.onSettingsApplied();
+            });
+        }
+
+        if (btnResetSettings != null) {
+            btnResetSettings.setOnClickListener(v -> resetSettings());
+        }
+
+        if (btnClosePanel != null) {
+            btnClosePanel.setOnClickListener(v -> {
+                if (callback != null) callback.onPanelClosed();
+            });
+        }
     }
     
     private void saveSettings() {
@@ -91,15 +97,17 @@ public class QuickSettingsPanel extends LinearLayout {
     
     private void resetSettings() {
         // Reset to default settings
-        switchAutoSuggestions.setChecked(true);
-        switchGboardAutocomplete.setChecked(true);
-        switchDynamicColors.setChecked(false);
-        switchPrivacyMode.setChecked(false);
-        switchLocalProcessing.setChecked(false);
-        
+        if (switchAutoSuggestions != null) switchAutoSuggestions.setChecked(true);
+        if (switchGboardAutocomplete != null) switchGboardAutocomplete.setChecked(true);
+        if (switchDynamicColors != null) switchDynamicColors.setChecked(false);
+        if (switchPrivacyMode != null) switchPrivacyMode.setChecked(false);
+        if (switchLocalProcessing != null) switchLocalProcessing.setChecked(false);
+
         // Reset spinner to default selection
-        spinnerAiModel.setSelection(0);
-        
+        if (spinnerAiModel != null && spinnerAiModel.getCount() > 0) {
+            spinnerAiModel.setSelection(0);
+        }
+
         Toast.makeText(getContext(), "Settings reset to defaults", Toast.LENGTH_SHORT).show();
     }
     

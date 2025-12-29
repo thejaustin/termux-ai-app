@@ -262,7 +262,13 @@ public class TerminalFragment extends Fragment implements TerminalSessionClient 
     public int getTabIndex() {
         return tabIndex;
     }
-    
+
+    public void clearTerminal() {
+        if (terminalSession != null) {
+            terminalSession.write("clear\r");
+        }
+    }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -297,22 +303,30 @@ public class TerminalFragment extends Fragment implements TerminalSessionClient 
     @Override
     public void onCopyTextToClipboard(@NonNull TerminalSession session, String text) {
         // Handle clipboard copy
-        android.content.ClipboardManager clipboard = 
+        if (getContext() == null) return;
+        android.content.ClipboardManager clipboard =
             (android.content.ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
-        android.content.ClipData clip = android.content.ClipData.newPlainText("Terminal", text);
-        clipboard.setPrimaryClip(clip);
-        Toast.makeText(getContext(), "Copied to clipboard", Toast.LENGTH_SHORT).show();
+        if (clipboard != null) {
+            android.content.ClipData clip = android.content.ClipData.newPlainText("Terminal", text);
+            clipboard.setPrimaryClip(clip);
+            Toast.makeText(getContext(), "Copied to clipboard", Toast.LENGTH_SHORT).show();
+        }
     }
     
     @Override
     public void onPasteTextFromClipboard(@NonNull TerminalSession session) {
         // Handle clipboard paste
-        android.content.ClipboardManager clipboard = 
+        if (getContext() == null) return;
+        android.content.ClipboardManager clipboard =
             (android.content.ClipboardManager) getContext().getSystemService(Context.CLIPBOARD_SERVICE);
-        if (clipboard.hasPrimaryClip()) {
+        if (clipboard != null && clipboard.hasPrimaryClip()) {
             android.content.ClipData.Item item = clipboard.getPrimaryClip().getItemAt(0);
-            String text = item.getText().toString();
-            terminalSession.write(text);
+            if (item != null && item.getText() != null) {
+                String text = item.getText().toString();
+                if (terminalSession != null) {
+                    terminalSession.write(text);
+                }
+            }
         }
     }
     

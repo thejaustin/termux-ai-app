@@ -39,6 +39,10 @@ public class ShakeDetector implements SensorEventListener {
     private int accelerationIdx = 0;
     private int numAccelerating = 0;
 
+    // Debouncing to prevent rapid repeated callbacks
+    private long lastShakeTime = 0;
+    private static final long SHAKE_DEBOUNCE_MS = 2000; // 2 seconds between shakes
+
     public interface ShakeCallback {
         void onShake();
     }
@@ -76,7 +80,11 @@ public class ShakeDetector implements SensorEventListener {
         accelerationIdx = (accelerationIdx + 1) % accelerating.length;
 
         if (numAccelerating > MIN_PORTION_ACCELERATING * MIN_ACCELERATION_SAMPLES) {
-            callback.onShake();
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - lastShakeTime > SHAKE_DEBOUNCE_MS) {
+                lastShakeTime = currentTime;
+                callback.onShake();
+            }
         }
     }
 

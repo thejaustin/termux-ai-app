@@ -219,12 +219,12 @@ public class ClaudeCodeIntegration {
     private boolean detectError(String line, ClaudeSession session) {
         Matcher matcher = CLAUDE_ERROR_PATTERN.matcher(line);
         if (matcher.find()) {
-            String error = matcher.group(2);
-            
+            String error = matcher.group(1);
+
             if (listener != null) {
                 listener.onErrorDetected(error);
             }
-            
+
             Log.w(TAG, "Claude error detected: " + error);
             return true;
         }
