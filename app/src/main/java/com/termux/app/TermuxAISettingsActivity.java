@@ -126,15 +126,6 @@ public class TermuxAISettingsActivity extends AppCompatActivity {
             apiKeyInput.setHint("Enter Claude API Key (or Token)");
         }
     }
-    }
-
-    private void updateApiKeyHint(int checkedId) {
-        if (checkedId == R.id.provider_gemini) {
-            apiKeyInput.setHint("Enter Gemini API Key");
-        } else {
-            apiKeyInput.setHint("Enter Claude API Key (or Token)");
-        }
-    }
 
     private void saveSettings() {
         String provider = geminiButton.isChecked() ? "gemini" : "claude";
