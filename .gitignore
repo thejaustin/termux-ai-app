@@ -68,3 +68,6 @@ Thumbs.db
 
 # Android Profiling
 *.hprof
+
+# Work in progress files
+.work_in_progress/
