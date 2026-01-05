@@ -40,15 +40,31 @@ public class TermuxAIApplication extends Application {
         // Initialize preferences
         preferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
 
-        // Apply Dynamic Colors (Material You) if enabled
-        boolean dynamicColorsEnabled = preferences.getBoolean(PREF_DYNAMIC_COLORS, false);
+        // Apply Material You 3 Dynamic Colors
+        boolean dynamicColorsEnabled = preferences.getBoolean(PREF_DYNAMIC_COLORS, true); // Enable by default
         if (dynamicColorsEnabled) {
-            DynamicColors.applyToActivitiesIfAvailable(this);
-            Log.d(TAG, "Dynamic Colors (Material You) enabled");
+            // Apply dynamic colors with custom options
+            DynamicColors.applyToActivitiesIfAvailable(
+                this,
+                com.google.android.material.color.DynamicColorsOptions.Builder()
+                    .setThemeOverlay(getThemeOverlay())
+                    .setPrecondition((activity, theme) -> {
+                        // Only apply if user has enabled it
+                        return preferences.getBoolean(PREF_DYNAMIC_COLORS, true);
+                    })
+                    .setOnAppliedCallback(activity -> {
+                        Log.d(TAG, "Material You 3 Dynamic Colors applied successfully");
+                    })
+                    .build()
+            );
+            Log.d(TAG, "Material You 3 Dynamic Colors enabled with expressive theming");
+        } else {
+            Log.d(TAG, "Using static Material 3 theme");
         }
 
         // Set up theme to follow system (light/dark)
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+        int nightMode = preferences.getInt("night_mode", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+        AppCompatDelegate.setDefaultNightMode(nightMode);
 
         // Initialize global components
         initializeClaudeIntegration();
@@ -277,5 +293,64 @@ public class TermuxAIApplication extends Application {
     
     public boolean isDebugMode() {
         return BuildConfig.DEBUG;
+    }
+
+    // Material You 3 Theming Methods
+
+    /**
+     * Get the theme overlay resource ID based on user preference
+     */
+    private int getThemeOverlay() {
+        String themeStyle = preferences.getString("theme_style", "expressive");
+        switch (themeStyle) {
+            case "vibrant":
+                return com.google.android.material.R.style.ThemeOverlay_Material3_DynamicColors_DayNight;
+            case "tonal":
+                return 0; // Use default
+            case "expressive":
+            default:
+                return 0; // Use default expressive theme
+        }
+    }
+
+    /**
+     * Apply theme mode (light/dark/auto)
+     */
+    public void setNightMode(int mode) {
+        preferences.edit().putInt("night_mode", mode).apply();
+        AppCompatDelegate.setDefaultNightMode(mode);
+    }
+
+    public int getNightMode() {
+        return preferences.getInt("night_mode", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+    }
+
+    /**
+     * Enable or disable dynamic colors
+     */
+    public void setDynamicColorsEnabled(boolean enabled) {
+        preferences.edit().putBoolean(PREF_DYNAMIC_COLORS, enabled).apply();
+    }
+
+    public boolean isDynamicColorsEnabled() {
+        return preferences.getBoolean(PREF_DYNAMIC_COLORS, true);
+    }
+
+    /**
+     * Set theme style (expressive, vibrant, tonal)
+     */
+    public void setThemeStyle(String style) {
+        preferences.edit().putString("theme_style", style).apply();
+    }
+
+    public String getThemeStyle() {
+        return preferences.getString("theme_style", "expressive");
+    }
+
+    /**
+     * Check if dynamic colors are available on this device
+     */
+    public boolean areDynamicColorsAvailable() {
+        return com.google.android.material.color.DynamicColors.isDynamicColorAvailable();
     }
 }

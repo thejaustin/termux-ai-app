@@ -91,6 +91,12 @@ public class TerminalFragment extends Fragment implements TerminalSessionClient 
 
         // Enable Gboard autocomplete
         terminalView.setGboardAutoCompleteEnabled(true);
+
+        // Request focus and show keyboard when terminal is ready
+        terminalView.post(() -> {
+            terminalView.requestFocus();
+            terminalView.showKeyboard();
+        });
         
         // Set Claude Code listener
         terminalView.setClaudeCodeListener(new EnhancedTerminalView.ClaudeCodeListener() {

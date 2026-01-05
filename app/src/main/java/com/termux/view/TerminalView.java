@@ -6,71 +6,188 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.BaseInputConnection;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 
+import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
 
 /**
- * Basic functional TerminalView implementation for Termux AI
- * Provides a simple terminal display with text rendering
+ * Functional TerminalView implementation for Termux AI
+ * Renders terminal emulator screen with proper text buffer rendering
  */
 @SuppressWarnings("unused")
 public class TerminalView extends View {
-    
+
     private TerminalSession currentSession;
     private Paint textPaint;
+    private Paint cursorPaint;
     private Paint backgroundPaint;
-    private String displayText = "Termux AI Terminal\n\nWelcome to the world's first AI-enhanced terminal!\n\n$ ";
-    private float textSize = 32f;
-    private float lineHeight = 40f;
+    private float textSize = 28f;
+    private float charWidth;
+    private float charHeight;
+    private int topRow = 0;
 
     public TerminalView(Context context) {
         super(context);
-        initializePaints();
+        initialize();
     }
 
     public TerminalView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        initializePaints();
+        initialize();
     }
 
     public TerminalView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        initializePaints();
+        initialize();
     }
-    
+
+    private void initialize() {
+        initializePaints();
+        setFocusable(true);
+        setFocusableInTouchMode(true);
+    }
+
     private void initializePaints() {
         textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         textPaint.setColor(Color.WHITE);
         textPaint.setTextSize(textSize);
         textPaint.setTypeface(Typeface.MONOSPACE);
-        
+
         backgroundPaint = new Paint();
         backgroundPaint.setColor(Color.BLACK);
+
+        cursorPaint = new Paint();
+        cursorPaint.setColor(0xFF00FF00); // Green cursor
+
+        // Calculate character dimensions
+        Paint.FontMetrics metrics = textPaint.getFontMetrics();
+        charHeight = (float) Math.ceil(metrics.descent - metrics.ascent);
+        charWidth = textPaint.measureText("X");
     }
-    
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        
+
         // Draw terminal background
         canvas.drawRect(0, 0, getWidth(), getHeight(), backgroundPaint);
-        
-        // Draw text
-        String[] lines = displayText.split("\\n");
-        float y = lineHeight;
+
+        if (currentSession == null) {
+            // Show welcome message if no session attached
+            drawWelcomeMessage(canvas);
+            return;
+        }
+
+        TerminalEmulator emulator = currentSession.getEmulator();
+        if (emulator == null) {
+            drawWelcomeMessage(canvas);
+            return;
+        }
+
+        // Render terminal screen
+        renderScreen(canvas, emulator);
+    }
+
+    private void drawWelcomeMessage(Canvas canvas) {
+        String[] lines = new String[]{
+            "Termux AI Terminal",
+            "",
+            "Welcome to the world's first",
+            "AI-enhanced terminal!",
+            "",
+            "Setting up terminal session...",
+            "$"
+        };
+
+        float y = charHeight + 20;
         for (String line : lines) {
             canvas.drawText(line, 20, y, textPaint);
-            y += lineHeight;
+            y += charHeight;
         }
+    }
+
+    private void renderScreen(Canvas canvas, TerminalEmulator emulator) {
+        try {
+            int rows = emulator.getScreen().getRows();
+            int cols = emulator.getScreen().getColumns();
+            int cursorRow = emulator.getCursorRow();
+            int cursorCol = emulator.getCursorCol();
+
+            float y = charHeight;
+
+            // Render each row
+            for (int row = 0; row < rows; row++) {
+                String line = emulator.getScreen().getSelectedText(0, row, cols, row);
+                if (line != null && !line.isEmpty()) {
+                    canvas.drawText(line, 10, y, textPaint);
+                }
+
+                // Draw cursor if on this row
+                if (row == cursorRow) {
+                    float cursorX = 10 + (cursorCol * charWidth);
+                    canvas.drawRect(cursorX, y - charHeight + 5,
+                                  cursorX + charWidth, y + 2, cursorPaint);
+                }
+
+                y += charHeight;
+            }
+        } catch (Exception e) {
+            // If rendering fails, show error
+            canvas.drawText("Error rendering terminal: " + e.getMessage(), 20, charHeight + 20, textPaint);
+        }
+    }
+
+    @Override
+    public boolean onCheckIsTextEditor() {
+        return true;
+    }
+
+    @Override
+    public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
+        outAttrs.inputType = android.text.InputType.TYPE_CLASS_TEXT;
+        outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_FULLSCREEN;
+        return new BaseInputConnection(this, true);
+    }
+
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (currentSession != null && event.getAction() == KeyEvent.ACTION_DOWN) {
+            // Handle special keys
+            int keyCode = event.getKeyCode();
+
+            if (keyCode == KeyEvent.KEYCODE_ENTER) {
+                currentSession.write("\r");
+                return true;
+            } else if (keyCode == KeyEvent.KEYCODE_DEL) {
+                currentSession.write("\b");
+                return true;
+            } else if (keyCode == KeyEvent.KEYCODE_TAB) {
+                currentSession.write("\t");
+                return true;
+            }
+
+            // Handle character keys
+            int unicodeChar = event.getUnicodeChar();
+            if (unicodeChar > 0) {
+                currentSession.write(new String(Character.toChars(unicodeChar)));
+                return true;
+            }
+        }
+
+        return super.dispatchKeyEvent(event);
     }
 
     /**
      * Attach a terminal session to this view.
-     * TODO: Implement real session binding with PTY management.
      */
     public void attachSession(TerminalSession session) {
         this.currentSession = session;
+        invalidate();
     }
 
     /**
@@ -79,60 +196,24 @@ public class TerminalView extends View {
     public TerminalSession getCurrentSession() {
         return currentSession;
     }
-    
-    /**
-     * Enhanced method for handling text changes with terminal display
-     */
-    public void handleTextInput(CharSequence text, int start, int lengthBefore, int lengthAfter) {
-        // Handle text changes - placeholder implementation
-        // Update display text to show what's being typed
-        if (text != null && text.length() > 0) {
-            displayText += text.toString();
-            invalidate(); // Trigger redraw
-        }
-    }
-    
-    /**
-     * Add text to the terminal display
-     */
-    public void addText(String text) {
-        displayText += text;
-        invalidate();
-    }
-    
-    /**
-     * Set Claude Code active indicator
-     */
-    public void setClaudeActive(boolean active) {
-        if (active) {
-            displayText += "\n🤖 Claude Code activated!\nType 'claude code' to start...\n$ ";
-        } else {
-            displayText += "\n✅ Claude session ended\n$ ";
-        }
-        invalidate();
-    }
 
     /**
      * Called when the screen is updated.
-     * TODO: Implement real screen rendering and invalidation.
      */
     public void onScreenUpdated() {
-        // Placeholder - would trigger view redraw
         invalidate();
     }
 
     /**
      * Called when text changes in the terminal.
      * Hook for subclasses to handle text change events.
-     * TODO: Implement real text change handling.
      */
     public void onTextChanged(CharSequence text, int start, int lengthBefore, int lengthAfter) {
-        // Placeholder hook for subclasses
+        // Hook for subclasses to override
     }
 
     /**
      * Request a redraw of the terminal view.
-     * TODO: Implement efficient rendering.
      */
     public void requestRedraw() {
         invalidate();
@@ -142,6 +223,33 @@ public class TerminalView extends View {
      * Get the entire transcript text currently displayed in the terminal.
      */
     public String getTranscriptText() {
-        return displayText;
+        if (currentSession == null) {
+            return "";
+        }
+
+        try {
+            TerminalEmulator emulator = currentSession.getEmulator();
+            if (emulator == null) {
+                return "";
+            }
+
+            StringBuilder transcript = new StringBuilder();
+            int rows = emulator.getScreen().getRows();
+            int cols = emulator.getScreen().getColumns();
+
+            for (int row = 0; row < rows; row++) {
+                String line = emulator.getScreen().getSelectedText(0, row, cols, row);
+                if (line != null) {
+                    transcript.append(line);
+                    if (row < rows - 1) {
+                        transcript.append("\n");
+                    }
+                }
+            }
+
+            return transcript.toString();
+        } catch (Exception e) {
+            return "Error retrieving transcript: " + e.getMessage();
+        }
     }
 }

@@ -94,10 +94,21 @@ public class EnhancedTerminalView extends TerminalView {
         inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         fileHighlights = new ArrayList<>();
         mainHandler = new Handler(Looper.getMainLooper());
-        
+
+        // Make view focusable for keyboard input
+        setFocusable(true);
+        setFocusableInTouchMode(true);
+        setClickable(true);
+
         initializePaints();
         setupGestureDetector();
         setupClaudeIntegration();
+    }
+
+    @Override
+    public boolean onCheckIsTextEditor() {
+        // This tells Android that this view can accept text input
+        return true;
     }
     
     private void initializePaints() {
@@ -274,24 +285,22 @@ public class EnhancedTerminalView extends TerminalView {
     
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-        // Enable Gboard autocomplete and suggestions
+        // Configure input for terminal
+        outAttrs.inputType = InputType.TYPE_CLASS_TEXT
+            | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
+
+        outAttrs.imeOptions = EditorInfo.IME_ACTION_UNSPECIFIED
+            | EditorInfo.IME_FLAG_NO_EXTRACT_UI
+            | EditorInfo.IME_FLAG_NO_FULLSCREEN;
+
+        // Enable Gboard autocomplete if requested
         if (gboardAutoCompleteEnabled) {
-            outAttrs.inputType = InputType.TYPE_CLASS_TEXT 
-                | InputType.TYPE_TEXT_FLAG_AUTO_COMPLETE
-                | InputType.TYPE_TEXT_FLAG_AUTO_CORRECT
-                | InputType.TYPE_TEXT_VARIATION_NORMAL;
-            
-            outAttrs.imeOptions = EditorInfo.IME_ACTION_UNSPECIFIED
-                | EditorInfo.IME_FLAG_NO_EXTRACT_UI
-                | EditorInfo.IME_FLAG_NO_FULLSCREEN;
-                
-            // Enable rich input features
-            outAttrs.inputType |= InputType.TYPE_TEXT_FLAG_MULTI_LINE;
-            
-            return new EnhancedInputConnection(this, true);
+            outAttrs.inputType |= InputType.TYPE_TEXT_FLAG_AUTO_COMPLETE
+                | InputType.TYPE_TEXT_FLAG_AUTO_CORRECT;
         }
-        
-        return super.onCreateInputConnection(outAttrs);
+
+        // Use our enhanced input connection
+        return new TerminalViewInputConnection(this, true);
     }
     
     @Override
@@ -300,8 +309,34 @@ public class EnhancedTerminalView extends TerminalView {
         if (gestureDetector.onTouchEvent(event)) {
             return true;
         }
-        
+
+        // Request focus and show keyboard when tapped
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            if (!hasFocus()) {
+                requestFocus();
+            }
+            showKeyboard();
+        }
+
         return super.onTouchEvent(event);
+    }
+
+    /**
+     * Show the soft keyboard for text input
+     */
+    public void showKeyboard() {
+        if (inputMethodManager != null) {
+            inputMethodManager.showSoftInput(this, InputMethodManager.SHOW_IMPLICIT);
+        }
+    }
+
+    /**
+     * Hide the soft keyboard
+     */
+    public void hideKeyboard() {
+        if (inputMethodManager != null) {
+            inputMethodManager.hideSoftInputFromWindow(getWindowToken(), 0);
+        }
     }
     
     @Override
@@ -522,26 +557,5 @@ public class EnhancedTerminalView extends TerminalView {
         String action;
         long timestamp;
         Rect rect;
-    }
-    
-    /**
-     * Enhanced InputConnection for better Gboard integration
-     */
-    private static class EnhancedInputConnection extends TerminalViewInputConnection {
-        public EnhancedInputConnection(TerminalView terminalView, boolean fullEditor) {
-            super(terminalView, fullEditor);
-        }
-        
-        @Override
-        public boolean commitText(CharSequence text, int newCursorPosition) {
-            // Handle Gboard autocomplete suggestions
-            return super.commitText(text, newCursorPosition);
-        }
-        
-        @Override
-        public boolean setComposingText(CharSequence text, int newCursorPosition) {
-            // Handle Gboard composing text (predictive text)
-            return super.setComposingText(text, newCursorPosition);
-        }
     }
 }

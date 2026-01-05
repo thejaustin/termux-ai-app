@@ -21,20 +21,133 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Appearance"
+            android:text="Appearance &amp; Theme"
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="?attr/colorPrimary"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="8dp" />
 
-        <Switch
+        <!-- Material You 3 Info Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="?attr/colorPrimaryContainer"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="✨ Material You 3 Expressive Theming"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:textColor="?attr/colorOnPrimaryContainer"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:id="@+id/dynamic_colors_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Dynamic colors adapt to your wallpaper for a personalized experience"
+                    android:textSize="12sp"
+                    android:textColor="?attr/colorOnPrimaryContainer"
+                    android:lineSpacingMultiplier="1.2" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Dynamic Colors Toggle -->
+        <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/dynamic_colors_switch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Material You (Dynamic Colors)"
+            android:text="Enable Material You Dynamic Colors"
             android:textSize="16sp"
-            android:padding="8dp"
-            android:layout_marginBottom="24dp" />
+            android:padding="12dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Theme Mode Selection -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Theme Mode"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <RadioGroup
+            android:id="@+id/theme_mode_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.radiobutton.MaterialRadioButton
+                android:id="@+id/theme_auto"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Auto (Follow System)"
+                android:padding="8dp"/>
+
+            <com.google.android.material.radiobutton.MaterialRadioButton
+                android:id="@+id/theme_light"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Light Mode"
+                android:padding="8dp"/>
+
+            <com.google.android.material.radiobutton.MaterialRadioButton
+                android:id="@+id/theme_dark"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Dark Mode"
+                android:padding="8dp"/>
+        </RadioGroup>
+
+        <!-- Theme Style Selection (only visible when dynamic colors enabled) -->
+        <TextView
+            android:id="@+id/theme_style_label"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Color Style"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp"
+            android:visibility="visible" />
+
+        <RadioGroup
+            android:id="@+id/theme_style_group"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:visibility="visible">
+
+            <com.google.android.material.radiobutton.MaterialRadioButton
+                android:id="@+id/style_expressive"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Expressive (Recommended)"
+                android:padding="8dp"/>
+
+            <com.google.android.material.radiobutton.MaterialRadioButton
+                android:id="@+id/style_vibrant"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Vibrant"
+                android:padding="8dp"/>
+
+            <com.google.android.material.radiobutton.MaterialRadioButton
+                android:id="@+id/style_tonal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tonal (Subtle)"
+                android:padding="8dp"/>
+        </RadioGroup>
 
         <!-- AI Provider Section -->
         <TextView
@@ -44,7 +157,39 @@
             android:textSize="18sp"
             android:textStyle="bold"
             android:textColor="?attr/colorPrimary"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="8dp" />
+
+        <!-- CLI Login Info -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardBackgroundColor="?attr/colorSecondaryContainer"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="💡 Alternative: Browser Login"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:layout_marginBottom="4dp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="You can use Claude Code CLI or Gemini CLI directly in the terminal with browser-based login instead of API keys:\n\n• Claude: Run 'claude code' and follow the browser login\n• Gemini: Run 'gemini' and authenticate via browser\n\nAPI keys below are optional if using CLI tools."
+                    android:textSize="12sp"
+                    android:lineSpacingMultiplier="1.2" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
         <TextView
             android:layout_width="match_parent"
@@ -78,7 +223,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="API Key"
+            android:text="API Key (Optional)"
             android:textSize="16sp"
             android:textStyle="bold"
             android:layout_marginBottom="8dp" />
@@ -88,7 +233,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="textPassword"
-            android:hint="Enter API Key"
+            android:hint="Enter API Key (or use CLI browser login)"
             android:layout_marginBottom="24dp" />
 
         <TextView

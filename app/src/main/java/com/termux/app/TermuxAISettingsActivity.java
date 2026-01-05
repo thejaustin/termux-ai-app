@@ -3,17 +3,21 @@ package com.termux.app;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
-import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.termux.ai.R;
+import com.termux.ai.TermuxAIApplication;
 
 public class TermuxAISettingsActivity extends AppCompatActivity {
     
@@ -28,18 +32,31 @@ public class TermuxAISettingsActivity extends AppCompatActivity {
     private static final String PREF_COMMAND_FILTERING = "command_filtering_enabled";
     private static final String PREF_LOCAL_PROCESSING = "local_processing_enabled";
 
+    // Theme settings
+    private SwitchMaterial dynamicColorsSwitch;
+    private TextView dynamicColorsStatus;
+    private RadioGroup themeModeGroup;
+    private RadioButton themeAuto, themeLight, themeDark;
+    private RadioGroup themeStyleGroup;
+    private RadioButton styleExpressive, styleVibrant, styleTonal;
+    private TextView themeStyleLabel;
+
+    // AI Provider settings
     private RadioGroup providerGroup;
     private RadioButton claudeButton;
     private RadioButton geminiButton;
     private EditText apiKeyInput;
     private Spinner modelSpinner;
     private EditText tokenLimitInput;
+
+    // Feature toggles
+    private SwitchMaterial autoSuggestionsSwitch;
+    private SwitchMaterial commandFilteringSwitch;
+    private SwitchMaterial localProcessingSwitch;
+
     private Button saveButton;
-    private Switch dynamicColorsSwitch;
-    private Switch autoSuggestionsSwitch;
-    private Switch commandFilteringSwitch;
-    private Switch localProcessingSwitch;
     private SharedPreferences prefs;
+    private TermuxAIApplication app;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,27 +68,70 @@ public class TermuxAISettingsActivity extends AppCompatActivity {
         }
 
         prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        app = (TermuxAIApplication) getApplication();
 
+        // Theme settings
+        dynamicColorsSwitch = findViewById(R.id.dynamic_colors_switch);
+        dynamicColorsStatus = findViewById(R.id.dynamic_colors_status);
+        themeModeGroup = findViewById(R.id.theme_mode_group);
+        themeAuto = findViewById(R.id.theme_auto);
+        themeLight = findViewById(R.id.theme_light);
+        themeDark = findViewById(R.id.theme_dark);
+        themeStyleGroup = findViewById(R.id.theme_style_group);
+        styleExpressive = findViewById(R.id.style_expressive);
+        styleVibrant = findViewById(R.id.style_vibrant);
+        styleTonal = findViewById(R.id.style_tonal);
+        themeStyleLabel = findViewById(R.id.theme_style_label);
+
+        // AI Provider settings
         providerGroup = findViewById(R.id.provider_group);
         claudeButton = findViewById(R.id.provider_claude);
         geminiButton = findViewById(R.id.provider_gemini);
         apiKeyInput = findViewById(R.id.api_key_input);
         modelSpinner = findViewById(R.id.model_spinner);
         tokenLimitInput = findViewById(R.id.token_limit_input);
-        saveButton = findViewById(R.id.save_button);
-        dynamicColorsSwitch = findViewById(R.id.dynamic_colors_switch);
+
+        // Feature toggles
         autoSuggestionsSwitch = findViewById(R.id.auto_suggestions_switch);
         commandFilteringSwitch = findViewById(R.id.command_filtering_switch);
         localProcessingSwitch = findViewById(R.id.local_processing_switch);
 
+        saveButton = findViewById(R.id.save_button);
+
         setupModelSpinner();
+        setupThemeListeners();
         loadSettings();
+        updateDynamicColorsStatus();
 
         saveButton.setOnClickListener(v -> saveSettings());
 
         providerGroup.setOnCheckedChangeListener((group, checkedId) -> {
             updateApiKeyHint(checkedId);
+            // Load the appropriate API key when switching providers
+            loadApiKeyForProvider(checkedId);
         });
+    }
+
+    private void setupThemeListeners() {
+        // Dynamic colors toggle listener
+        dynamicColorsSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            themeStyleGroup.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+            themeStyleLabel.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+            updateDynamicColorsStatus();
+        });
+    }
+
+    private void updateDynamicColorsStatus() {
+        if (app.areDynamicColorsAvailable()) {
+            if (dynamicColorsSwitch.isChecked()) {
+                dynamicColorsStatus.setText("✓ Dynamic colors are active and adapting to your wallpaper");
+            } else {
+                dynamicColorsStatus.setText("Dynamic colors are available. Enable to personalize your app!");
+            }
+        } else {
+            dynamicColorsStatus.setText("⚠ Dynamic colors require Android 12+ (API 31)");
+            dynamicColorsSwitch.setEnabled(false);
+        }
     }
 
     private void setupModelSpinner() {
@@ -82,6 +142,31 @@ public class TermuxAISettingsActivity extends AppCompatActivity {
     }
 
     private void loadSettings() {
+        // Load theme settings
+        boolean dynamicColors = app.isDynamicColorsEnabled();
+        dynamicColorsSwitch.setChecked(dynamicColors);
+        themeStyleGroup.setVisibility(dynamicColors ? View.VISIBLE : View.GONE);
+        themeStyleLabel.setVisibility(dynamicColors ? View.VISIBLE : View.GONE);
+
+        int nightMode = app.getNightMode();
+        if (nightMode == AppCompatDelegate.MODE_NIGHT_YES) {
+            themeDark.setChecked(true);
+        } else if (nightMode == AppCompatDelegate.MODE_NIGHT_NO) {
+            themeLight.setChecked(true);
+        } else {
+            themeAuto.setChecked(true);
+        }
+
+        String themeStyle = app.getThemeStyle();
+        if ("vibrant".equals(themeStyle)) {
+            styleVibrant.setChecked(true);
+        } else if ("tonal".equals(themeStyle)) {
+            styleTonal.setChecked(true);
+        } else {
+            styleExpressive.setChecked(true);
+        }
+
+        // Load AI provider settings
         String provider = prefs.getString(PREF_AI_PROVIDER, "claude");
         if ("gemini".equals(provider)) {
             geminiButton.setChecked(true);
@@ -104,9 +189,7 @@ public class TermuxAISettingsActivity extends AppCompatActivity {
         String tokenLimit = prefs.getString(PREF_TOKEN_LIMIT, "100000");
         tokenLimitInput.setText(tokenLimit);
 
-        boolean dynamicColors = prefs.getBoolean(PREF_DYNAMIC_COLORS, false);
-        dynamicColorsSwitch.setChecked(dynamicColors);
-
+        // Load feature toggles
         boolean autoSuggestions = prefs.getBoolean(PREF_AUTO_SUGGESTIONS, true);
         autoSuggestionsSwitch.setChecked(autoSuggestions);
 
@@ -127,7 +210,53 @@ public class TermuxAISettingsActivity extends AppCompatActivity {
         }
     }
 
+    private void loadApiKeyForProvider(int checkedId) {
+        // Save current API key before switching
+        String currentKey = apiKeyInput.getText().toString().trim();
+        if (!currentKey.isEmpty()) {
+            if (checkedId == R.id.provider_gemini) {
+                // Switching to Gemini, save Claude key first
+                prefs.edit().putString(PREF_CLAUDE_API_KEY, currentKey).apply();
+            } else {
+                // Switching to Claude, save Gemini key first
+                prefs.edit().putString(PREF_GEMINI_API_KEY, currentKey).apply();
+            }
+        }
+
+        // Load the API key for the newly selected provider
+        if (checkedId == R.id.provider_gemini) {
+            apiKeyInput.setText(prefs.getString(PREF_GEMINI_API_KEY, ""));
+        } else {
+            apiKeyInput.setText(prefs.getString(PREF_CLAUDE_API_KEY, ""));
+        }
+    }
+
     private void saveSettings() {
+        // Save theme settings
+        boolean dynamicColors = dynamicColorsSwitch.isChecked();
+        boolean dynamicColorsChanged = dynamicColors != app.isDynamicColorsEnabled();
+
+        int nightMode;
+        if (themeDark.isChecked()) {
+            nightMode = AppCompatDelegate.MODE_NIGHT_YES;
+        } else if (themeLight.isChecked()) {
+            nightMode = AppCompatDelegate.MODE_NIGHT_NO;
+        } else {
+            nightMode = AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM;
+        }
+        boolean nightModeChanged = nightMode != app.getNightMode();
+
+        String themeStyle;
+        if (styleVibrant.isChecked()) {
+            themeStyle = "vibrant";
+        } else if (styleTonal.isChecked()) {
+            themeStyle = "tonal";
+        } else {
+            themeStyle = "expressive";
+        }
+        boolean themeStyleChanged = !themeStyle.equals(app.getThemeStyle());
+
+        // Save AI provider settings
         String provider = geminiButton.isChecked() ? "gemini" : "claude";
         String apiKey = apiKeyInput.getText().toString().trim();
         String model = modelSpinner.getSelectedItem().toString();
@@ -139,20 +268,27 @@ public class TermuxAISettingsActivity extends AppCompatActivity {
             // Use default if parsing fails
         }
 
-        boolean dynamicColors = dynamicColorsSwitch.isChecked();
+        // Save feature toggles
         boolean autoSuggestions = autoSuggestionsSwitch.isChecked();
         boolean commandFiltering = commandFilteringSwitch.isChecked();
         boolean localProcessing = localProcessingSwitch.isChecked();
 
-        boolean dynamicColorsChanged = dynamicColors != prefs.getBoolean(PREF_DYNAMIC_COLORS, false);
-
         SharedPreferences.Editor editor = prefs.edit();
         editor.putString(PREF_AI_PROVIDER, provider);
 
+        // Save both API keys to preserve them when switching providers
         if ("gemini".equals(provider)) {
             editor.putString(PREF_GEMINI_API_KEY, apiKey);
+            // Keep existing Claude key if present
+            if (!prefs.contains(PREF_CLAUDE_API_KEY) || prefs.getString(PREF_CLAUDE_API_KEY, "").isEmpty()) {
+                // Don't overwrite existing Claude key
+            }
         } else {
             editor.putString(PREF_CLAUDE_API_KEY, apiKey);
+            // Keep existing Gemini key if present
+            if (!prefs.contains(PREF_GEMINI_API_KEY) || prefs.getString(PREF_GEMINI_API_KEY, "").isEmpty()) {
+                // Don't overwrite existing Gemini key
+            }
         }
 
         editor.putString(PREF_CLAUDE_MODEL, model);
@@ -162,15 +298,43 @@ public class TermuxAISettingsActivity extends AppCompatActivity {
         editor.putBoolean(PREF_COMMAND_FILTERING, commandFiltering);
         editor.putBoolean(PREF_LOCAL_PROCESSING, localProcessing);
 
+        // Save theme settings to app
+        app.setDynamicColorsEnabled(dynamicColors);
+        app.setNightMode(nightMode);
+        app.setThemeStyle(themeStyle);
+
         editor.apply();
 
-        if (dynamicColorsChanged) {
-             Toast.makeText(this, "Settings saved. Restart app for theme changes.", Toast.LENGTH_LONG).show();
-        } else {
-             Toast.makeText(this, "Settings saved", Toast.LENGTH_SHORT).show();
-        }
+        // Check if we need to restart the app for theme changes
+        boolean needsRestart = dynamicColorsChanged || nightModeChanged || themeStyleChanged;
 
-        finish();
+        if (needsRestart) {
+            // Show appropriate message
+            if (dynamicColorsChanged && dynamicColors) {
+                Toast.makeText(this, "✨ Material You 3 enabled! App restarting...", Toast.LENGTH_SHORT).show();
+            } else if (nightModeChanged) {
+                String modeName = nightMode == AppCompatDelegate.MODE_NIGHT_YES ? "Dark" :
+                                  nightMode == AppCompatDelegate.MODE_NIGHT_NO ? "Light" : "Auto";
+                Toast.makeText(this, modeName + " mode activated! App restarting...", Toast.LENGTH_SHORT).show();
+            } else if (themeStyleChanged) {
+                Toast.makeText(this, themeStyle.substring(0, 1).toUpperCase() + themeStyle.substring(1) +
+                              " style applied! App restarting...", Toast.LENGTH_SHORT).show();
+            }
+
+            // Apply night mode immediately
+            if (nightModeChanged) {
+                AppCompatDelegate.setDefaultNightMode(nightMode);
+            }
+
+            // Recreate the app with new theme
+            finish();
+            android.content.Intent intent = new android.content.Intent(this, com.termux.app.TabbedTerminalActivity.class);
+            intent.addFlags(android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP | android.content.Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+        } else {
+            Toast.makeText(this, "Settings saved", Toast.LENGTH_SHORT).show();
+            finish();
+        }
     }
 
     @Override
