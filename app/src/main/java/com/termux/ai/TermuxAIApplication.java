@@ -29,30 +29,59 @@ public class TermuxAIApplication extends Application {
     public void onCreate() {
         super.onCreate();
         instance = this;
-        
+
+        // Enable StrictMode in debug builds to catch performance issues
+        if (BuildConfig.DEBUG) {
+            enableStrictMode();
+        }
+
         Log.d(TAG, "Initializing Termux AI Application v" + BuildConfig.VERSION_NAME);
-        
+
         // Initialize preferences
         preferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        
+
         // Apply Dynamic Colors (Material You) if enabled
         boolean dynamicColorsEnabled = preferences.getBoolean(PREF_DYNAMIC_COLORS, false);
         if (dynamicColorsEnabled) {
             DynamicColors.applyToActivitiesIfAvailable(this);
             Log.d(TAG, "Dynamic Colors (Material You) enabled");
         }
-        
+
         // Set up theme to follow system (light/dark)
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
-        
+
         // Initialize global components
         initializeClaudeIntegration();
-        initializeTerminalEnvironment();
-        
+
         // Setup crash handling
         setupCrashHandler();
-        
+
+        // Initialize terminal environment in background to avoid blocking main thread
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                initializeTerminalEnvironment();
+            }
+        }).start();
+
         Log.d(TAG, "Termux AI Application initialized successfully");
+    }
+
+    private void enableStrictMode() {
+        android.os.StrictMode.setThreadPolicy(new android.os.StrictMode.ThreadPolicy.Builder()
+                .detectDiskReads()
+                .detectDiskWrites()
+                .detectNetwork()
+                .penaltyLog()
+                .build());
+
+        android.os.StrictMode.setVmPolicy(new android.os.StrictMode.VmPolicy.Builder()
+                .detectLeakedSqlLiteObjects()
+                .detectLeakedClosableObjects()
+                .penaltyLog()
+                .build());
+
+        Log.d(TAG, "StrictMode enabled for performance monitoring");
     }
     
     private void initializeClaudeIntegration() {
@@ -121,19 +150,22 @@ public class TermuxAIApplication extends Application {
     }
     
     private void setupCrashHandler() {
+        final Thread.UncaughtExceptionHandler defaultHandler = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
             @Override
             public void uncaughtException(@NonNull Thread thread, @NonNull Throwable ex) {
                 Log.e(TAG, "Uncaught exception in thread " + thread.getName(), ex);
-                
+
                 // Save crash info for debugging
                 saveCrashInfo(ex);
-                
+
                 // Try to gracefully shut down
                 cleanup();
-                
+
                 // Re-throw to allow system handling
-                Thread.getDefaultUncaughtExceptionHandler().uncaughtException(thread, ex);
+                if (defaultHandler != null) {
+                    defaultHandler.uncaughtException(thread, ex);
+                }
             }
         });
     }

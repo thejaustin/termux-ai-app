@@ -87,10 +87,6 @@ dependencies {
     implementation 'net.openid:appauth:0.11.1'
     implementation 'androidx.browser:browser:1.6.0'
     
-    // AI Processing and NLP
-    implementation 'org.tensorflow:tensorflow-lite:2.13.0'
-    implementation 'org.tensorflow:tensorflow-lite-support:0.4.4'
-    
     // Database for AI context and learning
     implementation 'androidx.room:room-runtime:2.5.0'
     implementation 'androidx.room:room-ktx:2.5.0'
