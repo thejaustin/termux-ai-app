@@ -46,7 +46,7 @@ public class TermuxAIApplication extends Application {
             // Apply dynamic colors with custom options
             DynamicColors.applyToActivitiesIfAvailable(
                 this,
-                com.google.android.material.color.DynamicColorsOptions.Builder()
+                new com.google.android.material.color.DynamicColorsOptions.Builder()
                     .setThemeOverlay(getThemeOverlay())
                     .setPrecondition((activity, theme) -> {
                         // Only apply if user has enabled it
