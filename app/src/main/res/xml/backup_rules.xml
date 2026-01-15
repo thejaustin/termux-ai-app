@@ -1,15 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <full-backup-content>
-    <!-- Exclude sensitive files from backup -->
-    <exclude domain="sharedpref" path="auth_preferences.xml" />
-    <exclude domain="sharedpref" path="api_keys.xml" />
-    <exclude domain="database" path="user_data.db" />
-    <exclude domain="file" path="ai_models/" />
+    <!-- Exclude sensitive credentials and encrypted data from backup -->
+
+    <!-- Encrypted credentials (API keys, tokens, session IDs) -->
+    <exclude domain="sharedpref" path="termux_ai_prefs.xml" />
+
+    <!-- Terminal tab state (may contain sensitive working directories) -->
+    <exclude domain="sharedpref" path="terminal_tabs.xml" />
+
+    <!-- AndroidX Security Crypto master key file -->
+    <exclude domain="sharedpref" path="__androidx_security_crypto_encrypted_prefs__.xml" />
+
+    <!-- Default app preferences (encrypted by androidx security) -->
+    <exclude domain="sharedpref" path="com.termux.ai_preferences.xml" />
+
+    <!-- Exclude logs that may contain sensitive command output -->
     <exclude domain="file" path="logs/" />
     <exclude domain="file" path="temp/" />
-    
-    <!-- Include important user settings -->
-    <include domain="sharedpref" path="app_preferences.xml" />
-    <include domain="file" path="themes/" />
-    <include domain="file" path="scripts/" />
+    <exclude domain="cache" path="." />
+
+    <!-- Include non-sensitive user settings and data -->
+    <include domain="file" path="." />
+    <include domain="database" path="." />
 </full-backup-content>

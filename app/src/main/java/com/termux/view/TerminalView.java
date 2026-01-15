@@ -14,6 +14,8 @@ import android.view.inputmethod.InputConnection;
 
 import com.termux.terminal.TerminalEmulator;
 import com.termux.terminal.TerminalSession;
+import com.termux.terminal.TerminalBuffer;
+import com.termux.terminal.TextStyle;
 
 /**
  * Functional TerminalView implementation for Termux AI
@@ -113,8 +115,9 @@ public class TerminalView extends View {
 
     private void renderScreen(Canvas canvas, TerminalEmulator emulator) {
         try {
-            int rows = emulator.getScreen().getRows();
-            int cols = emulator.getScreen().getColumns();
+            TerminalBuffer buffer = emulator.getScreen();
+            int rows = buffer.getRows();
+            int cols = buffer.getColumns();
             int cursorRow = emulator.getCursorRow();
             int cursorCol = emulator.getCursorCol();
 
@@ -122,9 +125,46 @@ public class TerminalView extends View {
 
             // Render each row
             for (int row = 0; row < rows; row++) {
-                String line = emulator.getScreen().getSelectedText(0, row, cols, row);
-                if (line != null && !line.isEmpty()) {
-                    canvas.drawText(line, 10, y, textPaint);
+                float x = 10;
+
+                // Render each character with its style
+                for (int col = 0; col < cols; col++) {
+                    char ch = buffer.getChar(col, row);
+                    int style = buffer.getStyle(col, row);
+
+                    // Decode style information
+                    int foreColor = TextStyle.decodeForeColor(style);
+                    int backColor = TextStyle.decodeBackColor(style);
+                    int effect = TextStyle.decodeEffect(style);
+
+                    // Get actual RGB colors from palette
+                    int fgRgb = TextStyle.DEFAULT_COLORSCHEME[foreColor & 0xF];
+                    int bgRgb = TextStyle.DEFAULT_COLORSCHEME[backColor & 0xF];
+
+                    // Handle inverse video
+                    if (TextStyle.isInverse(effect)) {
+                        int temp = fgRgb;
+                        fgRgb = bgRgb;
+                        bgRgb = temp;
+                    }
+
+                    // Draw background if not default black
+                    if (bgRgb != Color.BLACK) {
+                        backgroundPaint.setColor(bgRgb);
+                        canvas.drawRect(x, y - charHeight + 5, x + charWidth, y + 2, backgroundPaint);
+                    }
+
+                    // Set text attributes
+                    textPaint.setColor(fgRgb);
+                    textPaint.setFakeBoldText(TextStyle.isBold(effect));
+                    textPaint.setUnderlineText(TextStyle.isUnderline(effect));
+
+                    // Draw character
+                    if (ch != ' ') {
+                        canvas.drawText(String.valueOf(ch), x, y, textPaint);
+                    }
+
+                    x += charWidth;
                 }
 
                 // Draw cursor if on this row
@@ -135,6 +175,11 @@ public class TerminalView extends View {
                 }
 
                 y += charHeight;
+
+                // Reset paint attributes for next row
+                textPaint.setFakeBoldText(false);
+                textPaint.setUnderlineText(false);
+                backgroundPaint.setColor(Color.BLACK);
             }
         } catch (Exception e) {
             // If rendering fails, show error

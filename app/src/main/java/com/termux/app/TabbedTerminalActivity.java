@@ -79,6 +79,14 @@ public class TabbedTerminalActivity extends AppCompatActivity {
         protected void onCreate(Bundle savedInstanceState) {
             // It would be better to save the state of the tabs, including the working directory and the command history, so that the user can resume their session.
             super.onCreate(savedInstanceState);
+
+            // Validate incoming intents for security
+            if (!validateIntent(getIntent())) {
+                Log.w(TAG, "Invalid or malicious intent detected, finishing activity");
+                finish();
+                return;
+            }
+
             binding = ActivityTabbedTerminalBinding.inflate(getLayoutInflater());
             setContentView(binding.getRoot());
     
@@ -752,7 +760,96 @@ public class TabbedTerminalActivity extends AppCompatActivity {
             return false;
         }
     }
-    
+
+    /**
+     * Validates incoming intents to prevent malicious intent injection.
+     *
+     * @param intent The intent to validate
+     * @return true if intent is valid or null, false if intent is malicious
+     */
+    private boolean validateIntent(Intent intent) {
+        if (intent == null) {
+            return true; // Null intent is fine (normal app launch)
+        }
+
+        // Get intent data
+        android.net.Uri data = intent.getData();
+        if (data == null) {
+            return true; // No data URI, allow (normal launch or component intent)
+        }
+
+        // Validate scheme
+        String scheme = data.getScheme();
+        if (scheme == null) {
+            Log.w(TAG, "Intent has null scheme");
+            return false;
+        }
+
+        // Only allow our custom scheme
+        if (!"termux-ai".equals(scheme)) {
+            Log.w(TAG, "Invalid intent scheme: " + scheme);
+            return false;
+        }
+
+        // Validate host if present
+        String host = data.getHost();
+        if (host != null) {
+            // Define allowed hosts for termux-ai:// URLs
+            // Example: termux-ai://open, termux-ai://new-tab
+            String[] allowedHosts = {"open", "new-tab", "run", "settings"};
+            boolean validHost = false;
+
+            for (String allowedHost : allowedHosts) {
+                if (allowedHost.equals(host)) {
+                    validHost = true;
+                    break;
+                }
+            }
+
+            if (!validHost) {
+                Log.w(TAG, "Invalid intent host: " + host);
+                return false;
+            }
+        }
+
+        // Additional validation: check for suspicious parameters
+        String path = data.getPath();
+        if (path != null) {
+            // Block path traversal attempts
+            if (path.contains("..") || path.contains("//")) {
+                Log.w(TAG, "Suspicious path in intent: " + path);
+                return false;
+            }
+        }
+
+        // Validate action
+        String action = intent.getAction();
+        if (action != null) {
+            // Only allow specific actions
+            String[] allowedActions = {
+                Intent.ACTION_MAIN,
+                Intent.ACTION_VIEW,
+                "android.intent.action.VIEW"
+            };
+
+            boolean validAction = false;
+            for (String allowedAction : allowedActions) {
+                if (allowedAction.equals(action)) {
+                    validAction = true;
+                    break;
+                }
+            }
+
+            if (!validAction) {
+                Log.w(TAG, "Suspicious intent action: " + action);
+                return false;
+            }
+        }
+
+        Log.d(TAG, "Intent validated successfully: " + data.toString());
+        return true;
+    }
+
     /**
      * Represents a terminal tab
      */

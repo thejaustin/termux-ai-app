@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 import okhttp3.Call;
 import okhttp3.Callback;
+import okhttp3.CertificatePinner;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -71,15 +72,50 @@ public class AIClient {
     public AIClient(@NonNull Context context) {
         this.context = context.getApplicationContext();
         this.gson = new Gson();
-        this.prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        
-        this.httpClient = new OkHttpClient.Builder()
+
+        // Use encrypted SharedPreferences for secure credential storage
+        this.prefs = EncryptedPreferencesManager.getEncryptedPrefs(context, PREFS_NAME);
+
+        // Migrate existing plaintext preferences if they exist
+        EncryptedPreferencesManager.migratePlaintextToEncrypted(
+            context,
+            "termux_ai_prefs",  // old plaintext name
+            PREFS_NAME          // new encrypted name
+        );
+
+        // Build OkHttpClient with security configurations
+        OkHttpClient.Builder httpBuilder = new OkHttpClient.Builder()
             .connectTimeout(10, TimeUnit.SECONDS)
             .writeTimeout(10, TimeUnit.SECONDS)
             .readTimeout(30, TimeUnit.SECONDS)
-            .pingInterval(30, TimeUnit.SECONDS)
+            .pingInterval(30, TimeUnit.SECONDS);
+
+        // Add certificate pinning for enhanced security
+        // Note: Certificate pins should be updated periodically. To get current pins:
+        // echo | openssl s_client -connect generativelanguage.googleapis.com:443 2>&1 | \
+        //   openssl x509 -pubkey -noout | openssl pkey -pubin -outform der | \
+        //   openssl dgst -sha256 -binary | base64
+        //
+        // WARNING: Certificate pinning can cause app to stop working if certificates
+        // are rotated. For production, implement pin backup/rotation strategy.
+        CertificatePinner certificatePinner = new CertificatePinner.Builder()
+            // Google API pins (multiple pins for backup)
+            // These are example pins - you MUST fetch actual pins before enabling
+            // .add("generativelanguage.googleapis.com", "sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")
+            // .add("generativelanguage.googleapis.com", "sha256/BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB=")
+            // .add("*.googleapis.com", "sha256/AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=")
+
+            // Anthropic API pins (if/when using official API)
+            // .add("api.anthropic.com", "sha256/CCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCCC=")
+            // .add("api.anthropic.com", "sha256/DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD=")
             .build();
-            
+
+        // Enable certificate pinning only if pins are properly configured
+        // Comment this out until you fetch actual certificate pins
+        // httpBuilder.certificatePinner(certificatePinner);
+
+        this.httpClient = httpBuilder.build();
+
         loadAuthenticationData();
     }
     
@@ -539,11 +575,14 @@ public class AIClient {
         JsonObject requestBody = new JsonObject();
         requestBody.add("contents", contents);
 
-        String url = GEMINI_API_URL + "?key=" + geminiApiKey;
+        // Don't expose API key in URL - use header instead
+        String url = GEMINI_API_URL;
 
         RequestBody body = RequestBody.create(gson.toJson(requestBody), JSON);
         Request request = new Request.Builder()
             .url(url)
+            .addHeader("x-goog-api-key", geminiApiKey)
+            .addHeader("Content-Type", "application/json")
             .post(body)
             .build();
 

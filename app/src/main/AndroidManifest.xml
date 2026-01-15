@@ -4,20 +4,24 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <!-- External storage permissions for Android 9 and below -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+                     android:maxSdkVersion="29" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
+                     android:maxSdkVersion="29" />
+
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.VIBRATE" />
-        <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-        
-        <!-- For Claude Code CLI integration -->
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.CAMERA" />
-    
-    <!-- For enhanced terminal features -->
-    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
-    <!-- For shake detection -->
-    <uses-permission android:name="android.permission.BODY_SENSORS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+
+    <!-- Removed unused dangerous permissions:
+         - RECORD_AUDIO (not implemented)
+         - CAMERA (not implemented)
+         - SYSTEM_ALERT_WINDOW (not needed)
+         - BODY_SENSORS (not required for accelerometer/shake detection)
+    -->
 
     <application
         android:name="com.termux.ai.TermuxAIApplication"
@@ -92,18 +96,7 @@
             android:label="@string/file_picker_title"
             android:theme="@style/Theme.TermuxAI" />
 
-        <!-- Terminal Service for background operations -->
-        <service
-            android:name="com.termux.terminal.TermuxAIService"
-            android:enabled="true"
-            android:exported="false"
-            android:foregroundServiceType="dataSync" />
-
-        <!-- Claude Code Integration Service -->
-        <service
-            android:name="com.termux.ai.ClaudeCodeService"
-            android:enabled="true"
-            android:exported="false" />
+        <!-- Services removed - were empty implementations with no functionality -->
 
         <!-- File Provider for sharing files -->
         <provider

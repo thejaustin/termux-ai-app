@@ -8,43 +8,32 @@ import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * Claude Code Integration for Termux AI
- * 
+ *
  * Handles:
  * - Detection of Claude Code CLI activation
  * - Parsing of Claude output for progress and file operations
  * - Visual enhancements during Claude operations
  * - Mobile-optimized Claude workflows
+ *
+ * Note: Uses centralized ClaudePatterns for all regex pattern matching.
  */
 public class ClaudeCodeIntegration {
     // Using regular expressions to parse the output of the Claude Code CLI is a bit fragile and could break if the output format of the CLI changes.
     // A more robust solution would be to have the CLI produce a structured output format, such as JSON.
     private static final String TAG = "ClaudeCodeIntegration";
-    
-    // Claude Code detection patterns
-    private static final Pattern CLAUDE_START_PATTERN = 
-        Pattern.compile("(?i)(claude\\s+code|claude-code|@anthropic/claude-code)");
-    
-    private static final Pattern CLAUDE_THINKING_PATTERN = 
+
+    // Additional patterns not in ClaudePatterns (specific to this integration)
+    private static final Pattern CLAUDE_THINKING_PATTERN =
         Pattern.compile("🤔\\s*(Claude is thinking|Thinking|Processing)");
-        
-    private static final Pattern CLAUDE_PROGRESS_PATTERN = 
-        Pattern.compile("\\[([▓=]+)([░\\-]*)\\]\\s*(\\d+)%");
-        
-    private static final Pattern CLAUDE_FILE_PATTERN = 
-        Pattern.compile("(?:├─|\\s*)(\\S+\\.\\w+)\\s*(?:✨|🆕|📝)\\s*(NEW|MODIFIED|CREATED|UPDATED)");
-        
-    private static final Pattern CLAUDE_ERROR_PATTERN = 
-        Pattern.compile("❌\\s+(?:Error|Failed|Exception):\\s*(.+)");
-        
-    private static final Pattern CLAUDE_SUCCESS_PATTERN = 
+
+    private static final Pattern CLAUDE_SUCCESS_PATTERN =
         Pattern.compile("✅\\s+(?:Success|Complete|Done|Finished)");
-        
-    private static final Pattern CLAUDE_TOKEN_PATTERN = 
+
+    private static final Pattern CLAUDE_TOKEN_PATTERN_DETAILED =
         Pattern.compile("Token[s]?:\\s*(\\d+)/(\\d+)\\s*(?:K|k)?");
     
     // Listeners
@@ -150,43 +139,39 @@ public class ClaudeCodeIntegration {
             }
         }    
     private boolean detectClaudeStart(String line, int tabIndex) {
-        Matcher matcher = CLAUDE_START_PATTERN.matcher(line);
-        if (matcher.find()) {
+        // Use centralized pattern from ClaudePatterns
+        if (ClaudePatterns.isClaudeStart(line)) {
             Log.d(TAG, "Claude Code detected in tab " + tabIndex);
-            
+
             ClaudeSession session = new ClaudeSession(tabIndex);
             activeSessions.removeIf(s -> s.tabIndex == tabIndex); // Remove existing
             activeSessions.add(session);
-            
+
             if (globalListener != null) {
                 globalListener.onClaudeDetected(tabIndex);
             }
-            
+
             return true;
         }
         return false;
     }
     
     private boolean detectProgress(String line, ClaudeSession session) {
-        Matcher matcher = CLAUDE_PROGRESS_PATTERN.matcher(line);
-        if (matcher.find()) {
-            try {
-                String progressStr = matcher.group(3);
-                float progress = Float.parseFloat(progressStr) / 100.0f;
-                
-                session.progress = progress;
-                
-                if (listener != null) {
-                    listener.onProgressUpdated(progress);
-                }
-                
-                Log.d(TAG, "Progress updated: " + (int)(progress * 100) + "%");
-                return true;
-            } catch (NumberFormatException e) {
-                Log.w(TAG, "Failed to parse progress: " + line);
+        // Use centralized pattern from ClaudePatterns
+        int progressPercent = ClaudePatterns.extractProgress(line);
+        if (progressPercent >= 0) {
+            float progress = progressPercent / 100.0f;
+
+            session.progress = progress;
+
+            if (listener != null) {
+                listener.onProgressUpdated(progress);
             }
+
+            Log.d(TAG, "Progress updated: " + progressPercent + "%");
+            return true;
         }
-        
+
         // Also detect thinking indicators
         if (CLAUDE_THINKING_PATTERN.matcher(line).find()) {
             if (listener != null) {
@@ -194,22 +179,23 @@ public class ClaudeCodeIntegration {
             }
             return true;
         }
-        
+
         return false;
     }
     
     private boolean detectFileOperation(String line, ClaudeSession session) {
-        Matcher matcher = CLAUDE_FILE_PATTERN.matcher(line);
-        if (matcher.find()) {
-            String filePath = matcher.group(1);
-            String action = matcher.group(3);
-            
+        // Use centralized pattern from ClaudePatterns
+        ClaudePatterns.FileOperation fileOp = ClaudePatterns.extractFileOperation(line);
+        if (fileOp != null) {
+            String filePath = fileOp.getFileName();
+            String action = fileOp.getOperation();
+
             session.generatedFiles.add(filePath);
-            
+
             if (listener != null) {
                 listener.onFileGenerated(filePath, action);
             }
-            
+
             Log.d(TAG, "File operation detected: " + filePath + " " + action);
             return true;
         }
@@ -217,10 +203,9 @@ public class ClaudeCodeIntegration {
     }
     
     private boolean detectError(String line, ClaudeSession session) {
-        Matcher matcher = CLAUDE_ERROR_PATTERN.matcher(line);
-        if (matcher.find()) {
-            String error = matcher.group(1);
-
+        // Use centralized pattern from ClaudePatterns
+        String error = ClaudePatterns.extractError(line);
+        if (error != null) {
             if (listener != null) {
                 listener.onErrorDetected(error);
             }
