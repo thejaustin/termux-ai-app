@@ -8,6 +8,7 @@ import androidx.annotation.NonNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
@@ -225,7 +226,7 @@ public class ClaudeCodeIntegration {
     }
     
     private boolean detectTokenUsage(String line, ClaudeSession session) {
-        Matcher matcher = CLAUDE_TOKEN_PATTERN.matcher(line);
+        Matcher matcher = ClaudePatterns.CLAUDE_TOKEN_PATTERN.matcher(line);
         if (matcher.find()) {
             try {
                 int used = Integer.parseInt(matcher.group(1));
