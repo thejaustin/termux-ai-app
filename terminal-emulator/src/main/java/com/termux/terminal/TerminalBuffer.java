@@ -184,6 +184,13 @@ public class TerminalBuffer {
     }
 
     /**
+     * Get the number of rows (alias for getScreenRows for API consistency).
+     */
+    public int getRows() {
+        return mScreenRows;
+    }
+
+    /**
      * Get the number of scrollback rows currently in use.
      */
     public int getScrollbackRows() {
