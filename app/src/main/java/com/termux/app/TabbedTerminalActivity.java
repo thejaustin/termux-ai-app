@@ -14,6 +14,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.Fragment;
@@ -125,6 +126,11 @@ public class TabbedTerminalActivity extends AppCompatActivity {
             // and we want it to be initially hidden without a "slide out" effect on app start.
     
             loadTabs();
+
+            // Show onboarding on first launch
+            if (OnboardingOverlay.shouldShowOnboarding(this)) {
+                showOnboarding();
+            }
         }    
         @Override
         protected void onPause() {
@@ -173,15 +179,9 @@ public class TabbedTerminalActivity extends AppCompatActivity {
                 MobileGesturesHelper.setupTouchTarget(customTabView, 48);
                 MobileGesturesHelper.setupTouchTarget(closeBtn, 48);
 
-                // Show close button on long press
+                // Show context menu on long press
                 customTabView.setOnLongClickListener(v -> {
-                    closeBtn.setVisibility(View.VISIBLE);
-                    // Auto-hide after 3 seconds
-                    customTabView.postDelayed(() -> {
-                        if (closeBtn.getVisibility() == View.VISIBLE) {
-                            closeBtn.setVisibility(View.GONE);
-                        }
-                    }, 3000);
+                    showTabContextMenu(position);
                     return true;
                 });
 
@@ -473,8 +473,7 @@ public class TabbedTerminalActivity extends AppCompatActivity {
 
         // Set up bottom panel button listeners
         binding.btnFilePicker.setOnClickListener(v -> {
-            // Show file picker for Claude context
-            Toast.makeText(this, "File picker - coming soon!", Toast.LENGTH_SHORT).show();
+            showFilePicker();
         });
 
         binding.btnVoiceInput.setOnClickListener(v -> {
@@ -483,8 +482,8 @@ public class TabbedTerminalActivity extends AppCompatActivity {
         });
 
         binding.btnQuickCommands.setOnClickListener(v -> {
-            // Show quick command templates
-            Toast.makeText(this, "Quick commands - coming soon!", Toast.LENGTH_SHORT).show();
+            // Show quick command templates dialog
+            showQuickCommandsMenu();
         });
 
         binding.btnProjectInfo.setOnClickListener(v -> {
@@ -513,6 +512,48 @@ public class TabbedTerminalActivity extends AppCompatActivity {
 
         // In a real implementation, this would use Android's SpeechRecognizer
         // to capture voice input and send it to Claude
+    }
+
+    /**
+     * Show file picker dialog for selecting files to add as Claude context
+     */
+    private void showFilePicker() {
+        TerminalTab currentTab = getCurrentTab();
+        String startDir = currentTab != null ? currentTab.getWorkingDirectory() : getDefaultDirectory();
+
+        FilePickerDialog dialog = FilePickerDialog.newInstance(startDir);
+        dialog.setCallback(files -> {
+            if (files.isEmpty()) return;
+
+            // Build @-tag command for selected files
+            StringBuilder command = new StringBuilder();
+            command.append("# Selected files for Claude context:\n");
+
+            for (java.io.File file : files) {
+                command.append("# @").append(file.getName()).append("\n");
+            }
+
+            // Send to terminal as a comment showing selected files
+            TerminalFragment currentFragment = getCurrentTerminalFragment();
+            if (currentFragment != null) {
+                // Build file list string
+                StringBuilder fileListBuilder = new StringBuilder();
+                StringBuilder echoCmdBuilder = new StringBuilder();
+                echoCmdBuilder.append("echo 'Selected ").append(files.size()).append(" file(s) for context:'");
+
+                for (int i = 0; i < files.size(); i++) {
+                    java.io.File f = files.get(i);
+                    if (i > 0) fileListBuilder.append(", ");
+                    fileListBuilder.append(f.getName());
+                    echoCmdBuilder.append(" && echo '  - ").append(f.getName()).append("'");
+                }
+
+                Toast.makeText(this, "Selected: " + fileListBuilder.toString(), Toast.LENGTH_LONG).show();
+                currentFragment.sendCommand(echoCmdBuilder.toString());
+            }
+        });
+
+        dialog.show(getSupportFragmentManager(), "file_picker");
     }
 
     private void toggleQuickSettingsPanel() {
@@ -611,7 +652,40 @@ public class TabbedTerminalActivity extends AppCompatActivity {
     private void showClaudeQuickActions(TerminalTab tab) {
         ClaudeQuickActionsDialog dialog = new ClaudeQuickActionsDialog();
         dialog.setTab(tab);
+
+        // Set up callback to handle quick actions
+        dialog.setCallback(new ClaudeQuickActionsDialog.QuickActionCallback() {
+            @Override
+            public void onSendCommand(String command) {
+                TerminalFragment currentFragment = getCurrentTerminalFragment();
+                if (currentFragment != null) {
+                    currentFragment.sendCommand(command);
+                }
+            }
+
+            @Override
+            public void onStopClaude() {
+                TerminalFragment currentFragment = getCurrentTerminalFragment();
+                if (currentFragment != null) {
+                    currentFragment.sendInterrupt();
+                }
+            }
+
+            @Override
+            public void onVoiceInputRequested() {
+                showVoiceInputDialog();
+            }
+        });
+
         dialog.show(getSupportFragmentManager(), "claude_actions");
+    }
+
+    /**
+     * Get the currently active TerminalFragment
+     */
+    private TerminalFragment getCurrentTerminalFragment() {
+        return (TerminalFragment) getSupportFragmentManager()
+            .findFragmentByTag("f" + viewPager.getCurrentItem());
     }
 
     private void showProjectInsights(TerminalTab tab) {
@@ -672,6 +746,193 @@ public class TabbedTerminalActivity extends AppCompatActivity {
     private void showClaudeHelp() {
         ClaudeHelpDialog dialog = new ClaudeHelpDialog();
         dialog.show(getSupportFragmentManager(), "claude_help");
+    }
+
+    /**
+     * Show onboarding overlay for new users or when requested from settings
+     */
+    private void showOnboarding() {
+        OnboardingOverlay onboarding = new OnboardingOverlay();
+        onboarding.setCallback(() -> {
+            // Onboarding complete callback
+            Toast.makeText(this, "Welcome to Termux AI!", Toast.LENGTH_SHORT).show();
+        });
+        onboarding.show(getSupportFragmentManager(), "onboarding");
+    }
+
+    /**
+     * Public method to trigger onboarding from settings
+     */
+    public void showOnboardingTutorial() {
+        OnboardingOverlay.resetOnboarding(this);
+        showOnboarding();
+    }
+
+    /**
+     * Show context menu for a tab
+     */
+    private void showTabContextMenu(int position) {
+        if (position < 0 || position >= terminalTabs.size()) return;
+
+        TerminalTab tab = terminalTabs.get(position);
+        TabContextMenuDialog dialog = TabContextMenuDialog.newInstance(
+            position, tab.getName(), terminalTabs.size());
+
+        dialog.setCallback(new TabContextMenuDialog.TabContextMenuCallback() {
+            @Override
+            public void onRenameTab(int pos, String newName) {
+                renameTab(pos, newName);
+            }
+
+            @Override
+            public void onDuplicateTab(int pos) {
+                duplicateTab(pos);
+            }
+
+            @Override
+            public void onCloseTab(int pos) {
+                closeTab(pos);
+            }
+
+            @Override
+            public void onCloseOtherTabs(int pos) {
+                closeOtherTabs(pos);
+            }
+
+            @Override
+            public void onCloseTabsToRight(int pos) {
+                closeTabsToRight(pos);
+            }
+        });
+
+        dialog.show(getSupportFragmentManager(), "tab_context_menu");
+    }
+
+    /**
+     * Rename a tab
+     */
+    private void renameTab(int position, String newName) {
+        if (position >= 0 && position < terminalTabs.size()) {
+            TerminalTab tab = terminalTabs.get(position);
+            tab.setName(newName);
+
+            // Update the tab view
+            TabLayout.Tab layoutTab = tabLayout.getTabAt(position);
+            if (layoutTab != null && layoutTab.getCustomView() != null) {
+                TextView tabTitle = layoutTab.getCustomView().findViewById(R.id.tab_title);
+                if (tabTitle != null) {
+                    tabTitle.setText(tab.getDisplayName());
+                }
+            }
+
+            Toast.makeText(this, "Tab renamed to: " + newName, Toast.LENGTH_SHORT).show();
+            saveTabs();
+        }
+    }
+
+    /**
+     * Duplicate a tab
+     */
+    private void duplicateTab(int position) {
+        if (terminalTabs.size() >= MAX_TABS) {
+            Toast.makeText(this, "Maximum " + MAX_TABS + " tabs allowed", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (position >= 0 && position < terminalTabs.size()) {
+            TerminalTab originalTab = terminalTabs.get(position);
+            String newName = originalTab.getName() + " (copy)";
+            createNewTab(newName, originalTab.getWorkingDirectory());
+            Toast.makeText(this, "Tab duplicated", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Close all tabs except the one at the given position
+     */
+    private void closeOtherTabs(int keepPosition) {
+        if (keepPosition < 0 || keepPosition >= terminalTabs.size()) return;
+
+        // Store the tab we want to keep
+        TerminalTab tabToKeep = terminalTabs.get(keepPosition);
+
+        // Remove all tabs except the one to keep
+        terminalTabs.clear();
+        terminalTabs.add(tabToKeep);
+
+        // Refresh adapter
+        tabAdapter.notifyDataSetChanged();
+        viewPager.setCurrentItem(0);
+
+        Toast.makeText(this, "Closed other tabs", Toast.LENGTH_SHORT).show();
+        saveTabs();
+    }
+
+    /**
+     * Close all tabs to the right of the given position
+     */
+    private void closeTabsToRight(int position) {
+        if (position < 0 || position >= terminalTabs.size() - 1) return;
+
+        int tabsToRemove = terminalTabs.size() - position - 1;
+
+        // Remove tabs from the end to the right of position
+        for (int i = 0; i < tabsToRemove; i++) {
+            terminalTabs.remove(terminalTabs.size() - 1);
+        }
+
+        // Refresh adapter
+        tabAdapter.notifyDataSetChanged();
+
+        // Ensure current position is valid
+        if (viewPager.getCurrentItem() >= terminalTabs.size()) {
+            viewPager.setCurrentItem(terminalTabs.size() - 1);
+        }
+
+        Toast.makeText(this, "Closed " + tabsToRemove + " tab(s)", Toast.LENGTH_SHORT).show();
+        saveTabs();
+    }
+
+    /**
+     * Show a popup menu with quick command templates
+     */
+    private void showQuickCommandsMenu() {
+        String[] commands = {
+            "git status",
+            "git diff",
+            "git log --oneline -10",
+            "ls -la",
+            "pwd",
+            "clear",
+            "history",
+            "npm run build",
+            "python -m pytest",
+            "./gradlew build"
+        };
+
+        String[] labels = {
+            "📊 Git Status",
+            "📝 Git Diff",
+            "📜 Git Log (last 10)",
+            "📁 List Files",
+            "📍 Current Directory",
+            "🧹 Clear Screen",
+            "📋 Command History",
+            "🔨 NPM Build",
+            "🧪 Python Tests",
+            "🏗️ Gradle Build"
+        };
+
+        new AlertDialog.Builder(this)
+            .setTitle("Quick Commands")
+            .setItems(labels, (dialog, which) -> {
+                TerminalFragment fragment = getCurrentTerminalFragment();
+                if (fragment != null) {
+                    fragment.sendCommand(commands[which]);
+                }
+            })
+            .setNegativeButton("Cancel", null)
+            .show();
     }
 
     private void saveTabs() {

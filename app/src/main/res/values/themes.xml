@@ -146,4 +146,19 @@
         <item name="android:padding">16dp</item>
         <item name="android:alpha">0.8</item>
     </style>
+
+    <!-- Full screen dialog for onboarding -->
+    <style name="FullScreenDialog" parent="Theme.Material3.DynamicColors.Light">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowBackground">@color/terminal_background</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowAnimationStyle">@style/OnboardingDialogAnimation</item>
+    </style>
+
+    <!-- Onboarding dialog animation -->
+    <style name="OnboardingDialogAnimation">
+        <item name="android:windowEnterAnimation">@android:anim/fade_in</item>
+        <item name="android:windowExitAnimation">@android:anim/fade_out</item>
+    </style>
 </resources>
