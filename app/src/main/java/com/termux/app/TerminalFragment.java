@@ -275,6 +275,36 @@ public class TerminalFragment extends Fragment implements TerminalSessionClient 
         }
     }
 
+    /**
+     * Send a command to the terminal
+     * @param command The command to execute (without trailing newline)
+     */
+    public void sendCommand(String command) {
+        if (terminalSession != null && command != null) {
+            terminalSession.write(command + "\r");
+        }
+    }
+
+    /**
+     * Send raw bytes to the terminal (for control characters like Ctrl+C)
+     * @param bytes The bytes to send
+     */
+    public void sendBytes(byte[] bytes) {
+        if (terminalSession != null && bytes != null) {
+            terminalSession.write(new String(bytes));
+        }
+    }
+
+    /**
+     * Send interrupt signal (Ctrl+C) to the terminal
+     */
+    public void sendInterrupt() {
+        if (terminalSession != null) {
+            // Ctrl+C is ASCII 3 (ETX - End of Text)
+            terminalSession.write("\u0003");
+        }
+    }
+
     @Override
     public void onDestroy() {
         super.onDestroy();

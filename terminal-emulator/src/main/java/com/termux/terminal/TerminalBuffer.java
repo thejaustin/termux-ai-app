@@ -242,23 +242,83 @@ public class TerminalBuffer {
     }
 
     /**
-     * Resize the terminal buffer.
+     * Resize the terminal buffer, preserving content where possible.
+     *
+     * This creates a new buffer with the new dimensions and copies content
+     * from the old buffer. When columns change, content is either truncated
+     * (if shrinking) or padded with spaces (if growing). When rows change,
+     * content is preserved and scrollback is adjusted accordingly.
      *
      * @param newColumns New number of columns
      * @param newRows New number of screen rows
+     * @return A new TerminalBuffer with the resized dimensions and copied content
      */
-    public void resize(int newColumns, int newRows) {
-        // Note: This is a simplified implementation
-        // A full implementation would preserve content during resize
-        // For now, we'll just note this needs to be implemented
-        // when TerminalEmulator handles resize events
+    public TerminalBuffer resize(int newColumns, int newRows) {
+        if (newColumns == mColumns && newRows == mScreenRows) {
+            return this; // No change needed
+        }
 
-        // TODO: Implement proper resize with content preservation
-        // This would involve:
-        // 1. Creating new buffer with new dimensions
-        // 2. Copying and rewrapping content from old buffer
-        // 3. Handling cases where newColumns < oldColumns (rewrap)
-        // 4. Handling cases where newColumns > oldColumns (unwrap)
+        // Calculate new scrollback to maintain similar ratio
+        int currentScrollback = mTotalRows - mScreenRows;
+        int newScrollback = currentScrollback; // Keep same scrollback capacity
+
+        // Create new buffer
+        TerminalBuffer newBuffer = new TerminalBuffer(newColumns, newRows, newScrollback);
+
+        // Copy content from old buffer to new buffer
+        // Start from the oldest line in scrollback and work forward
+        int oldScrollbackRows = getScrollbackRows();
+        int copyRows = Math.min(mActiveRows, newBuffer.mTotalRows);
+
+        for (int i = 0; i < copyRows; i++) {
+            // Calculate source row (starting from scrollback if present)
+            int srcRowOffset = i - oldScrollbackRows;
+            TerminalRow srcRow = getRowShifted(srcRowOffset);
+
+            // Calculate destination row in new buffer
+            int dstRow = i;
+            if (dstRow < newBuffer.mTotalRows) {
+                TerminalRow dstRowObj = newBuffer.mLines[dstRow];
+
+                // Copy character by character up to the minimum of old and new columns
+                int colsToCopy = Math.min(mColumns, newColumns);
+                for (int col = 0; col < colsToCopy; col++) {
+                    dstRowObj.setChar(col, srcRow.getChar(col), srcRow.getStyle(col));
+                }
+
+                // Preserve line wrap flag
+                dstRowObj.setLineWrap(srcRow.isLineWrap());
+            }
+        }
+
+        // Update active rows in new buffer
+        newBuffer.mActiveRows = Math.min(copyRows, newRows);
+        if (oldScrollbackRows > 0) {
+            // If we had scrollback, include it in active rows
+            newBuffer.mActiveRows = Math.min(copyRows, newBuffer.mTotalRows);
+        }
+
+        return newBuffer;
+    }
+
+    /**
+     * Copy content from another row into this buffer at specified position.
+     * Used internally during resize operations.
+     *
+     * @param targetRow The row index in this buffer to copy to
+     * @param sourceRow The source TerminalRow to copy from
+     * @param columns Number of columns to copy
+     */
+    private void copyRowContent(int targetRow, TerminalRow sourceRow, int columns) {
+        if (targetRow < 0 || targetRow >= mTotalRows) return;
+
+        TerminalRow destRow = mLines[targetRow];
+        int colsToCopy = Math.min(columns, Math.min(sourceRow.getColumns(), destRow.getColumns()));
+
+        for (int col = 0; col < colsToCopy; col++) {
+            destRow.setChar(col, sourceRow.getChar(col), sourceRow.getStyle(col));
+        }
+        destRow.setLineWrap(sourceRow.isLineWrap());
     }
 
     /**
