@@ -163,7 +163,7 @@ This document verifies the complete implementation of real terminal emulation fo
 
 **Verification:**
 ✅ Proper initialization of buffer and parser
-✅ Resize creates new buffer (note: content preservation TODO)
+✅ Resize creates new buffer with content preservation (resize() implemented)
 ✅ Cursor position queries delegated to parser
 ✅ Screen access through buffer
 
@@ -325,8 +325,7 @@ Since the app cannot be built in Termux environment (requires Android SDK), the 
 
 ## Known Limitations
 
-1. **Resize Content Preservation**: TerminalBuffer.resize() is a TODO - content is not preserved/rewrapped on resize
-2. **OSC Sequences**: Operating System Commands (OSC) are parsed but ignored (window title, etc.)
+1. **OSC Sequences**: Operating System Commands (OSC) are parsed but ignored (window title, etc.)
 3. **Advanced VT Sequences**: Some advanced xterm/VT sequences not implemented (only common ones)
 4. **Scrolling Region**: DECSTBM (set scrolling region) is parsed but not implemented
 5. **Character Sets**: G0/G1 character set switching not implemented

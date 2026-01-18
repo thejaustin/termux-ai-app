@@ -106,10 +106,9 @@ The README.md should be updated to reflect:
 5. **Build requirements** - Mention NDK requirement
 
 ### ⚠️ Known Issues (Not Blockers)
-1. Terminal resize doesn't preserve content (TODO in TerminalBuffer)
-2. OSC sequences parsed but not processed
-3. Some advanced VT sequences not implemented
-4. Build only works in Android Studio/GitHub Actions (not Termux)
+1. OSC sequences parsed but not processed
+2. Some advanced VT sequences not implemented
+3. Build only works in Android Studio/GitHub Actions (not Termux)
 
 ### 🔍 Things to Check After Push
 1. GitHub Actions build succeeds
