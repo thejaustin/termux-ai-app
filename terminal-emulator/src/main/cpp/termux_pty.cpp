@@ -236,6 +236,15 @@ Java_com_termux_terminal_JNI_readFromPty(
 
     env->ReleaseByteArrayElements(buffer, bufPtr, 0);
 
+    // For non-blocking FD: return 0 for EAGAIN/EWOULDBLOCK (no data yet)
+    // Return -1 only for real errors (EOF or other failures)
+    if (bytesRead < 0) {
+        if (errno == EAGAIN || errno == EWOULDBLOCK) {
+            return 0;  // No data available yet, not an error
+        }
+        return -1;  // Real error
+    }
+
     return static_cast<jint>(bytesRead);
 }
 
