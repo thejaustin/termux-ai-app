@@ -122,7 +122,6 @@ public class TerminalView extends View {
             int cursorCol = emulator.getCursorCol();
 
             float y = charHeight;
-            char[] charBuffer = new char[1];
 
             // Render each row
             for (int row = 0; row < rows; row++) {
@@ -160,10 +159,9 @@ public class TerminalView extends View {
                     textPaint.setFakeBoldText(TextStyle.isBold(effect));
                     textPaint.setUnderlineText(TextStyle.isUnderline(effect));
 
-                    // Draw character using char array to avoid String creation
+                    // Draw character
                     if (ch != ' ') {
-                        charBuffer[0] = ch;
-                        canvas.drawText(charBuffer, 0, 1, x, y, textPaint);
+                        canvas.drawText(String.valueOf(ch), x, y, textPaint);
                     }
 
                     x += charWidth;

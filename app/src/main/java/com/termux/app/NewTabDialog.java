@@ -15,6 +15,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
 
 import com.termux.ai.R;
+import com.termux.app.FilePickerDialog;
 
 /**
  * Dialog for creating new terminal tabs
