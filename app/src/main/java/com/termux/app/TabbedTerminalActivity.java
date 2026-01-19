@@ -878,7 +878,7 @@ public class TabbedTerminalActivity extends AppCompatActivity {
         if (position >= 0 && position < terminalTabs.size()) {
             TerminalTab originalTab = terminalTabs.get(position);
             String newName = originalTab.getName() + " (copy)";
-            createNewTab(newName, originalTab.getWorkingDirectory());
+            createNewTab(newName, originalTab.getWorkingDirectory(), originalTab.getProjectType());
             Toast.makeText(this, "Tab duplicated", Toast.LENGTH_SHORT).show();
         }
     }
