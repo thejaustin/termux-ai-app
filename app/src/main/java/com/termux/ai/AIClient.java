@@ -205,6 +205,11 @@ public class AIClient {
     public void analyzeCommand(String command, String context, AnalysisCallback callback) {
         loadAuthenticationData(); // Reload prefs in case settings changed
         
+        // Filter sensitive information if enabled
+        boolean shouldFilter = prefs.getBoolean("command_filtering_enabled", true);
+        String filteredCommand = shouldFilter ? PrivacyGuard.filterCommand(command) : command;
+        String filteredContext = shouldFilter ? PrivacyGuard.filter(context) : context;
+
         if (!isAuthenticated()) {
             mainHandler.post(() -> {
                 if (listener != null) {
@@ -215,9 +220,9 @@ public class AIClient {
         }
         
         if ("gemini".equals(currentProvider)) {
-            analyzeCommandGemini(command, context, callback);
+            analyzeCommandGemini(filteredCommand, filteredContext, callback);
         } else {
-            analyzeCommandClaude(command, context, callback);
+            analyzeCommandClaude(filteredCommand, filteredContext, callback);
         }
     }
 
@@ -287,6 +292,12 @@ public class AIClient {
     public void analyzeError(String command, String errorOutput, String context, ErrorCallback callback) {
         loadAuthenticationData();
         
+        // Filter sensitive information if enabled
+        boolean shouldFilter = prefs.getBoolean("command_filtering_enabled", true);
+        String filteredCommand = shouldFilter ? PrivacyGuard.filterCommand(command) : command;
+        String filteredError = shouldFilter ? PrivacyGuard.filter(errorOutput) : errorOutput;
+        String filteredContext = shouldFilter ? PrivacyGuard.filter(context) : context;
+
         if (!isAuthenticated()) {
             mainHandler.post(() -> {
                 if (listener != null) {
@@ -297,9 +308,9 @@ public class AIClient {
         }
         
         if ("gemini".equals(currentProvider)) {
-            analyzeErrorGemini(command, errorOutput, context, callback);
+            analyzeErrorGemini(filteredCommand, filteredError, filteredContext, callback);
         } else {
-            analyzeErrorClaude(command, errorOutput, context, callback);
+            analyzeErrorClaude(filteredCommand, filteredError, filteredContext, callback);
         }
     }
 
@@ -366,6 +377,11 @@ public class AIClient {
     public void generateCode(String description, String language, String context, CodeCallback callback) {
         loadAuthenticationData();
 
+        // Filter sensitive information if enabled
+        boolean shouldFilter = prefs.getBoolean("command_filtering_enabled", true);
+        String filteredDescription = shouldFilter ? PrivacyGuard.filter(description) : description;
+        String filteredContext = shouldFilter ? PrivacyGuard.filter(context) : context;
+
         if (!isAuthenticated()) {
             mainHandler.post(() -> {
                 if (listener != null) {
@@ -376,9 +392,9 @@ public class AIClient {
         }
 
         if ("gemini".equals(currentProvider)) {
-            generateCodeGemini(description, language, context, callback);
+            generateCodeGemini(filteredDescription, language, filteredContext, callback);
         } else {
-            generateCodeClaude(description, language, context, callback);
+            generateCodeClaude(filteredDescription, language, filteredContext, callback);
         }
     }
 
@@ -549,11 +565,19 @@ public class AIClient {
 
         if (webSocket == null) return;
         
+        // Filter sensitive information if enabled
+        boolean shouldFilter = prefs.getBoolean("command_filtering_enabled", true);
+        String filteredCommand = shouldFilter ? PrivacyGuard.filterCommand(currentCommand) : currentCommand;
+        String[] filteredRecent = new String[recentCommands.length];
+        for (int i = 0; i < recentCommands.length; i++) {
+            filteredRecent[i] = shouldFilter ? PrivacyGuard.filterCommand(recentCommands[i]) : recentCommands[i];
+        }
+
         JsonObject contextUpdate = new JsonObject();
         contextUpdate.addProperty("type", "context_update");
         contextUpdate.addProperty("working_directory", workingDirectory);
-        contextUpdate.addProperty("current_command", currentCommand);
-        contextUpdate.add("recent_commands", gson.toJsonTree(recentCommands));
+        contextUpdate.addProperty("current_command", filteredCommand);
+        contextUpdate.add("recent_commands", gson.toJsonTree(filteredRecent));
         
         webSocket.send(gson.toJson(contextUpdate));
     }

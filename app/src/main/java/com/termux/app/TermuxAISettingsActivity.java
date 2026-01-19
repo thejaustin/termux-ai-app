@@ -106,6 +106,7 @@ public class TermuxAISettingsActivity extends AppCompatActivity {
         autoSuggestionsSwitch = findViewById(R.id.auto_suggestions_switch);
         commandFilteringSwitch = findViewById(R.id.command_filtering_switch);
         localProcessingSwitch = findViewById(R.id.local_processing_switch);
+        Button btnClearData = findViewById(R.id.btn_clear_ai_data);
 
         saveButton = findViewById(R.id.save_button);
 
@@ -115,6 +116,15 @@ public class TermuxAISettingsActivity extends AppCompatActivity {
         updateDynamicColorsStatus();
 
         saveButton.setOnClickListener(v -> saveSettings());
+
+        btnClearData.setOnClickListener(v -> {
+            ErrorDialogHelper.showConfirmation(this, 
+                "Clear All AI Data?", 
+                "This will permanently delete all stored API keys, session tokens, and locally cached AI interactions.",
+                () -> {
+                    clearAllAIData();
+                });
+        });
 
         providerGroup.setOnCheckedChangeListener((group, checkedId) -> {
             updateApiKeyHint(checkedId);
@@ -157,6 +167,25 @@ public class TermuxAISettingsActivity extends AppCompatActivity {
             apiKeyInput.setEnabled(true);
             isAuthorized = true;
         }
+    }
+
+    private void clearAllAIData() {
+        // Wipe all preferences
+        prefs.edit().clear().apply();
+        
+        // Clear input fields
+        apiKeyInput.setText("");
+        tokenLimitInput.setText("100000");
+        
+        // Reset toggles
+        autoSuggestionsSwitch.setChecked(true);
+        commandFilteringSwitch.setChecked(true);
+        localProcessingSwitch.setChecked(false);
+        
+        Toast.makeText(this, "All AI data cleared successfully", Toast.LENGTH_SHORT).show();
+        
+        // Optionally restart to ensure clean state in AIClient
+        finish();
     }
 
     private void setupThemeListeners() {

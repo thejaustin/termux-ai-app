@@ -344,6 +344,15 @@
             android:layout_marginBottom="16dp" />
 
         <Button
+            android:id="@+id/btn_clear_ai_data"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Clear All AI Data &amp; Tokens"
+            android:textColor="@color/error_color"
+            android:layout_marginBottom="24dp" />
+
+        <Button
             android:id="@+id/save_button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
