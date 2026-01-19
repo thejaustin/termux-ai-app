@@ -37,8 +37,8 @@ public class TermuxAIApplication extends Application {
 
         Log.d(TAG, "Initializing Termux AI Application v" + BuildConfig.VERSION_NAME);
 
-        // Initialize preferences
-        preferences = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        // Initialize secure preferences
+        preferences = EncryptedPreferencesManager.getEncryptedPrefs(this, PREFS_NAME);
 
         // Apply Material You 3 Dynamic Colors
         boolean dynamicColorsEnabled = preferences.getBoolean(PREF_DYNAMIC_COLORS, true); // Enable by default

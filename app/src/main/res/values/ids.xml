@@ -2,4 +2,5 @@
 <resources>
     <item name="btn_history" type="id" />
     <item name="btn_model" type="id" />
+    <item name="btn_biometric_auth" type="id" />
 </resources>

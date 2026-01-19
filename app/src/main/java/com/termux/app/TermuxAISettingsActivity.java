@@ -46,6 +46,7 @@ public class TermuxAISettingsActivity extends AppCompatActivity {
     private RadioButton claudeButton;
     private RadioButton geminiButton;
     private EditText apiKeyInput;
+    private View btnBiometricAuth;
     private Spinner modelSpinner;
     private EditText tokenLimitInput;
 
@@ -57,6 +58,7 @@ public class TermuxAISettingsActivity extends AppCompatActivity {
     private Button saveButton;
     private SharedPreferences prefs;
     private TermuxAIApplication app;
+    private boolean isAuthorized = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,7 +72,8 @@ public class TermuxAISettingsActivity extends AppCompatActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         }
 
-        prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        // Use encrypted preferences for all settings to ensure security
+        prefs = com.termux.ai.EncryptedPreferencesManager.getEncryptedPrefs(this, PREFS_NAME);
         app = (TermuxAIApplication) getApplication();
 
         // Theme settings
@@ -91,8 +94,13 @@ public class TermuxAISettingsActivity extends AppCompatActivity {
         claudeButton = findViewById(R.id.provider_claude);
         geminiButton = findViewById(R.id.provider_gemini);
         apiKeyInput = findViewById(R.id.api_key_input);
+        btnBiometricAuth = findViewById(R.id.btn_biometric_auth);
         modelSpinner = findViewById(R.id.model_spinner);
         tokenLimitInput = findViewById(R.id.token_limit_input);
+
+        // Initial security state: mask API key and disable editing until authorized
+        apiKeyInput.setEnabled(false);
+        setupBiometricAuth();
 
         // Feature toggles
         autoSuggestionsSwitch = findViewById(R.id.auto_suggestions_switch);
@@ -113,6 +121,42 @@ public class TermuxAISettingsActivity extends AppCompatActivity {
             // Load the appropriate API key when switching providers
             loadApiKeyForProvider(checkedId);
         });
+    }
+
+    private void setupBiometricAuth() {
+        if (BiometricHelper.isBiometricAvailable(this)) {
+            btnBiometricAuth.setVisibility(View.VISIBLE);
+            btnBiometricAuth.setOnClickListener(v -> {
+                BiometricHelper.authenticate(this, 
+                    "Authorize AI Settings", 
+                    "Authenticate to view or edit API keys",
+                    new BiometricHelper.BiometricCallback() {
+                        @Override
+                        public void onAuthenticationSuccess() {
+                            isAuthorized = true;
+                            apiKeyInput.setEnabled(true);
+                            btnBiometricAuth.setVisibility(View.GONE);
+                            loadSettings(); // Populate keys now that we are authorized
+                            Toast.makeText(TermuxAISettingsActivity.this, "Authorized", Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onAuthenticationError(String error) {
+                            Toast.makeText(TermuxAISettingsActivity.this, "Auth error: " + error, Toast.LENGTH_LONG).show();
+                        }
+
+                        @Override
+                        public void onAuthenticationCancelled() {
+                            // Do nothing
+                        }
+                    });
+            });
+        } else {
+            // Biometrics not available, allow access by default but log a warning
+            btnBiometricAuth.setVisibility(View.GONE);
+            apiKeyInput.setEnabled(true);
+            isAuthorized = true;
+        }
     }
 
     private void setupThemeListeners() {
@@ -173,10 +217,18 @@ public class TermuxAISettingsActivity extends AppCompatActivity {
         String provider = prefs.getString(PREF_AI_PROVIDER, "claude");
         if ("gemini".equals(provider)) {
             geminiButton.setChecked(true);
-            apiKeyInput.setText(prefs.getString(PREF_GEMINI_API_KEY, ""));
+            if (isAuthorized || !BiometricHelper.isBiometricAvailable(this)) {
+                apiKeyInput.setText(prefs.getString(PREF_GEMINI_API_KEY, ""));
+            } else {
+                apiKeyInput.setText("");
+            }
         } else {
             claudeButton.setChecked(true);
-            apiKeyInput.setText(prefs.getString(PREF_CLAUDE_API_KEY, ""));
+            if (isAuthorized || !BiometricHelper.isBiometricAvailable(this)) {
+                apiKeyInput.setText(prefs.getString(PREF_CLAUDE_API_KEY, ""));
+            } else {
+                apiKeyInput.setText("");
+            }
         }
 
         String model = prefs.getString(PREF_CLAUDE_MODEL, "claude-3-5-sonnet-20241022");
@@ -214,6 +266,12 @@ public class TermuxAISettingsActivity extends AppCompatActivity {
     }
 
     private void loadApiKeyForProvider(int checkedId) {
+        // Only load/save if authorized or biometrics not available
+        if (!isAuthorized && BiometricHelper.isBiometricAvailable(this)) {
+            apiKeyInput.setText("");
+            return;
+        }
+
         // Save current API key before switching
         String currentKey = apiKeyInput.getText().toString().trim();
         if (!currentKey.isEmpty()) {

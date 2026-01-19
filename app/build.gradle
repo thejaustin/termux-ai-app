@@ -70,6 +70,7 @@ dependencies {
 
     // Security
     implementation 'androidx.security:security-crypto:1.1.0-alpha06'
+    implementation 'androidx.biometric:biometric:1.1.0'
 
     // Original Termux dependencies
     implementation 'androidx.annotation:annotation:1.7.0'
