@@ -20,20 +20,39 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
-    <com.google.android.material.textfield.TextInputLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Working Directory"
+        android:orientation="horizontal"
         android:layout_marginBottom="16dp">
 
-        <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/edit_working_directory"
-            android:layout_width="match_parent"
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:inputType="textUri"
-            android:maxLines="1" />
+            android:layout_weight="1"
+            android:hint="Working Directory">
 
-    </com.google.android.material.textfield.TextInputLayout>
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edit_working_directory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textUri"
+                android:maxLines="1" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <ImageButton
+            android:id="@+id/btn_browse_directory"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="8dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_folder"
+            android:contentDescription="@string/browse_directory"
+            android:tint="@color/icon_tint" />
+
+    </LinearLayout>
 
     <TextView
         android:layout_width="match_parent"

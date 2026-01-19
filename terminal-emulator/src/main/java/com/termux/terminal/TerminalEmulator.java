@@ -54,10 +54,9 @@ public class TerminalEmulator {
         this.mColumns = columns;
         this.mRows = rows;
 
-        // Create new buffer with new size
-        // Note: A full implementation would preserve and rewrap content
-        this.mBuffer = new TerminalBuffer(columns, rows, 1000);
-        this.mParser = new TerminalOutput(mBuffer);
+        // Use TerminalBuffer's resize method to preserve content
+        this.mBuffer = mBuffer.resize(columns, rows);
+        this.mParser.setBuffer(mBuffer);
     }
 
     /**

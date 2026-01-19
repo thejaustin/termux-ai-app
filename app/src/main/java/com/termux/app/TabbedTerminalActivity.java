@@ -78,6 +78,9 @@ public class TabbedTerminalActivity extends AppCompatActivity {
     
         @Override
         protected void onCreate(Bundle savedInstanceState) {
+            // Enable Material You Dynamic Colors
+            com.google.android.material.color.DynamicColors.applyToActivityIfAvailable(this);
+            
             // It would be better to save the state of the tabs, including the working directory and the command history, so that the user can resume their session.
             super.onCreate(savedInstanceState);
 
@@ -159,10 +162,37 @@ public class TabbedTerminalActivity extends AppCompatActivity {
     private void setupTerminalTabs() {
         terminalTabs = new ArrayList<>();
         tabAdapter = new TerminalTabAdapter(this);
-        viewPager.setAdapter(tabAdapter);
+            viewPager.setAdapter(tabAdapter);
+            viewPager.setOffscreenPageLimit(3); // Keep neighboring tabs in memory for performance
 
-        // Connect tabs with ViewPager2
-        new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
+            // Add smooth transition animation
+            viewPager.setPageTransformer((page, position) -> {
+                int pageWidth = page.getWidth();
+                if (position < -1) { // [-Infinity,-1)
+                    // This page is way off-screen to the left.
+                    page.setAlpha(0f);
+                } else if (position <= 0) { // [-1,0]
+                    // Use the default slide transition when moving to the left page
+                    page.setAlpha(1f);
+                    page.setTranslationX(0f);
+                    page.setScaleX(1f);
+                    page.setScaleY(1f);
+                } else if (position <= 1) { // (0,1]
+                    // Fade the page out.
+                    page.setAlpha(1 - position);
+                    // Counteract the default slide transition
+                    page.setTranslationX(pageWidth * -position);
+                    // Scale the page down (between MIN_SCALE and 1)
+                    float scaleFactor = 0.75f + (1 - 0.75f) * (1 - Math.abs(position));
+                    page.setScaleX(scaleFactor);
+                    page.setScaleY(scaleFactor);
+                } else { // (1,+Infinity]
+                    // This page is way off-screen to the right.
+                    page.setAlpha(0f);
+                }
+            });
+            
+            new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
             if (position < terminalTabs.size()) {
                 TerminalTab terminalTab = terminalTabs.get(position);
 
@@ -574,13 +604,13 @@ public class TabbedTerminalActivity extends AppCompatActivity {
         }
     }
     
-    private void createNewTab(String name, String workingDirectory) {
+    private void createNewTab(String name, String workingDirectory, String projectType) {
         if (terminalTabs.size() >= MAX_TABS) {
             Toast.makeText(this, "Maximum " + MAX_TABS + " tabs allowed", Toast.LENGTH_SHORT).show();
             return;
         }
         
-        TerminalTab newTab = new TerminalTab(name, workingDirectory);
+        TerminalTab newTab = new TerminalTab(name, workingDirectory, projectType);
         terminalTabs.add(newTab);
         tabAdapter.notifyItemInserted(terminalTabs.size() - 1);
         
@@ -643,7 +673,7 @@ public class TabbedTerminalActivity extends AppCompatActivity {
         dialog.setListener(new NewTabDialog.NewTabListener() {
             @Override
             public void onCreateTab(String name, String directory, String projectType) {
-                createNewTab(name, directory);
+                createNewTab(name, directory, projectType);
             }
         });
         dialog.show(getSupportFragmentManager(), "new_tab");
@@ -674,6 +704,12 @@ public class TabbedTerminalActivity extends AppCompatActivity {
             @Override
             public void onVoiceInputRequested() {
                 showVoiceInputDialog();
+            }
+
+            @Override
+            public void onModelSelectionRequested() {
+                Intent intent = new Intent(TabbedTerminalActivity.this, TermuxAISettingsActivity.class);
+                startActivity(intent);
             }
         });
 
@@ -1124,13 +1160,26 @@ public class TabbedTerminalActivity extends AppCompatActivity {
         private boolean claudeActive;
         private long lastActivityTime;
         
-        public TerminalTab(String name, String workingDirectory) {
+        public TerminalTab(String name, String workingDirectory, String projectType) {
             this.id = nextId++;
             this.name = name;
             this.workingDirectory = workingDirectory;
-            this.projectType = detectProjectType(workingDirectory);
+            if (projectType == null || projectType.equalsIgnoreCase("Auto-detect") || projectType.equalsIgnoreCase("General Terminal")) {
+                this.projectType = detectProjectType(workingDirectory);
+            } else {
+                this.projectType = mapProjectTypeNameToId(projectType);
+            }
             this.claudeActive = false;
             this.lastActivityTime = System.currentTimeMillis();
+        }
+
+        private String mapProjectTypeNameToId(String name) {
+            if (name.toLowerCase().contains("node")) return "nodejs";
+            if (name.toLowerCase().contains("python")) return "python";
+            if (name.toLowerCase().contains("rust")) return "rust";
+            if (name.toLowerCase().contains("go")) return "go";
+            if (name.toLowerCase().contains("java")) return "java";
+            return "general";
         }
         
         private String detectProjectType(String directory) {

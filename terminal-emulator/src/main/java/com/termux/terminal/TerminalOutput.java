@@ -21,6 +21,7 @@ public class TerminalOutput {
     private static final int STATE_OSC = 3;
 
     // Special characters
+    // Special characters
     private static final byte ESC = 27;
     private static final byte BEL = 7;
     private static final byte BS = 8;
@@ -28,7 +29,7 @@ public class TerminalOutput {
     private static final byte LF = 10;
     private static final byte CR = 13;
 
-    private final TerminalBuffer mBuffer;
+    private TerminalBuffer mBuffer;
     private int mCursorRow = 0;
     private int mCursorCol = 0;
 
@@ -44,6 +45,10 @@ public class TerminalOutput {
     private final StringBuilder mOscBuffer = new StringBuilder();
 
     public TerminalOutput(TerminalBuffer buffer) {
+        this.mBuffer = buffer;
+    }
+
+    public void setBuffer(TerminalBuffer buffer) {
         this.mBuffer = buffer;
     }
 

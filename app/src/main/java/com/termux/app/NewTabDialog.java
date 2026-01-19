@@ -47,7 +47,19 @@ public class NewTabDialog extends DialogFragment {
         nameEdit = view.findViewById(R.id.edit_tab_name);
         directoryEdit = view.findViewById(R.id.edit_working_directory);
         projectTypeSpinner = view.findViewById(R.id.spinner_project_type);
+        View btnBrowse = view.findViewById(R.id.btn_browse_directory);
         
+        btnBrowse.setOnClickListener(v -> {
+            String currentDir = directoryEdit.getText().toString();
+            FilePickerDialog dialog = FilePickerDialog.newInstance(currentDir, true, true);
+            dialog.setCallback(files -> {
+                if (!files.isEmpty()) {
+                    directoryEdit.setText(files.get(0).getAbsolutePath());
+                }
+            });
+            dialog.show(getParentFragmentManager(), "directory_picker");
+        });
+
         // Setup project type spinner
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
             requireContext(),

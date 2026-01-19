@@ -43,6 +43,11 @@ public class ClaudeQuickActionsDialog extends DialogFragment {
          * Called when voice input is requested
          */
         void onVoiceInputRequested();
+
+        /**
+         * Called when model selection is requested
+         */
+        void onModelSelectionRequested();
     }
 
     private TabbedTerminalActivity.TerminalTab tab;
@@ -71,6 +76,8 @@ public class ClaudeQuickActionsDialog extends DialogFragment {
         Button btnProjectAnalysis = view.findViewById(R.id.btn_project_analysis);
         Button btnDebugHelp = view.findViewById(R.id.btn_debug_help);
         Button btnVoiceInput = view.findViewById(R.id.btn_voice_input);
+        Button btnCommandHistory = view.findViewById(R.id.btn_command_history);
+        Button btnModelSelection = view.findViewById(R.id.btn_model_selection);
         Button btnStop = view.findViewById(R.id.btn_stop_claude);
 
         // Set accessibility content descriptions
@@ -84,6 +91,10 @@ public class ClaudeQuickActionsDialog extends DialogFragment {
             "Shows recent commands and debugging tips");
         setupAccessibility(btnVoiceInput, "Voice Input",
             "Activate voice input to speak commands to Claude");
+        setupAccessibility(btnCommandHistory, "Command History",
+            "Shows recent terminal command history");
+        setupAccessibility(btnModelSelection, "Select AI Model",
+            "Change the active AI provider or model");
         setupAccessibility(btnStop, "Stop Claude",
             "Immediately stops the current Claude operation");
 
@@ -93,6 +104,8 @@ public class ClaudeQuickActionsDialog extends DialogFragment {
         ensureMinTouchTarget(btnProjectAnalysis);
         ensureMinTouchTarget(btnDebugHelp);
         ensureMinTouchTarget(btnVoiceInput);
+        ensureMinTouchTarget(btnCommandHistory);
+        ensureMinTouchTarget(btnModelSelection);
         ensureMinTouchTarget(btnStop);
 
         // Set up click listeners with practical development commands
@@ -131,7 +144,9 @@ public class ClaudeQuickActionsDialog extends DialogFragment {
                 "echo \"  Java: $(find . -name '*.java' 2>/dev/null | wc -l)\" && " +
                 "echo \"  Kotlin: $(find . -name '*.kt' 2>/dev/null | wc -l)\" && " +
                 "echo \"  Python: $(find . -name '*.py' 2>/dev/null | wc -l)\" && " +
-                "echo \"  JS/TS: $(find . \\( -name '*.js' -o -name '*.ts' \\) 2>/dev/null | wc -l)\"";
+                "echo \"  JS/TS: $(find . \\( -name '*.js' -o -name '*.ts' \\) 2>/dev/null | wc -l)\" && " +
+                "echo '' && echo '🛠️ Configs:' && " +
+                "ls package.json build.gradle pom.xml requirements.txt Cargo.toml 2>/dev/null";
             sendCommand(cmd);
             dismiss();
         });
@@ -157,6 +172,20 @@ public class ClaudeQuickActionsDialog extends DialogFragment {
                 callback.onVoiceInputRequested();
             } else {
                 Toast.makeText(getContext(), "Voice input - Coming soon!", Toast.LENGTH_SHORT).show();
+            }
+            dismiss();
+        });
+
+        btnCommandHistory.setOnClickListener(v -> {
+            announceForAccessibility(v, "Showing command history");
+            sendCommand("history 20");
+            dismiss();
+        });
+
+        btnModelSelection.setOnClickListener(v -> {
+            announceForAccessibility(v, "Selecting AI Model");
+            if (callback != null) {
+                callback.onModelSelectionRequested();
             }
             dismiss();
         });

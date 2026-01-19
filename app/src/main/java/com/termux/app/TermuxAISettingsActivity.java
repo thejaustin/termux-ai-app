@@ -60,6 +60,9 @@ public class TermuxAISettingsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // Enable Material You Dynamic Colors
+        com.google.android.material.color.DynamicColors.applyToActivityIfAvailable(this);
+        
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_settings);
         

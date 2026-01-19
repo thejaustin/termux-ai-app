@@ -40,6 +40,8 @@ public class FilePickerDialog extends DialogFragment {
     }
 
     private static final String ARG_START_DIR = "start_directory";
+    private static final String ARG_DIRECTORY_ONLY = "directory_only";
+    private static final String ARG_SINGLE_SELECTION = "single_selection";
     private static final String[] HIDDEN_DIRS = {".git", "node_modules", "__pycache__", ".gradle", "build", ".idea"};
     private static final String[] SOURCE_EXTENSIONS = {".java", ".kt", ".py", ".js", ".ts", ".tsx", ".jsx", ".go", ".rs", ".c", ".cpp", ".h", ".hpp", ".swift", ".rb", ".php", ".html", ".css", ".scss", ".json", ".xml", ".yaml", ".yml", ".md", ".txt", ".sh", ".bash"};
 
@@ -49,11 +51,19 @@ public class FilePickerDialog extends DialogFragment {
     private FileAdapter adapter;
     private TextView pathView;
     private TextView selectionCountView;
+    private boolean directoryOnly = false;
+    private boolean singleSelection = false;
 
     public static FilePickerDialog newInstance(String startDirectory) {
+        return newInstance(startDirectory, false, false);
+    }
+
+    public static FilePickerDialog newInstance(String startDirectory, boolean directoryOnly, boolean singleSelection) {
         FilePickerDialog dialog = new FilePickerDialog();
         Bundle args = new Bundle();
         args.putString(ARG_START_DIR, startDirectory);
+        args.putBoolean(ARG_DIRECTORY_ONLY, directoryOnly);
+        args.putBoolean(ARG_SINGLE_SELECTION, singleSelection);
         dialog.setArguments(args);
         return dialog;
     }
@@ -68,6 +78,8 @@ public class FilePickerDialog extends DialogFragment {
         if (getArguments() != null) {
             String startDir = getArguments().getString(ARG_START_DIR);
             currentDirectory = new File(startDir != null ? startDir : "/");
+            directoryOnly = getArguments().getBoolean(ARG_DIRECTORY_ONLY, false);
+            singleSelection = getArguments().getBoolean(ARG_SINGLE_SELECTION, false);
         } else {
             currentDirectory = new File("/");
         }
@@ -92,12 +104,16 @@ public class FilePickerDialog extends DialogFragment {
         updateUI();
 
         return new MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Select Files")
+            .setTitle(directoryOnly ? "Select Directory" : "Select Files")
             .setView(view)
             .setNegativeButton("Cancel", null)
-            .setPositiveButton("Add Selected", (dialog, which) -> {
-                if (callback != null && !selectedFiles.isEmpty()) {
-                    callback.onFilesSelected(new ArrayList<>(selectedFiles));
+            .setPositiveButton(directoryOnly ? "Select Current" : "Add Selected", (dialog, which) -> {
+                if (callback != null) {
+                    if (directoryOnly && selectedFiles.isEmpty()) {
+                        callback.onFilesSelected(Collections.singletonList(currentDirectory));
+                    } else if (!selectedFiles.isEmpty()) {
+                        callback.onFilesSelected(new ArrayList<>(selectedFiles));
+                    }
                 }
             })
             .create();
@@ -114,15 +130,24 @@ public class FilePickerDialog extends DialogFragment {
     private void navigateTo(File directory) {
         if (directory.isDirectory() && directory.canRead()) {
             currentDirectory = directory;
+            if (directoryOnly && singleSelection) {
+                selectedFiles.clear();
+                selectedFiles.add(currentDirectory);
+            }
             updateUI();
         }
     }
 
     private void toggleFileSelection(File file) {
-        if (selectedFiles.contains(file)) {
-            selectedFiles.remove(file);
-        } else {
+        if (singleSelection) {
+            selectedFiles.clear();
             selectedFiles.add(file);
+        } else {
+            if (selectedFiles.contains(file)) {
+                selectedFiles.remove(file);
+            } else {
+                selectedFiles.add(file);
+            }
         }
         updateSelectionCount();
         adapter.notifyDataSetChanged();
@@ -137,9 +162,9 @@ public class FilePickerDialog extends DialogFragment {
     private void updateSelectionCount() {
         int count = selectedFiles.size();
         if (count == 0) {
-            selectionCountView.setText("No files selected");
+            selectionCountView.setText(directoryOnly ? "Current directory selected" : "No files selected");
         } else {
-            selectionCountView.setText(count + " file" + (count > 1 ? "s" : "") + " selected");
+            selectionCountView.setText(count + " item" + (count > 1 ? "s" : "") + " selected");
         }
     }
 
@@ -165,7 +190,7 @@ public class FilePickerDialog extends DialogFragment {
 
             if (file.isDirectory()) {
                 dirs.add(file);
-            } else if (isSourceFile(file.getName())) {
+            } else if (!directoryOnly && isSourceFile(file.getName())) {
                 filesList.add(file);
             }
         }
@@ -174,7 +199,7 @@ public class FilePickerDialog extends DialogFragment {
         Collections.sort(filesList, (a, b) -> a.getName().compareToIgnoreCase(b.getName()));
 
         for (File dir : dirs) {
-            items.add(new FileItem(dir, true, false));
+            items.add(new FileItem(dir, true, selectedFiles.contains(dir)));
         }
         for (File file : filesList) {
             items.add(new FileItem(file, false, selectedFiles.contains(file)));

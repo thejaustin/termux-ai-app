@@ -70,6 +70,24 @@
                 android:drawablePadding="8dp" />
 
             <Button
+                android:id="@+id/btn_command_history"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Command History"
+                android:layout_marginBottom="8dp"
+                android:drawableStart="@drawable/ic_go"
+                android:drawablePadding="8dp" />
+
+            <Button
+                android:id="@+id/btn_model_selection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Select AI Model"
+                android:layout_marginBottom="8dp"
+                android:drawableStart="@drawable/ic_settings"
+                android:drawablePadding="8dp" />
+
+            <Button
                 android:id="@+id/btn_stop_claude"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
