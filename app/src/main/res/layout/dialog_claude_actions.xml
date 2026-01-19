@@ -70,7 +70,7 @@
                 android:drawablePadding="8dp" />
 
             <Button
-                android:id="@+id/btn_command_history"
+                android:id="@+id/btn_history"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Command History"
@@ -79,7 +79,7 @@
                 android:drawablePadding="8dp" />
 
             <Button
-                android:id="@+id/btn_model_selection"
+                android:id="@+id/btn_model"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Select AI Model"

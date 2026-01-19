@@ -76,8 +76,8 @@ public class ClaudeQuickActionsDialog extends DialogFragment {
         Button btnProjectAnalysis = view.findViewById(R.id.btn_project_analysis);
         Button btnDebugHelp = view.findViewById(R.id.btn_debug_help);
         Button btnVoiceInput = view.findViewById(R.id.btn_voice_input);
-        Button btnCommandHistory = view.findViewById(R.id.btn_command_history);
-        Button btnModelSelection = view.findViewById(R.id.btn_model_selection);
+        Button btnCommandHistory = view.findViewById(R.id.btn_history);
+        Button btnModelSelection = view.findViewById(R.id.btn_model);
         Button btnStop = view.findViewById(R.id.btn_stop_claude);
 
         // Set accessibility content descriptions
