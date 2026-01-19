@@ -42,6 +42,7 @@ public class TerminalFragment extends Fragment implements TerminalSessionClient 
     private EnhancedTerminalView terminalView;
     private TerminalSession terminalSession;
     private TabbedTerminalActivity parentActivity;
+    private ShakeDetector shakeDetector;
     
     public static TerminalFragment newInstance(String tabName, String workingDirectory, int tabIndex) {
         TerminalFragment fragment = new TerminalFragment();
@@ -61,6 +62,29 @@ public class TerminalFragment extends Fragment implements TerminalSessionClient 
             workingDirectory = getArguments().getString(ARG_WORKING_DIR);
             tabIndex = getArguments().getInt(ARG_TAB_INDEX);
         }
+
+        shakeDetector = new ShakeDetector(requireContext(), () -> {
+            if (getContext() != null) {
+                clearTerminal();
+                Toast.makeText(getContext(), "Terminal cleared (Shake)", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (shakeDetector != null) {
+            shakeDetector.start();
+        }
+    }
+
+    @Override
+    public void onPause() {
+        if (shakeDetector != null) {
+            shakeDetector.stop();
+        }
+        super.onPause();
     }
     
     @Override

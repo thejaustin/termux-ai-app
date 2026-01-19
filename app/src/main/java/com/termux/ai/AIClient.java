@@ -2,6 +2,8 @@ package com.termux.ai;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -52,6 +54,7 @@ public class AIClient {
     private final OkHttpClient httpClient;
     private final Gson gson;
     private final SharedPreferences prefs;
+    private final Handler mainHandler;
     
     private String authToken;
     private String sessionId;
@@ -72,6 +75,7 @@ public class AIClient {
     public AIClient(@NonNull Context context) {
         this.context = context.getApplicationContext();
         this.gson = new Gson();
+        this.mainHandler = new Handler(Looper.getMainLooper());
 
         // Use encrypted SharedPreferences for secure credential storage
         this.prefs = EncryptedPreferencesManager.getEncryptedPrefs(context, PREFS_NAME);
@@ -202,9 +206,11 @@ public class AIClient {
         loadAuthenticationData(); // Reload prefs in case settings changed
         
         if (!isAuthenticated()) {
-            if (listener != null) {
-                listener.onAuthenticationRequired();
-            }
+            mainHandler.post(() -> {
+                if (listener != null) {
+                    listener.onAuthenticationRequired();
+                }
+            });
             return;
         }
         
@@ -229,17 +235,19 @@ public class AIClient {
                     float confidence = response.has("confidence") ? 
                         response.get("confidence").getAsFloat() : 0.5f;
                     
-                    callback.onSuggestion(suggestion, confidence);
-                    
-                    if (listener != null) {
-                        listener.onSuggestionReceived(suggestion, confidence);
-                    }
+                    mainHandler.post(() -> {
+                        callback.onSuggestion(suggestion, confidence);
+                        
+                        if (listener != null) {
+                            listener.onSuggestionReceived(suggestion, confidence);
+                        }
+                    });
                 }
             }
             
             @Override
             public void onError(String error) {
-                callback.onError(error);
+                mainHandler.post(() -> callback.onError(error));
             }
         });
     }
@@ -257,18 +265,20 @@ public class AIClient {
                     String suggestion = json.get("suggestion").getAsString();
                     float confidence = json.has("confidence") ? json.get("confidence").getAsFloat() : 0.8f;
 
-                    callback.onSuggestion(suggestion, confidence);
-                    if (listener != null) listener.onSuggestionReceived(suggestion, confidence);
+                    mainHandler.post(() -> {
+                        callback.onSuggestion(suggestion, confidence);
+                        if (listener != null) listener.onSuggestionReceived(suggestion, confidence);
+                    });
                 } catch (Exception e) {
-                    callback.onError("Failed to parse Gemini response: " + e.getMessage());
+                    mainHandler.post(() -> callback.onError("Failed to parse Gemini response: " + e.getMessage()));
                 }
             }
 
             @Override
             public void onError(String error) {
-                callback.onError(error);
+                mainHandler.post(() -> callback.onError(error));
             }
-        }, callback::onError);
+        }, error -> mainHandler.post(() -> callback.onError(error)));
     }
     
     /**
@@ -278,9 +288,11 @@ public class AIClient {
         loadAuthenticationData();
         
         if (!isAuthenticated()) {
-            if (listener != null) {
-                listener.onAuthenticationRequired();
-            }
+            mainHandler.post(() -> {
+                if (listener != null) {
+                    listener.onAuthenticationRequired();
+                }
+            });
             return;
         }
         
@@ -304,16 +316,18 @@ public class AIClient {
                 String analysis = response.get("analysis").getAsString();
                 String[] solutions = gson.fromJson(response.get("solutions"), String[].class);
                 
-                callback.onAnalysis(analysis, solutions);
-                
-                if (listener != null) {
-                    listener.onErrorAnalysis(errorOutput, analysis, solutions);
-                }
+                mainHandler.post(() -> {
+                    callback.onAnalysis(analysis, solutions);
+                    
+                    if (listener != null) {
+                        listener.onErrorAnalysis(errorOutput, analysis, solutions);
+                    }
+                });
             }
             
             @Override
             public void onError(String error) {
-                callback.onError(error);
+                mainHandler.post(() -> callback.onError(error));
             }
         });
     }
@@ -330,18 +344,20 @@ public class AIClient {
                     String analysis = json.get("analysis").getAsString();
                     String[] solutions = gson.fromJson(json.get("solutions"), String[].class);
 
-                    callback.onAnalysis(analysis, solutions);
-                    if (listener != null) listener.onErrorAnalysis(errorOutput, analysis, solutions);
+                    mainHandler.post(() -> {
+                        callback.onAnalysis(analysis, solutions);
+                        if (listener != null) listener.onErrorAnalysis(errorOutput, analysis, solutions);
+                    });
                 } catch (Exception e) {
-                    callback.onError("Failed to parse Gemini response: " + e.getMessage());
+                    mainHandler.post(() -> callback.onError("Failed to parse Gemini response: " + e.getMessage()));
                 }
             }
 
             @Override
             public void onError(String error) {
-                callback.onError(error);
+                mainHandler.post(() -> callback.onError(error));
             }
-        }, callback::onError);
+        }, error -> mainHandler.post(() -> callback.onError(error)));
     }
     
     /**
@@ -351,9 +367,11 @@ public class AIClient {
         loadAuthenticationData();
 
         if (!isAuthenticated()) {
-            if (listener != null) {
-                listener.onAuthenticationRequired();
-            }
+            mainHandler.post(() -> {
+                if (listener != null) {
+                    listener.onAuthenticationRequired();
+                }
+            });
             return;
         }
 
@@ -378,16 +396,18 @@ public class AIClient {
                 String detectedLanguage = response.has("language") ? 
                     response.get("language").getAsString() : language;
                 
-                callback.onCodeGenerated(code, detectedLanguage);
-                
-                if (listener != null) {
-                    listener.onCodeGenerated(code, detectedLanguage);
-                }
+                mainHandler.post(() -> {
+                    callback.onCodeGenerated(code, detectedLanguage);
+                    
+                    if (listener != null) {
+                        listener.onCodeGenerated(code, detectedLanguage);
+                    }
+                });
             }
             
             @Override
             public void onError(String error) {
-                callback.onError(error);
+                mainHandler.post(() -> callback.onError(error));
             }
         });
     }
@@ -404,18 +424,20 @@ public class AIClient {
                     String code = json.get("code").getAsString();
                     String detectedLanguage = json.has("language") ? json.get("language").getAsString() : language;
 
-                    callback.onCodeGenerated(code, detectedLanguage);
-                    if (listener != null) listener.onCodeGenerated(code, detectedLanguage);
+                    mainHandler.post(() -> {
+                        callback.onCodeGenerated(code, detectedLanguage);
+                        if (listener != null) listener.onCodeGenerated(code, detectedLanguage);
+                    });
                 } catch (Exception e) {
-                    callback.onError("Failed to parse Gemini response: " + e.getMessage());
+                    mainHandler.post(() -> callback.onError("Failed to parse Gemini response: " + e.getMessage()));
                 }
             }
 
             @Override
             public void onError(String error) {
-                callback.onError(error);
+                mainHandler.post(() -> callback.onError(error));
             }
-        }, callback::onError);
+        }, error -> mainHandler.post(() -> callback.onError(error)));
     }
     
     /**
@@ -425,9 +447,11 @@ public class AIClient {
         loadAuthenticationData();
 
         if (!isAuthenticated()) {
-            if (listener != null) {
-                listener.onAuthenticationRequired();
-            }
+            mainHandler.post(() -> {
+                if (listener != null) {
+                    listener.onAuthenticationRequired();
+                }
+            });
             return;
         }
         
@@ -435,9 +459,11 @@ public class AIClient {
             Log.d(TAG, "Real-time session not supported for Gemini via REST");
             // Optionally, we could simulate it or use a different mechanism.
             // For now, just notifying connected to simulate success.
-            if (listener != null) {
-                listener.onConnectionStatusChanged(true);
-            }
+            mainHandler.post(() -> {
+                if (listener != null) {
+                    listener.onConnectionStatusChanged(true);
+                }
+            });
             return;
         }
 
@@ -451,9 +477,11 @@ public class AIClient {
             @Override
             public void onOpen(@NonNull WebSocket webSocket, @NonNull Response response) {
                 Log.d(TAG, "WebSocket connection opened");
-                if (listener != null) {
-                    listener.onConnectionStatusChanged(true);
-                }
+                mainHandler.post(() -> {
+                    if (listener != null) {
+                        listener.onConnectionStatusChanged(true);
+                    }
+                });
             }
             
             @Override
@@ -464,17 +492,21 @@ public class AIClient {
             @Override
             public void onClosing(@NonNull WebSocket webSocket, int code, @NonNull String reason) {
                 Log.d(TAG, "WebSocket connection closing: " + reason);
-                if (listener != null) {
-                    listener.onConnectionStatusChanged(false);
-                }
+                mainHandler.post(() -> {
+                    if (listener != null) {
+                        listener.onConnectionStatusChanged(false);
+                    }
+                });
             }
             
             @Override
             public void onFailure(@NonNull WebSocket webSocket, @NonNull Throwable t, @Nullable Response response) {
                 Log.e(TAG, "WebSocket connection failed", t);
-                if (listener != null) {
-                    listener.onConnectionStatusChanged(false);
-                }
+                mainHandler.post(() -> {
+                    if (listener != null) {
+                        listener.onConnectionStatusChanged(false);
+                    }
+                });
             }
         });
     }
@@ -484,24 +516,26 @@ public class AIClient {
             JsonObject msg = gson.fromJson(message, JsonObject.class);
             String type = msg.get("type").getAsString();
             
-            switch (type) {
-                case "suggestion":
-                    if (listener != null) {
-                        String suggestion = msg.get("content").getAsString();
-                        float confidence = msg.get("confidence").getAsFloat();
-                        listener.onSuggestionReceived(suggestion, confidence);
-                    }
-                    break;
-                    
-                case "error_analysis":
-                    if (listener != null) {
-                        String error = msg.get("error").getAsString();
-                        String analysis = msg.get("analysis").getAsString();
-                        String[] solutions = gson.fromJson(msg.get("solutions"), String[].class);
-                        listener.onErrorAnalysis(error, analysis, solutions);
-                    }
-                    break;
-            }
+            mainHandler.post(() -> {
+                switch (type) {
+                    case "suggestion":
+                        if (listener != null) {
+                            String suggestion = msg.get("content").getAsString();
+                            float confidence = msg.get("confidence").getAsFloat();
+                            listener.onSuggestionReceived(suggestion, confidence);
+                        }
+                        break;
+                        
+                    case "error_analysis":
+                        if (listener != null) {
+                            String error = msg.get("error").getAsString();
+                            String analysis = msg.get("analysis").getAsString();
+                            String[] solutions = gson.fromJson(msg.get("solutions"), String[].class);
+                            listener.onErrorAnalysis(error, analysis, solutions);
+                        }
+                        break;
+                }
+            });
         } catch (Exception e) {
             Log.e(TAG, "Failed to parse realtime message", e);
         }
@@ -550,9 +584,11 @@ public class AIClient {
                     authToken = null;
                     sessionId = null;
                     saveAuthenticationData();
-                    if (listener != null) {
-                        listener.onAuthenticationRequired();
-                    }
+                    mainHandler.post(() -> {
+                        if (listener != null) {
+                            listener.onAuthenticationRequired();
+                        }
+                    });
                 } else {
                     callback.onError("Request failed: " + response.code());
                 }
