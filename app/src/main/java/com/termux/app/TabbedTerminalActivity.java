@@ -994,12 +994,12 @@ public class TabbedTerminalActivity extends AppCompatActivity {
                 tabAdapter.notifyDataSetChanged();
             } else {
                 // Create initial tab if no tabs were loaded
-                createNewTab("home", getDefaultDirectory());
+                createNewTab("home", getDefaultDirectory(), "Auto-detect");
             }
         } catch (JsonSyntaxException e) {
             Log.e(TAG, "Failed to load tabs from SharedPreferences", e);
             // Create initial tab if loading fails
-            createNewTab("home", getDefaultDirectory());
+            createNewTab("home", getDefaultDirectory(), "Auto-detect");
         }
     }
     
