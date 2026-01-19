@@ -18,14 +18,14 @@ public class PrivacyGuard {
         SENSITIVE_PATTERNS.add(Pattern.compile("(?i)(api[_-]?key|auth[_-]?token|secret|password|passwd)[:=]\s*['"]?([a-zA-Z0-9]{16,})['"]?"));
         
         // Generic HEX/Base64 strings that look like keys (length > 32)
-        SENSITIVE_PATTERNS.add(Pattern.compile("\b[a-fA-F0-9]{32,}\b"));
-        SENSITIVE_PATTERNS.add(Pattern.compile("\b[a-zA-Z0-9+/]{40,}={0,2}\b"));
+        SENSITIVE_PATTERNS.add(Pattern.compile("\\b[a-fA-F0-9]{32,}\\b"));
+        SENSITIVE_PATTERNS.add(Pattern.compile("\\b[a-zA-Z0-9+/]{40,}={0,2}\\b"));
         
         // AWS Keys
         SENSITIVE_PATTERNS.add(Pattern.compile("AKIA[0-9A-Z]{16}"));
         
         // Common environment variable patterns
-        SENSITIVE_PATTERNS.add(Pattern.compile("(?i)(export|set)\s+[A-Z_]+[:=]\s*.*\s*"));
+        SENSITIVE_PATTERNS.add(Pattern.compile("(?i)(export|set)\\s+[A-Z_]+[:=]\\s*.*\s*"));
         
         // SSH Keys (partial match for detection)
         SENSITIVE_PATTERNS.add(Pattern.compile("-----BEGIN (RSA|OPENSSH|DSA|EC) PRIVATE KEY-----"));
