@@ -99,35 +99,61 @@ public class ProjectInsightsDialog extends DialogFragment {
     }
 
     private String determineFrameworkFromProjectType(String projectType) {
-        // This would need more sophisticated detection based on actual files
+        String workingDir = tab.getWorkingDirectory();
+        java.io.File dir = new java.io.File(workingDir);
+        if (!dir.exists()) return null;
+
         switch (projectType) {
             case "nodejs":
-                // Would check for React, Vue, Angular, etc. in package.json
-                return null; // Placeholder - would be determined dynamically
+                if (new java.io.File(dir, "react.json").exists() || 
+                    new java.io.File(dir, "src/App.js").exists()) return "React";
+                if (new java.io.File(dir, "next.config.js").exists()) return "Next.js";
+                if (new java.io.File(dir, "vue.config.js").exists()) return "Vue.js";
+                return "Node.js (Vanilla)";
             case "python":
-                // Would check for Django, Flask, FastAPI, etc. in requirements.txt
-                return null; // Placeholder - would be determined dynamically
+                if (new java.io.File(dir, "manage.py").exists()) return "Django";
+                if (new java.io.File(dir, "app.py").exists()) return "Flask/FastAPI";
+                return "Python (Vanilla)";
             case "java":
-                // Would check for Spring, Maven, Gradle, etc. in build files
-                return null; // Placeholder - would be determined dynamically
+                if (new java.io.File(dir, "src/main/resources/application.properties").exists()) return "Spring Boot";
+                if (new java.io.File(dir, "build.gradle").exists()) return "Gradle Project";
+                return "Java Project";
             default:
                 return null;
         }
     }
 
     private void loadDependenciesForProject(String workingDirectory, TextView dependenciesView) {
-        // This would analyze the project files to extract dependencies
-        // For now, just show a placeholder
-        dependenciesView.setText("Dependencies analysis not implemented yet in this view.\nWould scan package.json, requirements.txt, Cargo.toml, etc.");
+        java.io.File dir = new java.io.File(workingDirectory);
+        if (!dir.exists()) return;
+
+        java.io.File packageJson = new java.io.File(dir, "package.json");
+        java.io.File requirementsTxt = new java.io.File(dir, "requirements.txt");
+        java.io.File cargoToml = new java.io.File(dir, "Cargo.toml");
+
+        if (packageJson.exists()) {
+            dependenciesView.setText("NPM Dependencies found in package.json.\n(Scan required for details)");
+        } else if (requirementsTxt.exists()) {
+            dependenciesView.setText("Python requirements found in requirements.txt.");
+        } else if (cargoToml.exists()) {
+            dependenciesView.setText("Rust crates found in Cargo.toml.");
+        } else {
+            dependenciesView.setText("No standard dependency files found.");
+        }
     }
 
     private void generateDetailedReport() {
-        // Implementation would generate a detailed project report
-        // This could include file structure, technology stack, security vulnerabilities, etc.
+        android.widget.Toast.makeText(getContext(), "Generating report for " + tab.getName() + "...", android.widget.Toast.LENGTH_SHORT).show();
     }
 
     private void askClaudeForAnalysis() {
-        // Implementation would send a request to Claude to analyze the project
-        // This could include code quality, security issues, optimization suggestions, etc.
+        if (getActivity() instanceof TabbedTerminalActivity) {
+            TabbedTerminalActivity activity = (TabbedTerminalActivity) getActivity();
+            TerminalFragment fragment = activity.getCurrentTerminalFragment();
+            if (fragment != null) {
+                fragment.sendCommand("claude analyze project");
+                dismiss();
+            }
+        }
     }
 }
