@@ -264,7 +264,15 @@ public class EnhancedTerminalView extends TerminalView {
             @Override
             public void onErrorDetected(String error) {
                 mainHandler.post(() -> {
-                    // Handle Claude error detection
+                    // Show user-friendly error dialog
+                    if (getContext() != null) {
+                        com.termux.app.ErrorDialogHelper.showError(
+                            getContext(),
+                            com.termux.app.ErrorDialogHelper.ErrorType.CLAUDE_API_ERROR,
+                            error,
+                            null // No specific retry for auto-detected errors
+                        );
+                    }
                     if (claudeListener != null) {
                         claudeListener.onClaudeErrorDetected(error);
                     }

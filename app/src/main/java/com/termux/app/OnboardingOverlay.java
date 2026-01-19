@@ -144,18 +144,27 @@ public class OnboardingOverlay extends DialogFragment {
                 false
         ));
 
-        // Page 4: Claude Integration
+        // Page 4: AI Providers
         pages.add(new OnboardingPage(
                 R.drawable.ic_claude,
-                "Claude AI Integration",
-                "• Run 'claude' in terminal to start\n" +
-                "• Progress shows in the status bar\n" +
-                "• Tap the Claude button for quick actions\n" +
-                "• Triple-tap for voice input",
+                "Multi-AI Support",
+                "Choose between Anthropic Claude and Google Gemini in Settings.\n\n" +
+                "Get real-time suggestions and error analysis from either provider.",
                 false
         ));
 
-        // Page 5: Quick Actions
+        // Page 5: Claude Code
+        pages.add(new OnboardingPage(
+                R.drawable.ic_code,
+                "Claude Code CLI",
+                "• Deep integration with Claude Code CLI\n" +
+                "• Interactive coding & project analysis\n" +
+                "• Visual progress indicators\n" +
+                "• Shake to clear terminal",
+                false
+        ));
+
+        // Page 6: Quick Actions
         pages.add(new OnboardingPage(
                 R.drawable.ic_quick_commands,
                 "Quick Tools",
@@ -167,13 +176,14 @@ public class OnboardingOverlay extends DialogFragment {
                 false
         ));
 
-        // Page 6: Get Started
+        // Page 7: Get Started
         pages.add(new OnboardingPage(
                 R.drawable.ic_check,
                 "You're Ready!",
-                "Shake device to clear terminal.\n\n" +
-                "Long-press settings for quick toggles.\n\n" +
-                "Enjoy coding with AI!",
+                "1. Go to Settings > AI Integration\n" +
+                "2. Enter your API Key\n" +
+                "3. Start coding with AI assistant!\n\n" +
+                "Enjoy your enhanced terminal.",
                 true
         ));
     }

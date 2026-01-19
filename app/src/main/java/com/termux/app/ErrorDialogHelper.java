@@ -30,6 +30,7 @@ public class ErrorDialogHelper {
         PERMISSION_ERROR,
         CLAUDE_NOT_INSTALLED,
         CLAUDE_API_ERROR,
+        GEMINI_API_ERROR,
         TOKEN_LIMIT_EXCEEDED,
         FILE_NOT_FOUND,
         UNKNOWN_ERROR
@@ -87,6 +88,9 @@ public class ErrorDialogHelper {
                 break;
             case CLAUDE_API_ERROR:
                 showClaudeApiError(context, additionalInfo, retryCallback);
+                break;
+            case GEMINI_API_ERROR:
+                showGeminiApiError(context, additionalInfo, retryCallback);
                 break;
             case TOKEN_LIMIT_EXCEEDED:
                 showTokenLimitError(context, additionalInfo);
@@ -211,6 +215,30 @@ public class ErrorDialogHelper {
             .setTitle("Claude API Error")
             .setMessage(message)
             .setIcon(R.drawable.ic_claude)
+            .setNegativeButton("Dismiss", null);
+
+        if (retryCallback != null) {
+            builder.setPositiveButton("Retry", (dialog, which) -> retryCallback.onRetry());
+        }
+
+        builder.show();
+    }
+
+    /**
+     * Gemini API error with retry option
+     */
+    private static void showGeminiApiError(Context context, @Nullable String details,
+                                           @Nullable RetryCallback retryCallback) {
+        String message = "Google Gemini API returned an error.\n\n";
+        if (details != null && !details.isEmpty()) {
+            message += "Details: " + details + "\n\n";
+        }
+        message += "This may be a temporary issue or safety filters triggered. Try again or check your prompt.";
+
+        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context)
+            .setTitle("Gemini API Error")
+            .setMessage(message)
+            .setIcon(R.drawable.ic_launcher_foreground) // Use default AI icon if ic_gemini not available
             .setNegativeButton("Dismiss", null);
 
         if (retryCallback != null) {
