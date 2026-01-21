@@ -719,7 +719,7 @@ public class TabbedTerminalActivity extends AppCompatActivity {
     /**
      * Get the currently active TerminalFragment
      */
-    private TerminalFragment getCurrentTerminalFragment() {
+    public TerminalFragment getCurrentTerminalFragment() {
         return (TerminalFragment) getSupportFragmentManager()
             .findFragmentByTag("f" + viewPager.getCurrentItem());
     }
