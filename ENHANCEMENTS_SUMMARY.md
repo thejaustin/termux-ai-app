@@ -39,7 +39,7 @@
 **Problem:** When adding API keys, only one was saved (the currently selected provider). Switching providers would lose the previous key.
 
 **Fixes Applied:**
-- **TermuxAISettingsActivity.java** (app/src/main/java/com/termux/app/TermuxAISettingsActivity.java):
+- **TermuxPlusSettingsActivity.java** (app/src/main/java/com/termux/app/TermuxPlusSettingsActivity.java):
   - Added `loadApiKeyForProvider()` method that:
     - Saves current API key before switching providers
     - Loads the appropriate key for the newly selected provider
@@ -53,7 +53,7 @@
 **Problem:** Material You (Dynamic Colors) toggle didn't apply immediately - required app restart.
 
 **Fixes Applied:**
-- **TermuxAISettingsActivity.java**:
+- **TermuxPlusSettingsActivity.java**:
   - Added immediate theme application when Dynamic Colors is enabled
   - Calls `DynamicColors.applyToActivitiesIfAvailable()` immediately
   - Automatically restarts the main activity with proper flags
@@ -185,7 +185,7 @@ When testing via GitHub Actions build:
 2. `app/src/main/java/com/termux/terminal/TerminalViewInputConnection.java` - Complete rewrite for input
 3. `app/src/main/java/com/termux/terminal/EnhancedTerminalView.java` - Focus and keyboard enhancements
 4. `app/src/main/java/com/termux/app/TerminalFragment.java` - Auto keyboard display
-5. `app/src/main/java/com/termux/app/TermuxAISettingsActivity.java` - API key saving + theme fixes
+5. `app/src/main/java/com/termux/app/TermuxPlusSettingsActivity.java` - API key saving + theme fixes
 6. `app/src/main/res/layout/activity_settings.xml` - CLI login info card
 
 ## Known Considerations
@@ -217,7 +217,7 @@ When testing via GitHub Actions build:
 
 ### Implementation
 - `TermuxAIApplication.java`: Enhanced with DynamicColorsOptions and theme management
-- `TermuxAISettingsActivity.java`: Complete theme control UI
+- `TermuxPlusSettingsActivity.java`: Complete theme control UI
 - `activity_settings.xml`: Beautiful Material 3 theme settings layout
 - Proper Material 3 color roles throughout the app
 - Graceful fallback for Android <12 devices

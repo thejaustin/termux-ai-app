@@ -95,7 +95,7 @@ Base themes use Material 3 Dynamic Colors:
 - Color style radio group (Expressive/Vibrant/Tonal)
 - Android 12+ availability indicator
 
-### Settings Activity (`TermuxAISettingsActivity.java`)
+### Settings Activity (`TermuxPlusSettingsActivity.java`)
 
 **Enhanced Features:**
 - Real-time dynamic colors status updates
@@ -263,7 +263,7 @@ Always test both theme modes:
    - Added theme management methods
    - Implemented style switching
 
-2. **TermuxAISettingsActivity.java**
+2. **TermuxPlusSettingsActivity.java**
    - Added theme UI elements
    - Implemented load/save for themes
    - Added real-time status updates

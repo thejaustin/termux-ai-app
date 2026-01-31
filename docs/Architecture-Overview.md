@@ -16,7 +16,7 @@ app/src/main/java/com/termux/
 ├── app/                   # Main app activities
 │   ├── TabbedTerminalActivity.java # Main activity with tab management
 │   ├── TerminalFragment.java # Individual terminal instances
-│   ├── TermuxAISettingsActivity.java # AI provider configuration
+│   ├── TermuxPlusSettingsActivity.java # AI provider configuration
 │   ├── ClaudeHelpDialog.java # Help documentation dialog
 │   ├── ClaudeQuickActionsDialog.java # Quick actions for Claude
 │   ├── ProjectInsightsDialog.java # Project analysis and insights

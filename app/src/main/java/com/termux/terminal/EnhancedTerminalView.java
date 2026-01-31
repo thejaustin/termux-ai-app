@@ -308,6 +308,14 @@ public class EnhancedTerminalView extends TerminalView {
         return new TerminalViewInputConnection(this, true);
     }
 
+    public void setGboardAutoCompleteEnabled(boolean enabled) {
+        this.gboardAutoCompleteEnabled = enabled;
+        // Re-create input connection to apply changes
+        if (inputMethodManager != null) {
+            inputMethodManager.restartInput(this);
+        }
+    }
+
     public void showKeyboard() {
         if (inputMethodManager != null) {
             inputMethodManager.showSoftInput(this, InputMethodManager.SHOW_IMPLICIT);

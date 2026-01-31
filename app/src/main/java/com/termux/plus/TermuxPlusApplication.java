@@ -118,4 +118,32 @@ public class TermuxPlusApplication extends Application {
     public boolean isClaudeEnabled() {
         return preferences.getBoolean("claude_enabled", true);
     }
+
+    public boolean areDynamicColorsAvailable() {
+        return android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S;
+    }
+
+    public boolean isDynamicColorsEnabled() {
+        return preferences.getBoolean(PREF_DYNAMIC_COLORS, true);
+    }
+
+    public void setDynamicColorsEnabled(boolean enabled) {
+        preferences.edit().putBoolean(PREF_DYNAMIC_COLORS, enabled).apply();
+    }
+
+    public int getNightMode() {
+        return preferences.getInt("night_mode", AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+    }
+
+    public void setNightMode(int nightMode) {
+        preferences.edit().putInt("night_mode", nightMode).apply();
+    }
+
+    public String getThemeStyle() {
+        return preferences.getString("theme_style", "expressive");
+    }
+
+    public void setThemeStyle(String style) {
+        preferences.edit().putString("theme_style", style).apply();
+    }
 }

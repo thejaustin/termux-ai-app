@@ -3,21 +3,23 @@
 ## Current Project Status
 - **Project Name:** Termux+ (formerly Termux AI)
 - **Version:** 2.0.0
-- **Architecture:** Modular Plugin System
+- **Architecture:** Modular Plugin System (Host-Plugin Model)
 - **Key Modules:**
-    - `app`: Main application, plugin host.
-    - `terminal-emulator`: Core terminal logic.
+    - `app`: Main application, plugin host, UI.
+    - `terminal-emulator`: Core terminal logic, native PTY layer.
 - **Plugins:**
     - `ClaudePlugin` (com.termux.plus.claude): Official Claude Code integration.
-    - `AutoSavePlugin` (com.termux.plus.autosave): Example utility.
+    - `AutoSavePlugin` (com.termux.plus.autosave): Example terminal extension.
 
 ## Development Goals
-- Expand plugin ecosystem.
-- Support dynamic loading of 3rd party plugins (DEX/APK).
-- Maintain robust AI integration (Claude, Gemini, etc.).
+- [DONE] Define modular plugin architecture.
+- [DONE] Implement Plugin Manager and Settings UI.
+- [DONE] Rebrand to Termux+.
+- [TODO] Support dynamic loading of 3rd party plugins via `DexClassLoader`.
+- [TODO] Implement on-device AI model support.
 
 ## Recent Changes
-- Rebranded to Termux+.
-- Refactored `ClaudeCodeIntegration` into `ClaudePlugin` implementing `AIProvider`.
-- Added `PluginManager` and Plugin Settings UI.
-- Decoupled `EnhancedTerminalView` from specific AI implementations.
+- Fixed syntax errors in `TabbedTerminalActivity` and `PluginSettingsActivity`.
+- Renamed `TermuxAISettingsActivity` to `TermuxPlusSettingsActivity`.
+- Moved `TermuxPlusApplication` to `com.termux.plus`.
+- Updated `README.md` and `strings.xml` for full Termux+ v2.0.0 branding.

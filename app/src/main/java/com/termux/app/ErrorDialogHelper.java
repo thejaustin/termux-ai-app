@@ -147,7 +147,7 @@ public class ErrorDialogHelper {
             .setIcon(R.drawable.ic_auth_error)
             .setNegativeButton("Dismiss", null)
             .setPositiveButton("Open Settings", (dialog, which) -> {
-                Intent intent = new Intent(context, TermuxAISettingsActivity.class);
+                Intent intent = new Intent(context, TermuxPlusSettingsActivity.class);
                 context.startActivity(intent);
             })
             .show();
@@ -267,7 +267,7 @@ public class ErrorDialogHelper {
             .setIcon(R.drawable.ic_token_limit)
             .setNegativeButton("Dismiss", null)
             .setNeutralButton("Settings", (dialog, which) -> {
-                Intent intent = new Intent(context, TermuxAISettingsActivity.class);
+                Intent intent = new Intent(context, TermuxPlusSettingsActivity.class);
                 context.startActivity(intent);
             })
             .setPositiveButton("New Conversation", (dialog, which) -> {

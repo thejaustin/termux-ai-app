@@ -157,7 +157,7 @@ public class TermuxPlusSettingsActivity extends AppCompatActivity {
 
                         @Override
                         public void onAuthenticationError(String error) {
-                            Toast.makeText(TermuxAISettingsActivity.this, "Auth error: " + error, Toast.LENGTH_LONG).show();
+                            Toast.makeText(TermuxPlusSettingsActivity.this, "Auth error: " + error, Toast.LENGTH_LONG).show();
                         }
 
                         @Override
