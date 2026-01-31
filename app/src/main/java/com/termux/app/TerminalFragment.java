@@ -27,6 +27,10 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import com.termux.plus.api.AIProvider;
+import com.termux.plus.plugin.PluginManager;
+import com.termux.plus.plugin.impl.ClaudePlugin;
+
 import java.lang.ref.WeakReference;
 
 /**
@@ -118,6 +122,17 @@ public class TerminalFragment extends Fragment implements TerminalSessionClient 
             terminalView.requestFocus();
             terminalView.showKeyboard();
         });
+        
+        // Setup AI Provider
+        if (getContext() != null) {
+            PluginManager manager = PluginManager.getInstance(getContext());
+            // Use the first enabled AI provider
+            List<AIProvider> providers = manager.getEnabledPluginsByType(AIProvider.class);
+            if (!providers.isEmpty()) {
+                terminalView.setTabIndex(tabIndex);
+                terminalView.setAIProvider(providers.get(0));
+            }
+        }
         
         // Set Claude Code listener
         terminalView.setClaudeCodeListener(new EnhancedTerminalView.ClaudeCodeListener() {

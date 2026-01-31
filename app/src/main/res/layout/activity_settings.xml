@@ -16,6 +16,15 @@
             android:text="@string/settings_title"
             android:textSize="24sp"
             android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <Button
+            android:id="@+id/btn_manage_plugins"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Manage Plugins"
+            android:drawableStart="@drawable/ic_settings"
             android:layout_marginBottom="24dp" />
 
         <!-- Appearance Section -->

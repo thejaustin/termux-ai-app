@@ -32,6 +32,9 @@ jobs:
     - name: Create local.properties
       run: echo "sdk.dir=$ANDROID_HOME" > local.properties
 
+    - name: Run AI Code Review Agent
+      run: python3 tools/review_agent.py
+
     - name: Build Debug APK
       run: gradle assembleDebug --stacktrace --no-daemon
 

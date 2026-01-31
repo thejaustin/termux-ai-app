@@ -12,46 +12,38 @@ import android.util.AttributeSet;
 import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import com.termux.ai.ClaudeCodeIntegration;
-import com.termux.app.TabbedTerminalActivity;
-import com.termux.terminal.TerminalEmulator;
-import com.termux.terminal.TerminalSession;
+import com.termux.plus.api.AIProvider;
 import com.termux.view.TerminalView;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
- * Enhanced TerminalView for Termux AI
+ * Enhanced TerminalView for Termux+
  * 
  * Key enhancements:
- * - Claude Code integration and detection
+ * - AI Provider integration (modular)
  * - Gboard autocomplete support
  * - Visual indicators for AI operations
  * - Enhanced text selection for mobile
- * - Progress tracking for Claude operations
- * - File operation highlighting
+ * - Progress tracking and file highlighting
  */
 public class EnhancedTerminalView extends TerminalView {
     private static final String TAG = "EnhancedTerminalView";
     
-    // Claude Code integration
-    private ClaudeCodeIntegration claudeIntegration;
-    private boolean isClaudeCodeActive = false;
-    private String currentClaudeOperation = "";
-    private float claudeProgress = 0.0f;
+    // AI Integration
+    private AIProvider currentAIProvider;
+    private boolean isAIActive = false;
+    private String currentAIOperation = "";
+    private float aiProgress = 0.0f;
+    private int tabIndex = -1;
     
     // Gboard integration
     private boolean gboardAutoCompleteEnabled = true;
@@ -66,11 +58,7 @@ public class EnhancedTerminalView extends TerminalView {
     // Gesture handling
     private GestureDetector gestureDetector;
     private Handler mainHandler;
-    
-    // Claude Code patterns
-    private static final Pattern CLAUDE_START_PATTERN = Pattern.compile("claude code|claude-code");
-    private static final Pattern CLAUDE_PROGRESS_PATTERN = Pattern.compile("\\[▓*░*\\]\\s*(\\d+)%");
-    private static final Pattern CLAUDE_FILE_PATTERN = Pattern.compile("├─\\s*([^\\s]+)\\s*✨\\s*(NEW|MODIFIED)");
+    private ExecutorService backgroundExecutor;
     
     public interface ClaudeCodeListener {
         void onClaudeCodeDetected();
@@ -82,39 +70,36 @@ public class EnhancedTerminalView extends TerminalView {
         void onClaudeTokenUsageUpdated(int used, int total);
     }
     
-    private ClaudeCodeListener claudeListener;
+    private ClaudeCodeListener legacyListener;
     
     public EnhancedTerminalView(Context context, AttributeSet attrs) {
         super(context, attrs);
         initialize();
     }
     
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-// ... (imports)
-
-public class EnhancedTerminalView extends TerminalView {
-    // ... (fields)
-    private ExecutorService backgroundExecutor;
-
-    // ... (constructors)
-
     private void initialize() {
-        claudeIntegration = new ClaudeCodeIntegration();
         inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         fileHighlights = new ArrayList<>();
         mainHandler = new Handler(Looper.getMainLooper());
         backgroundExecutor = Executors.newSingleThreadExecutor();
 
-        // Make view focusable for keyboard input
         setFocusable(true);
         setFocusableInTouchMode(true);
         setClickable(true);
 
         initializePaints();
         setupGestureDetector();
-        setupClaudeIntegration();
+    }
+
+    public void setAIProvider(AIProvider provider) {
+        this.currentAIProvider = provider;
+        if (provider != null) {
+            setupAIProviderListener();
+        }
+    }
+
+    public void setTabIndex(int index) {
+        this.tabIndex = index;
     }
 
     @Override
@@ -125,134 +110,247 @@ public class EnhancedTerminalView extends TerminalView {
         }
     }
 
-    // ... (rest of the file until onTextChanged)
+    // ... (paints and gestures same as before) ...
+    
+    private void initializePaints() {
+        overlayPaint = new Paint();
+        overlayPaint.setAntiAlias(true);
+        overlayPaint.setColor(0x88000000); 
+        
+        progressPaint = new Paint();
+        progressPaint.setAntiAlias(true);
+        progressPaint.setColor(0xFF4CAF50); 
+        progressPaint.setStrokeWidth(8);
+        
+        highlightPaint = new Paint();
+        highlightPaint.setAntiAlias(true);
+        highlightPaint.setColor(0x4400FF00); 
+    }
+
+    private void setupGestureDetector() {
+        gestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
+            @Override
+            public boolean onDoubleTap(MotionEvent e) {
+                // Implementation for double tap
+                return true;
+            }
+            // ... (other gestures)
+        });
+    }
+
+    private void setupAIProviderListener() {
+        currentAIProvider.setAIListener(new AIProvider.AIListener() {
+            @Override
+            public void onOperationDetected(String operation) {
+                mainHandler.post(() -> {
+                    isAIActive = true;
+                    currentAIOperation = operation;
+                    invalidate();
+                    if (legacyListener != null) legacyListener.onClaudeOperationStarted(operation);
+                });
+            }
+
+            @Override
+            public void onProgressUpdated(float progress) {
+                mainHandler.post(() -> {
+                    aiProgress = progress;
+                    invalidate(0, getHeight() - 50, getWidth(), getHeight());
+                    if (legacyListener != null) legacyListener.onClaudeProgressUpdated(progress);
+                });
+            }
+
+            @Override
+            public void onFileGenerated(String filePath, String action) {
+                mainHandler.post(() -> {
+                    addFileHighlight(filePath, action);
+                    if (legacyListener != null) legacyListener.onClaudeFileGenerated(filePath, action);
+                });
+            }
+
+            @Override
+            public void onError(String error) {
+                mainHandler.post(() -> {
+                    if (legacyListener != null) legacyListener.onClaudeErrorDetected(error);
+                });
+            }
+
+            @Override
+            public void onCompleted() {
+                mainHandler.post(() -> {
+                    isAIActive = false;
+                    currentAIOperation = "";
+                    aiProgress = 0.0f;
+                    invalidate();
+                    if (legacyListener != null) legacyListener.onClaudeOperationCompleted();
+                });
+            }
+
+            @Override
+            public void onTokenUsage(int used, int total) {
+                mainHandler.post(() -> {
+                    if (legacyListener != null) legacyListener.onClaudeTokenUsageUpdated(used, total);
+                });
+            }
+        });
+    }
 
     @Override
     public void onTextChanged(CharSequence text, int start, int lengthBefore, int lengthAfter) {
         super.onTextChanged(text, start, lengthBefore, lengthAfter);
         
-        // Detect Claude Code activation
-        // Fetch string on UI thread to ensure thread safety with emulator
         final String currentLine = getCurrentLine();
         
-        if (currentLine != null && backgroundExecutor != null && !backgroundExecutor.isShutdown()) {
+        if (currentLine != null && currentAIProvider != null && !backgroundExecutor.isShutdown()) {
             backgroundExecutor.execute(() -> {
-                detectClaudeCode(currentLine);
-                if (isClaudeCodeActive) {
-                    parseClaudeOutput(currentLine);
-                }
-            });
-        }
-    }
-    
-    // ... (getCurrentLine)
-
-    private void detectClaudeCode(String text) {
-        Matcher matcher = CLAUDE_START_PATTERN.matcher(text.toLowerCase());
-        if (matcher.find() && !isClaudeCodeActive) {
-            mainHandler.post(() -> {
-                if (!isClaudeCodeActive) { // Check again in case of race
-                    isClaudeCodeActive = true;
-                    invalidate();
-                    if (claudeListener != null) {
-                        claudeListener.onClaudeCodeDetected();
-                    }
-                    
-                    // Show helpful toast
-                    Toast.makeText(getContext(), 
-                        "Claude Code detected! 🤖\nSwipe down to stop • Double-tap for history", 
-                        Toast.LENGTH_LONG).show();
+                if (currentAIProvider.isEnabled()) {
+                    currentAIProvider.processTerminalOutput(currentLine, tabIndex);
                 }
             });
         }
     }
 
-    // ... (rest of file)
-    
-    private void parseClaudeOutput(String text) {
-        // Parse progress indicators
-        Matcher progressMatcher = CLAUDE_PROGRESS_PATTERN.matcher(text);
-        if (progressMatcher.find()) {
-            try {
-                int progress = Integer.parseInt(progressMatcher.group(1));
-                claudeIntegration.updateProgress(progress / 100.0f);
-            } catch (NumberFormatException e) {
-                // Ignore parsing errors
+    private String getCurrentLine() {
+        try {
+            TerminalSession session = getCurrentSession();
+            if (session != null) {
+                TerminalEmulator emulator = session.getEmulator();
+                if (emulator != null) {
+                    return emulator.getScreen().getSelectedText(0, emulator.getCursorRow(), 
+                        emulator.getScreen().getColumns(), emulator.getCursorRow());
+                }
+            }
+        } catch (Exception e) {
+            // Ignore errors
+        }
+        return null;
+    }
+
+    // ... (drawing methods adapted for generic AI) ...
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+        super.onDraw(canvas);
+        if (isAIActive) {
+            drawAIOverlays(canvas);
+            drawProgressIndicator(canvas);
+        }
+        drawFileHighlights(canvas);
+    }
+
+    private void drawAIOverlays(Canvas canvas) {
+        int width = getWidth();
+        
+        // Top indicator bar
+        canvas.drawRect(0, 0, width, 4, progressPaint);
+        
+        // Status text
+        if (!currentAIOperation.isEmpty()) {
+            String statusText = "🤖 " + currentAIOperation;
+            Paint textPaint = new Paint();
+            textPaint.setColor(0xFF4CAF50);
+            textPaint.setTextSize(24);
+            textPaint.setTypeface(Typeface.DEFAULT_BOLD);
+            
+            Rect textBounds = new Rect();
+            textPaint.getTextBounds(statusText, 0, statusText.length(), textBounds);
+            
+            canvas.drawText(statusText, width - textBounds.width() - 16, 32, textPaint);
+        }
+    }
+
+    private void drawProgressIndicator(Canvas canvas) {
+        if (aiProgress > 0 && aiProgress < 1.0f) {
+            int width = getWidth();
+            int progressWidth = (int)(width * aiProgress);
+            
+            canvas.drawRect(0, getHeight() - 8, progressWidth, getHeight(), progressPaint);
+        }
+    }
+
+    private void drawFileHighlights(Canvas canvas) {
+        long currentTime = System.currentTimeMillis();
+        boolean needsInvalidate = false;
+        
+        fileHighlights.removeIf(highlight -> currentTime - highlight.timestamp > 5000);
+        
+        for (FileHighlight highlight : fileHighlights) {
+            float alpha = 1.0f - ((currentTime - highlight.timestamp) / 5000.0f);
+            if (alpha > 0) {
+                highlightPaint.setAlpha((int)(alpha * 68));
+                canvas.drawRect(highlight.rect, highlightPaint);
+                needsInvalidate = true;
             }
         }
         
-        // Parse file operations
-        Matcher fileMatcher = CLAUDE_FILE_PATTERN.matcher(text);
-        if (fileMatcher.find()) {
-            String filePath = fileMatcher.group(1);
-            String action = fileMatcher.group(2);
-            claudeIntegration.reportFileGenerated(filePath, action);
+        if (needsInvalidate) {
+            postInvalidateOnAnimation();
         }
     }
-    
+
     private void addFileHighlight(String filePath, String action) {
-        // Find the line containing this file path and highlight it
         FileHighlight highlight = new FileHighlight();
         highlight.filePath = filePath;
         highlight.action = action;
         highlight.timestamp = System.currentTimeMillis();
-        
-        // Calculate highlight rectangle (simplified - would need proper text measurement)
-        highlight.rect = new Rect(0, 0, getWidth(), 40); // Placeholder
-        
+        highlight.rect = new Rect(0, 0, getWidth(), 40); 
         fileHighlights.add(highlight);
         invalidate();
     }
-    
-    private void showClaudeHistory() {
-        // Implementation would show a dialog with Claude message history
-        Toast.makeText(getContext(), "Claude History (Double-tap feature)", Toast.LENGTH_SHORT).show();
+
+    // Input connection and keyboard handling...
+    @Override
+    public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
+        outAttrs.inputType = InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
+        outAttrs.imeOptions = EditorInfo.IME_ACTION_UNSPECIFIED | EditorInfo.IME_FLAG_NO_EXTRACT_UI | EditorInfo.IME_FLAG_NO_FULLSCREEN;
+        if (gboardAutoCompleteEnabled) {
+            outAttrs.inputType |= InputType.TYPE_TEXT_FLAG_AUTO_COMPLETE | InputType.TYPE_TEXT_FLAG_AUTO_CORRECT;
+        }
+        return new TerminalViewInputConnection(this, true);
     }
-    
-    private void stopClaudeOperation() {
-        // Send Escape key to stop Claude operation
-        sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_ESCAPE));
-        sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_ESCAPE));
-        
-        Toast.makeText(getContext(), "Stopping Claude operation...", Toast.LENGTH_SHORT).show();
-    }
-    
-    /**
-     * Send a key event to the terminal
-     * @param keyEvent The key event to send
-     */
-    private void sendKeyEvent(KeyEvent keyEvent) {
-        // Dispatch the key event to be processed by the terminal
-        dispatchKeyEvent(keyEvent);
-    }
-    
-    private void startEnhancedTextSelection(MotionEvent e) {
-        // Enhanced text selection for mobile - would implement better selection handles
-        performLongClick();
-    }
-    
-    // Setters and getters
-    public void setClaudeCodeListener(ClaudeCodeListener listener) {
-        this.claudeListener = listener;
-    }
-    
-    public void setGboardAutoCompleteEnabled(boolean enabled) {
-        this.gboardAutoCompleteEnabled = enabled;
+
+    public void showKeyboard() {
         if (inputMethodManager != null) {
-            inputMethodManager.restartInput(this);
+            inputMethodManager.showSoftInput(this, InputMethodManager.SHOW_IMPLICIT);
         }
     }
-    
-    public boolean isClaudeCodeActive() {
-        return isClaudeCodeActive;
+
+    public void hideKeyboard() {
+        if (inputMethodManager != null) {
+            inputMethodManager.hideSoftInputFromWindow(getWindowToken(), 0);
+        }
     }
-    
+
+    @Override
+    public boolean onCheckIsTextEditor() {
+        return true;
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (gestureDetector != null && gestureDetector.onTouchEvent(event)) {
+            return true;
+        }
+        if (event.getAction() == MotionEvent.ACTION_DOWN) {
+            if (!hasFocus()) requestFocus();
+            showKeyboard();
+        }
+        return super.onTouchEvent(event);
+    }
+
+    // Legacy support methods
+    public void setClaudeCodeListener(ClaudeCodeListener listener) {
+        this.legacyListener = listener;
+    }
+
+    public boolean isClaudeCodeActive() {
+        return isAIActive;
+    }
+
     public void forceClaudeCodeMode(boolean active) {
-        this.isClaudeCodeActive = active;
+        this.isAIActive = active;
         invalidate();
     }
-    
-    // Helper classes
+
     private static class FileHighlight {
         String filePath;
         String action;
