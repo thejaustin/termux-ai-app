@@ -366,7 +366,11 @@ public class TabbedTerminalActivity extends AppCompatActivity {
 
             @Override
             public void onTokenUsage(int used, int total) {
-                runOnUiThread(() -> binding.claudeStatusText.setText("🤖 Claude: Tokens " + used + "/" + total));
+                runOnUiThread(() -> {
+                    if (binding != null && binding.claudeStatusText != null) {
+                        binding.claudeStatusText.setText("🤖 Claude: Tokens " + used + "/" + total);
+                    }
+                });
             }
         });
     }

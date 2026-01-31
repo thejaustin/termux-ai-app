@@ -4,4 +4,5 @@
     <item name="btn_model" type="id" />
     <item name="btn_biometric_auth" type="id" />
     <item name="btn_clear_ai_data" type="id" />
+    <item name="action_new_window" type="id" />
 </resources>
