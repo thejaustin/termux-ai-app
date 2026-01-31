@@ -1,4 +1,4 @@
-package com.termux.ai;
+package com.termux.plus;
 
 import android.app.Application;
 import android.content.SharedPreferences;
@@ -8,6 +8,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatDelegate;
 
 import com.google.android.material.color.DynamicColors;
+import com.termux.ai.BuildConfig;
+import com.termux.ai.EncryptedPreferencesManager;
 import com.termux.plus.plugin.PluginManager;
 import com.termux.plus.plugin.impl.AutoSavePlugin;
 import com.termux.plus.plugin.impl.ClaudePlugin;

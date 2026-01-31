@@ -24,7 +24,7 @@
     -->
 
     <application
-        android:name="com.termux.ai.TermuxPlusApplication"
+        android:name="com.termux.plus.TermuxPlusApplication"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -78,7 +78,7 @@
 
         <!-- Settings Activity -->
         <activity
-            android:name="com.termux.app.TermuxAISettingsActivity"
+            android:name="com.termux.app.TermuxPlusSettingsActivity"
             android:exported="false"
             android:label="@string/settings_title"
             android:parentActivityName="com.termux.app.TabbedTerminalActivity" />
@@ -87,7 +87,7 @@
             android:name="com.termux.app.PluginSettingsActivity"
             android:exported="false"
             android:label="Plugins"
-            android:parentActivityName="com.termux.app.TermuxAISettingsActivity"
+            android:parentActivityName="com.termux.app.TermuxPlusSettingsActivity"
             android:theme="@style/Theme.TermuxAI" />
 
         <!-- Claude Code Setup Activity -->

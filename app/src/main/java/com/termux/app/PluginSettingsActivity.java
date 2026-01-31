@@ -71,7 +71,7 @@ public class PluginSettingsActivity extends AppCompatActivity {
             SwitchMaterial enabledSwitch;
 
             ViewHolder(View itemView) {
-                super(view);
+                super(itemView);
                 name = itemView.findViewById(R.id.plugin_name);
                 description = itemView.findViewById(R.id.plugin_description);
                 meta = itemView.findViewById(R.id.plugin_meta);

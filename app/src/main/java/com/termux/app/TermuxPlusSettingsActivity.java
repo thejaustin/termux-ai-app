@@ -17,11 +17,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.termux.ai.R;
-import com.termux.ai.TermuxAIApplication;
+import com.termux.plus.TermuxPlusApplication;
 
-public class TermuxAISettingsActivity extends AppCompatActivity {
+public class TermuxPlusSettingsActivity extends AppCompatActivity {
     
-    private static final String PREFS_NAME = "termux_ai_prefs";
+    private static final String PREFS_NAME = "termux_plus_prefs";
     private static final String PREF_AI_PROVIDER = "ai_provider";
     private static final String PREF_GEMINI_API_KEY = "gemini_api_key";
     private static final String PREF_CLAUDE_API_KEY = "auth_token";
@@ -57,7 +57,7 @@ public class TermuxAISettingsActivity extends AppCompatActivity {
 
     private Button saveButton;
     private SharedPreferences prefs;
-    private TermuxAIApplication app;
+    private TermuxPlusApplication app;
     private boolean isAuthorized = false;
 
     @Override
@@ -74,7 +74,7 @@ public class TermuxAISettingsActivity extends AppCompatActivity {
 
         // Use encrypted preferences for all settings to ensure security
         prefs = com.termux.ai.EncryptedPreferencesManager.getEncryptedPrefs(this, PREFS_NAME);
-        app = (TermuxAIApplication) getApplication();
+        app = (TermuxPlusApplication) getApplication();
 
         // Theme settings
         dynamicColorsSwitch = findViewById(R.id.dynamic_colors_switch);
@@ -152,7 +152,7 @@ public class TermuxAISettingsActivity extends AppCompatActivity {
                             apiKeyInput.setEnabled(true);
                             btnBiometricAuth.setVisibility(View.GONE);
                             loadSettings(); // Populate keys now that we are authorized
-                            Toast.makeText(TermuxAISettingsActivity.this, "Authorized", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(TermuxPlusSettingsActivity.this, "Authorized", Toast.LENGTH_SHORT).show();
                         }
 
                         @Override
