@@ -15,9 +15,9 @@
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
     <!-- Removed unused dangerous permissions:
-         - RECORD_AUDIO (not implemented)
          - CAMERA (not implemented)
          - SYSTEM_ALERT_WINDOW (not needed)
          - BODY_SENSORS (not required for accelerometer/shake detection)
@@ -39,7 +39,8 @@
         <activity
             android:name="com.termux.app.TabbedTerminalActivity"
             android:exported="true"
-            android:launchMode="singleTask"
+            android:launchMode="standard"
+            android:documentLaunchMode="always"
             android:theme="@style/Theme.TermuxAI.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateVisible"
             android:configChanges="orientation|screenSize|keyboardHidden">

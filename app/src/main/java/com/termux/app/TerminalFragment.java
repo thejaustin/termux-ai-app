@@ -27,6 +27,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import java.lang.ref.WeakReference;
+
 /**
  * Fragment containing an enhanced terminal with Claude Code integration
  */
@@ -41,8 +43,7 @@ public class TerminalFragment extends Fragment implements TerminalSessionClient 
     
     private EnhancedTerminalView terminalView;
     private TerminalSession terminalSession;
-    private TabbedTerminalActivity parentActivity;
-    private ShakeDetector shakeDetector;
+    private WeakReference<TabbedTerminalActivity> parentActivityRef;
     
     public static TerminalFragment newInstance(String tabName, String workingDirectory, int tabIndex) {
         TerminalFragment fragment = new TerminalFragment();
@@ -62,28 +63,15 @@ public class TerminalFragment extends Fragment implements TerminalSessionClient 
             workingDirectory = getArguments().getString(ARG_WORKING_DIR);
             tabIndex = getArguments().getInt(ARG_TAB_INDEX);
         }
-
-        shakeDetector = new ShakeDetector(requireContext(), () -> {
-            if (getContext() != null) {
-                clearTerminal();
-                Toast.makeText(getContext(), "Terminal cleared (Shake)", Toast.LENGTH_SHORT).show();
-            }
-        });
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if (shakeDetector != null) {
-            shakeDetector.start();
-        }
     }
 
     @Override
     public void onPause() {
-        if (shakeDetector != null) {
-            shakeDetector.stop();
-        }
         super.onPause();
     }
     
@@ -91,7 +79,16 @@ public class TerminalFragment extends Fragment implements TerminalSessionClient 
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
         if (context instanceof TabbedTerminalActivity) {
-            parentActivity = (TabbedTerminalActivity) context;
+            parentActivityRef = new WeakReference<>((TabbedTerminalActivity) context);
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        if (parentActivityRef != null) {
+            parentActivityRef.clear();
+            parentActivityRef = null;
         }
     }
     
@@ -126,9 +123,10 @@ public class TerminalFragment extends Fragment implements TerminalSessionClient 
         terminalView.setClaudeCodeListener(new EnhancedTerminalView.ClaudeCodeListener() {
             @Override
             public void onClaudeCodeDetected() {
-                if (parentActivity != null) {
+                TabbedTerminalActivity activity = parentActivityRef != null ? parentActivityRef.get() : null;
+                if (activity != null) {
                     // Update tab to show Claude is active
-                    TabbedTerminalActivity.TerminalTab tab = parentActivity.getTab(tabIndex);
+                    TabbedTerminalActivity.TerminalTab tab = activity.getTab(tabIndex);
                     if (tab != null) {
                         tab.setClaudeActive(true);
                     }
@@ -152,8 +150,9 @@ public class TerminalFragment extends Fragment implements TerminalSessionClient 
             
             @Override
             public void onClaudeOperationCompleted() {
-                if (parentActivity != null) {
-                    TabbedTerminalActivity.TerminalTab tab = parentActivity.getTab(tabIndex);
+                TabbedTerminalActivity activity = parentActivityRef != null ? parentActivityRef.get() : null;
+                if (activity != null) {
+                    TabbedTerminalActivity.TerminalTab tab = activity.getTab(tabIndex);
                     if (tab != null) {
                         tab.setClaudeActive(false);
                     }

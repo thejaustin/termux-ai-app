@@ -37,6 +37,15 @@ import java.io.Serializable;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import android.Manifest;
+import android.content.pm.PackageManager;
+import android.speech.RecognizerIntent;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.core.content.ContextCompat;
 
 public class TabbedTerminalActivity extends AppCompatActivity {
     private static final String TAG = "TabbedTerminalActivity";
@@ -44,6 +53,7 @@ public class TabbedTerminalActivity extends AppCompatActivity {
     private static final String PREFS_NAME = "terminal_tabs";
     private static final String KEY_TABS = "tabs";
     private long lastDoubleTapTime = 0;
+    private String sessionId;
 
     private ActivityTabbedTerminalBinding binding;
     private ViewPager2 viewPager;
@@ -57,6 +67,36 @@ public class TabbedTerminalActivity extends AppCompatActivity {
     private List<TerminalTab> terminalTabs;
     private ClaudeCodeIntegration claudeIntegration;
     private android.view.GestureDetector gestureDetector;
+    
+    private ExecutorService ioExecutor;
+
+    private final ActivityResultLauncher<Intent> speechRecognizerLauncher = registerForActivityResult(
+        new ActivityResultContracts.StartActivityForResult(),
+        result -> {
+            if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                ArrayList<String> matches = result.getData().getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                if (matches != null && !matches.isEmpty()) {
+                    String spokenText = matches.get(0);
+                    TerminalFragment fragment = getCurrentTerminalFragment();
+                    if (fragment != null) {
+                        fragment.sendCommand(spokenText);
+                        Toast.makeText(this, "Voice command: " + spokenText, Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        }
+    );
+
+    private final ActivityResultLauncher<String> requestPermissionLauncher = registerForActivityResult(
+        new ActivityResultContracts.RequestPermission(),
+        isGranted -> {
+            if (isGranted) {
+                startVoiceInput();
+            } else {
+                Toast.makeText(this, "Microphone permission required for voice input", Toast.LENGTH_SHORT).show();
+            }
+        }
+    );
 
     // Cached animations to prevent lag from repeated resource loading
     private android.view.animation.Animation slideInBottom;
@@ -83,6 +123,13 @@ public class TabbedTerminalActivity extends AppCompatActivity {
             
             // It would be better to save the state of the tabs, including the working directory and the command history, so that the user can resume their session.
             super.onCreate(savedInstanceState);
+            
+            ioExecutor = Executors.newSingleThreadExecutor();
+            
+            sessionId = getIntent().getStringExtra("SESSION_ID");
+            if (sessionId == null) {
+                sessionId = "default";
+            }
 
             // Validate incoming intents for security
             if (!validateIntent(getIntent())) {
@@ -163,7 +210,8 @@ public class TabbedTerminalActivity extends AppCompatActivity {
         terminalTabs = new ArrayList<>();
         tabAdapter = new TerminalTabAdapter(this);
             viewPager.setAdapter(tabAdapter);
-            viewPager.setOffscreenPageLimit(3); // Keep neighboring tabs in memory for performance
+            // Reduced offscreen limit from 3 to 1 to save memory, especially when multiple windows are open.
+            viewPager.setOffscreenPageLimit(1);
 
             // Add smooth transition animation
             viewPager.setPageTransformer((page, position) -> {
@@ -537,11 +585,22 @@ public class TabbedTerminalActivity extends AppCompatActivity {
     }
 
     public void showVoiceInputDialog() {
-        // Show a dialog or interface for voice input to Claude
-        Toast.makeText(this, "Voice input activated - would open microphone for Claude commands", Toast.LENGTH_SHORT).show();
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+            startVoiceInput();
+        } else {
+            requestPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO);
+        }
+    }
 
-        // In a real implementation, this would use Android's SpeechRecognizer
-        // to capture voice input and send it to Claude
+    private void startVoiceInput() {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Speak a command...");
+        try {
+            speechRecognizerLauncher.launch(intent);
+        } catch (Exception e) {
+            Toast.makeText(this, "Voice input not supported on this device", Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**
@@ -759,6 +818,12 @@ public class TabbedTerminalActivity extends AppCompatActivity {
         if (id == R.id.action_new_tab) {
             showNewTabDialog();
             return true;
+        } else if (id == R.id.action_new_window) {
+            Intent intent = new Intent(this, TabbedTerminalActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.putExtra("SESSION_ID", UUID.randomUUID().toString());
+            startActivity(intent);
+            return true;
         } else if (id == R.id.action_close_tab) {
             closeTab(viewPager.getCurrentItem());
             return true;
@@ -971,20 +1036,42 @@ public class TabbedTerminalActivity extends AppCompatActivity {
             .show();
     }
 
+    private String getPrefsName() {
+        if (sessionId == null || "default".equals(sessionId)) {
+            return PREFS_NAME;
+        }
+        return PREFS_NAME + "_" + sessionId;
+    }
+
     private void saveTabs() {
-        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        Gson gson = new Gson();
-        String json = gson.toJson(terminalTabs);
-        editor.putString(KEY_TABS, json);
-        editor.apply();
+        if (ioExecutor == null || ioExecutor.isShutdown()) return;
+
+        // Create a copy of the list to avoid ConcurrentModificationException if tabs change while saving
+        final List<TerminalTab> tabsToSave = new ArrayList<>(terminalTabs);
+        final String prefsName = getPrefsName();
+
+        ioExecutor.execute(() -> {
+            SharedPreferences prefs = getSharedPreferences(prefsName, MODE_PRIVATE);
+            SharedPreferences.Editor editor = prefs.edit();
+            Gson gson = new Gson();
+            String json = gson.toJson(tabsToSave);
+            editor.putString(KEY_TABS, json);
+            editor.apply(); // apply() is already async, but the JSON serialization above was the heavy part
+        });
     }
 
     private void loadTabs() {
         try {
-            SharedPreferences prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
+            SharedPreferences prefs = getSharedPreferences(getPrefsName(), MODE_PRIVATE);
             Gson gson = new Gson();
             String json = prefs.getString(KEY_TABS, null);
+            
+            // If this is a non-default session and no tabs exist yet, don't load default tabs
+            if (json == null && !"default".equals(sessionId)) {
+                createNewTab("home", getDefaultDirectory(), "Auto-detect");
+                return;
+            }
+
             Type type = new TypeToken<ArrayList<TerminalTab>>() {}.getType();
             List<TerminalTab> loadedTabs = gson.fromJson(json, type);
 
@@ -1012,6 +1099,10 @@ public class TabbedTerminalActivity extends AppCompatActivity {
 
         if (shakeDetector != null) {
             shakeDetector.stop();
+        }
+        
+        if (ioExecutor != null) {
+            ioExecutor.shutdown();
         }
     }
     

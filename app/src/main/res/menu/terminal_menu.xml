@@ -7,6 +7,11 @@
         android:title="@string/new_tab"
         android:icon="@drawable/ic_add"
         app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/action_new_window"
+        android:title="New Window"
+        app:showAsAction="never" />
         
     <item
         android:id="@+id/action_close_tab"

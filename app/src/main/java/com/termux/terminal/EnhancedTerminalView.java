@@ -89,11 +89,23 @@ public class EnhancedTerminalView extends TerminalView {
         initialize();
     }
     
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+// ... (imports)
+
+public class EnhancedTerminalView extends TerminalView {
+    // ... (fields)
+    private ExecutorService backgroundExecutor;
+
+    // ... (constructors)
+
     private void initialize() {
         claudeIntegration = new ClaudeCodeIntegration();
         inputMethodManager = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         fileHighlights = new ArrayList<>();
         mainHandler = new Handler(Looper.getMainLooper());
+        backgroundExecutor = Executors.newSingleThreadExecutor();
 
         // Make view focusable for keyboard input
         setFocusable(true);
@@ -106,375 +118,56 @@ public class EnhancedTerminalView extends TerminalView {
     }
 
     @Override
-    public boolean onCheckIsTextEditor() {
-        // This tells Android that this view can accept text input
-        return true;
-    }
-    
-    private void initializePaints() {
-        overlayPaint = new Paint();
-        overlayPaint.setAntiAlias(true);
-        overlayPaint.setColor(0x88000000); // Semi-transparent black
-        
-        progressPaint = new Paint();
-        progressPaint.setAntiAlias(true);
-        progressPaint.setColor(0xFF4CAF50); // Green
-        progressPaint.setStrokeWidth(8);
-        
-        highlightPaint = new Paint();
-        highlightPaint.setAntiAlias(true);
-        highlightPaint.setColor(0x4400FF00); // Semi-transparent green
-    }
-    
-    private void setupGestureDetector() {
-        gestureDetector = new GestureDetector(getContext(), new GestureDetector.SimpleOnGestureListener() {
-            @Override
-            public boolean onDoubleTap(MotionEvent e) {
-                if (isClaudeCodeActive) {
-                    showClaudeHistory();
-                    return true;
-                } else {
-                    // Double tap for zooming or other terminal actions
-                    performDoubleTapAction();
-                }
-                return false;
-            }
-
-            @Override
-            public boolean onSingleTapConfirmed(MotionEvent e) {
-                // Handle single tap actions
-                return handleSingleTap(e);
-            }
-
-            @Override
-            public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
-                // Swipe down to stop Claude operation (replaces Escape key)
-                if (e2.getY() - e1.getY() > 100 && Math.abs(velocityY) > 1000) {
-                    if (isClaudeCodeActive && !currentClaudeOperation.isEmpty()) {
-                        stopClaudeOperation();
-                        return true;
-                    }
-                }
-
-                // Swipe right to show side panel
-                if (e2.getX() - e1.getX() > 100 && Math.abs(velocityX) > 1000) {
-                    showSidePanel();
-                    return true;
-                }
-
-                // Swipe left to hide side panel
-                if (e1.getX() - e2.getX() > 100 && Math.abs(velocityX) > 1000) {
-                    hideSidePanel();
-                    return true;
-                }
-
-                return false;
-            }
-
-            @Override
-            public void onLongPress(MotionEvent e) {
-                // Enhanced text selection for mobile
-                startEnhancedTextSelection(e);
-            }
-        });
-    }
-
-    private boolean handleSingleTap(MotionEvent e) {
-        // Handle single tap actions like dismissing overlays
-        if (isClaudeCodeActive) {
-            // Maybe show quick actions or expand status
-            return false;
-        }
-        return false;
-    }
-
-    private void performDoubleTapAction() {
-        // Default double tap action could be zooming or showing quick menu
-        // This could be context-dependent
-    }
-
-    private void performTripleTapAction() {
-        // Triple tap could activate voice input for Claude
-        if (getContext() instanceof TabbedTerminalActivity) {
-            TabbedTerminalActivity activity = (TabbedTerminalActivity) getContext();
-            activity.showVoiceInputDialog();
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        if (backgroundExecutor != null) {
+            backgroundExecutor.shutdown();
         }
     }
 
-    private void showSidePanel() {
-        // This would trigger showing a side panel with quick actions
-        // Could be implemented in the parent activity
-    }
+    // ... (rest of the file until onTextChanged)
 
-    private void hideSidePanel() {
-        // Hide the side panel
-    }
-    
-    private void setupClaudeIntegration() {
-        claudeIntegration.setListener(new ClaudeCodeIntegration.ClaudeIntegrationListener() {
-            @Override
-            public void onOperationDetected(String operation) {
-                mainHandler.post(() -> {
-                    currentClaudeOperation = operation;
-                    if (claudeListener != null) {
-                        claudeListener.onClaudeOperationStarted(operation);
-                    }
-                });
-            }
-            
-            @Override
-            public void onProgressUpdated(float progress) {
-                mainHandler.post(() -> {
-                    // Throttle updates: only redraw if significant change or completion
-                    if (Math.abs(progress - claudeProgress) < 0.01f && progress < 1.0f && progress > 0.0f) {
-                        return;
-                    }
-                    
-                    claudeProgress = progress;
-                    // Only invalidate the bottom part where progress bar is (height - 50 pixels)
-                    invalidate(0, getHeight() - 50, getWidth(), getHeight()); 
-                    if (claudeListener != null) {
-                        claudeListener.onClaudeProgressUpdated(progress);
-                    }
-                });
-            }
-            
-            @Override
-            public void onFileGenerated(String filePath, String action) {
-                mainHandler.post(() -> {
-                    addFileHighlight(filePath, action);
-                    if (claudeListener != null) {
-                        claudeListener.onClaudeFileGenerated(filePath, action);
-                    }
-                });
-            }
-            
-            @Override
-            public void onOperationCompleted() {
-                mainHandler.post(() -> {
-                    currentClaudeOperation = "";
-                    claudeProgress = 0.0f;
-                    invalidate(0, getHeight() - 50, getWidth(), getHeight()); // Clear progress bar
-                    if (claudeListener != null) {
-                        claudeListener.onClaudeOperationCompleted();
-                    }
-                });
-            }
-            
-            @Override
-            public void onErrorDetected(String error) {
-                mainHandler.post(() -> {
-                    // Show user-friendly error dialog
-                    if (getContext() != null) {
-                        com.termux.app.ErrorDialogHelper.showError(
-                            getContext(),
-                            com.termux.app.ErrorDialogHelper.ErrorType.CLAUDE_API_ERROR,
-                            error,
-                            null // No specific retry for auto-detected errors
-                        );
-                    }
-                    if (claudeListener != null) {
-                        claudeListener.onClaudeErrorDetected(error);
-                    }
-                });
-            }
-            
-            @Override
-            public void onTokenUsageUpdated(int used, int total) {
-                mainHandler.post(() -> {
-                    // Handle token usage updates
-                    if (claudeListener != null) {
-                        claudeListener.onClaudeTokenUsageUpdated(used, total);
-                    }
-                });
-            }
-        });
-    }
-    
-    @Override
-    public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
-        // Configure input for terminal
-        outAttrs.inputType = InputType.TYPE_CLASS_TEXT
-            | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS;
-
-        outAttrs.imeOptions = EditorInfo.IME_ACTION_UNSPECIFIED
-            | EditorInfo.IME_FLAG_NO_EXTRACT_UI
-            | EditorInfo.IME_FLAG_NO_FULLSCREEN;
-
-        // Enable Gboard autocomplete if requested
-        if (gboardAutoCompleteEnabled) {
-            outAttrs.inputType |= InputType.TYPE_TEXT_FLAG_AUTO_COMPLETE
-                | InputType.TYPE_TEXT_FLAG_AUTO_CORRECT;
-        }
-
-        // Use our enhanced input connection
-        return new TerminalViewInputConnection(this, true);
-    }
-    
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        // Handle gestures first
-        if (gestureDetector.onTouchEvent(event)) {
-            return true;
-        }
-
-        // Request focus and show keyboard when tapped
-        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            if (!hasFocus()) {
-                requestFocus();
-            }
-            showKeyboard();
-        }
-
-        return super.onTouchEvent(event);
-    }
-
-    /**
-     * Show the soft keyboard for text input
-     */
-    public void showKeyboard() {
-        if (inputMethodManager != null) {
-            inputMethodManager.showSoftInput(this, InputMethodManager.SHOW_IMPLICIT);
-        }
-    }
-
-    /**
-     * Hide the soft keyboard
-     */
-    public void hideKeyboard() {
-        if (inputMethodManager != null) {
-            inputMethodManager.hideSoftInputFromWindow(getWindowToken(), 0);
-        }
-    }
-    
-    @Override
-    protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        
-        // Draw Claude Code enhancements
-        drawClaudeOverlays(canvas);
-        drawFileHighlights(canvas);
-        drawProgressIndicator(canvas);
-    }
-    
-    private void drawClaudeOverlays(Canvas canvas) {
-        if (!isClaudeCodeActive) return;
-        
-        // Draw subtle overlay to indicate Claude Code mode
-        int width = getWidth();
-        int height = getHeight();
-        
-        // Top indicator bar
-        canvas.drawRect(0, 0, width, 4, progressPaint);
-        
-        // Claude status text (top-right)
-        if (!currentClaudeOperation.isEmpty()) {
-            String statusText = "🤖 " + currentClaudeOperation;
-            Paint textPaint = new Paint();
-            textPaint.setColor(0xFF4CAF50);
-            textPaint.setTextSize(24);
-            textPaint.setTypeface(Typeface.DEFAULT_BOLD);
-            
-            Rect textBounds = new Rect();
-            textPaint.getTextBounds(statusText, 0, statusText.length(), textBounds);
-            
-            canvas.drawText(statusText, width - textBounds.width() - 16, 32, textPaint);
-        }
-    }
-    
-    private void drawFileHighlights(Canvas canvas) {
-        long currentTime = System.currentTimeMillis();
-        boolean needsInvalidate = false;
-        
-        // Remove expired highlights
-        fileHighlights.removeIf(highlight -> 
-            currentTime - highlight.timestamp > 5000); // 5 second fade
-        
-        // Draw remaining highlights
-        for (FileHighlight highlight : fileHighlights) {
-            float alpha = 1.0f - ((currentTime - highlight.timestamp) / 5000.0f);
-            if (alpha > 0) {
-                highlightPaint.setAlpha((int)(alpha * 68)); // Fade out
-                canvas.drawRect(highlight.rect, highlightPaint);
-                needsInvalidate = true;
-            }
-        }
-        
-        if (needsInvalidate) {
-            postInvalidateOnAnimation(); // Smoother animation loop
-        }
-    }
-    
-    private void drawProgressIndicator(Canvas canvas) {
-        if (claudeProgress > 0 && claudeProgress < 1.0f) {
-            int width = getWidth();
-            int progressWidth = (int)(width * claudeProgress);
-            
-            // Progress bar at bottom
-            canvas.drawRect(0, getHeight() - 8, progressWidth, getHeight(), progressPaint);
-            
-            // Progress text
-            String progressText = (int)(claudeProgress * 100) + "%";
-            Paint textPaint = new Paint();
-            textPaint.setColor(0xFF4CAF50);
-            textPaint.setTextSize(32);
-            textPaint.setTypeface(Typeface.DEFAULT_BOLD);
-            
-            Rect textBounds = new Rect();
-            textPaint.getTextBounds(progressText, 0, progressText.length(), textBounds);
-            
-            canvas.drawText(progressText, 
-                (width - textBounds.width()) / 2, 
-                getHeight() - 16, 
-                textPaint);
-        }
-    }
-    
     @Override
     public void onTextChanged(CharSequence text, int start, int lengthBefore, int lengthAfter) {
         super.onTextChanged(text, start, lengthBefore, lengthAfter);
         
         // Detect Claude Code activation
-        String currentLine = getCurrentLine();
-        if (currentLine != null) {
-            detectClaudeCode(currentLine);
-            if (isClaudeCodeActive) {
-                parseClaudeOutput(currentLine);
-            }
-        }
-    }
-    
-    private String getCurrentLine() {
-        try {
-            TerminalSession session = getCurrentSession();
-            if (session != null) {
-                TerminalEmulator emulator = session.getEmulator();
-                if (emulator != null) {
-                    return emulator.getScreen().getSelectedText(0, emulator.getCursorRow(), 
-                        emulator.getScreen().getColumns(), emulator.getCursorRow());
+        // Fetch string on UI thread to ensure thread safety with emulator
+        final String currentLine = getCurrentLine();
+        
+        if (currentLine != null && backgroundExecutor != null && !backgroundExecutor.isShutdown()) {
+            backgroundExecutor.execute(() -> {
+                detectClaudeCode(currentLine);
+                if (isClaudeCodeActive) {
+                    parseClaudeOutput(currentLine);
                 }
-            }
-        } catch (Exception e) {
-            // Ignore errors
+            });
         }
-        return null;
     }
     
+    // ... (getCurrentLine)
+
     private void detectClaudeCode(String text) {
         Matcher matcher = CLAUDE_START_PATTERN.matcher(text.toLowerCase());
         if (matcher.find() && !isClaudeCodeActive) {
-            isClaudeCodeActive = true;
-            invalidate();
-            if (claudeListener != null) {
-                claudeListener.onClaudeCodeDetected();
-            }
-            
-            // Show helpful toast
-            Toast.makeText(getContext(), 
-                "Claude Code detected! 🤖\nSwipe down to stop • Double-tap for history", 
-                Toast.LENGTH_LONG).show();
+            mainHandler.post(() -> {
+                if (!isClaudeCodeActive) { // Check again in case of race
+                    isClaudeCodeActive = true;
+                    invalidate();
+                    if (claudeListener != null) {
+                        claudeListener.onClaudeCodeDetected();
+                    }
+                    
+                    // Show helpful toast
+                    Toast.makeText(getContext(), 
+                        "Claude Code detected! 🤖\nSwipe down to stop • Double-tap for history", 
+                        Toast.LENGTH_LONG).show();
+                }
+            });
         }
     }
+
+    // ... (rest of file)
     
     private void parseClaudeOutput(String text) {
         // Parse progress indicators

@@ -2,6 +2,8 @@ package com.termux.ai;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
@@ -55,6 +57,7 @@ public class ClaudeCodeIntegration {
     private ClaudeIntegrationListener listener;
     private GlobalListener globalListener;
     private List<ClaudeSession> activeSessions;
+    private Handler handler;
     
     // Session tracking
     private static class ClaudeSession {
@@ -78,6 +81,7 @@ public class ClaudeCodeIntegration {
     
     public ClaudeCodeIntegration() {
         this.activeSessions = new ArrayList<>();
+        this.handler = new Handler(Looper.getMainLooper());
     }
     
     public void setListener(ClaudeIntegrationListener listener) {
@@ -284,9 +288,11 @@ public class ClaudeCodeIntegration {
         Log.d(TAG, "Claude session completed for tab " + session.tabIndex);
         
         // Remove completed session after delay
-        new android.os.Handler().postDelayed(() -> {
-            activeSessions.removeIf(s -> s == session);
-        }, 5000); // 5 second delay
+        if (handler != null) {
+            handler.postDelayed(() -> {
+                activeSessions.removeIf(s -> s == session);
+            }, 5000); // 5 second delay
+        }
     }
     
     private ClaudeSession getSession(int tabIndex) {
@@ -365,6 +371,10 @@ public class ClaudeCodeIntegration {
      * Cleanup all sessions
      */
     public void cleanup() {
+        if (handler != null) {
+            handler.removeCallbacksAndMessages(null);
+        }
+        
         for (ClaudeSession session : activeSessions) {
             if (globalListener != null) {
                 globalListener.onClaudeCompleted(session.tabIndex);
