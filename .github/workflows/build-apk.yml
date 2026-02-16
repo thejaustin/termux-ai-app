@@ -238,7 +238,7 @@ jobs:
           cat > app/src/main/res/values/themes.xml << 'EOF'
         <?xml version="1.0" encoding="utf-8"?>
         <resources xmlns:tools="http://schemas.android.com/tools">
-            <style name="Theme.TermuxAI" parent="Theme.Material3.DayNight">
+            <style name="Theme.TermuxPlus" parent="Theme.Material3.DayNight">
                 <item name="colorPrimary">@color/claude_accent</item>
                 <item name="colorOnPrimary">@android:color/white</item>
                 <item name="colorPrimaryContainer">@color/terminal_background</item>
@@ -247,12 +247,12 @@ jobs:
                 <item name="android:colorSurface">@color/tab_background</item>
             </style>
             
-            <style name="Theme.TermuxAI.NoActionBar">
+            <style name="Theme.TermuxPlus.NoActionBar">
                 <item name="windowActionBar">false</item>
                 <item name="windowNoTitle">true</item>
             </style>
             
-            <style name="Theme.TermuxAI.Dialog" parent="Theme.Material3.DayNight.Dialog">
+            <style name="Theme.TermuxPlus.Dialog" parent="Theme.Material3.DayNight.Dialog">
                 <item name="colorPrimary">@color/claude_accent</item>
             </style>
         </resources>
