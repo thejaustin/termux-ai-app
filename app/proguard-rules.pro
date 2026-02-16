@@ -75,7 +75,7 @@
 -keep public class * extends android.content.ContentProvider
 
 # Keep application class
--keep public class com.termux.ai.TermuxAIApplication
+-keep public class com.termux.plus.TermuxPlusApplication
 
 # OkHttp and networking
 -dontwarn okhttp3.**
