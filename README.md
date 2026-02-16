@@ -6,6 +6,7 @@ A powerful, modular fork of the official Termux app that transforms the terminal
 
 ### 🧩 Modular Plugin Architecture (NEW in v2.0.0)
 - **Plugin Manager** - Enable, disable, and configure extensions at runtime.
+- **Plus Features Toggles** - Granular control over experimental features like Voice Input, Gesture Controls, and AI Integration.
 - **AI Provider API** - Swap between different AI backends (Claude, Gemini, etc.) via plugins.
 - **Terminal Extensions** - Expand terminal functionality with official and third-party plugins.
 - **Customizable Experience** - Only load the features you need.

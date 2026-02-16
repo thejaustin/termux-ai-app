@@ -439,12 +439,14 @@ jobs:
         tag_name: v0.1.0-build-${{ github.run_number }}
         name: Termux AI v0.1.0 Build ${{ github.run_number }}
         body: |
-          This is an automatically generated build for Termux AI.
+          This is an automatically generated build for Termux+ (formerly Termux AI).
 
           Key features of this release:
-          - Initial integration of AI capabilities (Claude, Gemini)
-          - Real-time command assistance and error analysis
-          - Enhanced terminal UI/UX
+          - **Plus Features Toggle System**: Granular control over experimental features.
+          - **Modular Plugin System**: Runtime management of terminal extensions.
+          - **AI Capabilities**: Deep integration with Claude and Gemini.
+          - **Material You (M3)**: Dynamic theming that adapts to your wallpaper.
+          - **Enhanced Terminal UI**: Multi-tab support and professional PTY emulation.
 
           Installation:
           1. Download the APK from the assets below.
