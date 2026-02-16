@@ -17,6 +17,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Termux AI"
+rootProject.name = "Termux+"
 include ':app'
 include ':terminal-emulator'

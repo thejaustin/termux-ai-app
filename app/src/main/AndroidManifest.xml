@@ -84,6 +84,13 @@
             android:parentActivityName="com.termux.app.TabbedTerminalActivity" />
 
         <activity
+            android:name="com.termux.app.PlusTogglesActivity"
+            android:exported="false"
+            android:label="Plus Features"
+            android:parentActivityName="com.termux.app.TermuxPlusSettingsActivity"
+            android:theme="@style/Theme.TermuxAI" />
+
+        <activity
             android:name="com.termux.app.PluginSettingsActivity"
             android:exported="false"
             android:label="Plugins"

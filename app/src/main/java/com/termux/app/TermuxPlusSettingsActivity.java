@@ -109,6 +109,13 @@ public class TermuxPlusSettingsActivity extends AppCompatActivity {
         Button btnClearData = findViewById(R.id.btn_clear_ai_data);
 
         saveButton = findViewById(R.id.save_button);
+        
+        Button btnPlusFeatures = findViewById(R.id.btn_plus_features);
+        btnPlusFeatures.setOnClickListener(v -> {
+            android.content.Intent intent = new android.content.Intent(this, PlusTogglesActivity.class);
+            startActivity(intent);
+        });
+
         Button btnManagePlugins = findViewById(R.id.btn_manage_plugins);
         btnManagePlugins.setOnClickListener(v -> {
             android.content.Intent intent = new android.content.Intent(this, PluginSettingsActivity.class);

@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?android:attr/colorBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="Turn features on or off to customize your experience. Core improvements remain active."
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="?android:attr/textColorSecondary" />
+
+        <!-- AI Integration -->
+        <include
+            android:id="@+id/toggle_ai_integration"
+            layout="@layout/item_plus_toggle" />
+
+        <!-- Voice Input -->
+        <include
+            android:id="@+id/toggle_voice_input"
+            layout="@layout/item_plus_toggle" />
+
+        <!-- Gesture Controls -->
+        <include
+            android:id="@+id/toggle_gesture_controls"
+            layout="@layout/item_plus_toggle" />
+
+        <!-- Project Insights -->
+        <include
+            android:id="@+id/toggle_project_insights"
+            layout="@layout/item_plus_toggle" />
+
+        <!-- Quick Settings Panel -->
+        <include
+            android:id="@+id/toggle_quick_settings_panel"
+            layout="@layout/item_plus_toggle" />
+
+        <!-- Dynamic Colors -->
+        <include
+            android:id="@+id/toggle_dynamic_colors"
+            layout="@layout/item_plus_toggle" />
+
+        <!-- Onboarding -->
+        <include
+            android:id="@+id/toggle_onboarding"
+            layout="@layout/item_plus_toggle" />
+
+        <!-- Multi-Tab -->
+        <include
+            android:id="@+id/toggle_multi_tab"
+            layout="@layout/item_plus_toggle" />
+
+        <!-- Biometric Protection -->
+        <include
+            android:id="@+id/toggle_biometric_protection"
+            layout="@layout/item_plus_toggle" />
+
+        <!-- Plugin System -->
+        <include
+            android:id="@+id/toggle_plugin_system"
+            layout="@layout/item_plus_toggle" />
+
+        <Button
+            android:id="@+id/btn_reset_toggles"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Reset to Defaults" />
+
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>

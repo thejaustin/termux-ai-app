@@ -19,6 +19,15 @@
             android:layout_marginBottom="16dp" />
 
         <Button
+            android:id="@+id/btn_plus_features"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Plus Features"
+            android:drawableStart="@drawable/ic_star"
+            android:layout_marginBottom="8dp" />
+
+        <Button
             android:id="@+id/btn_manage_plugins"
             style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="match_parent"
