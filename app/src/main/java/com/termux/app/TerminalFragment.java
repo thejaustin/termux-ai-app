@@ -114,8 +114,14 @@ public class TerminalFragment extends Fragment implements TerminalSessionClient 
             terminalView.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_NO);
         }
 
-        // Enable Gboard autocomplete
-        terminalView.setGboardAutoCompleteEnabled(true);
+        // Enable Gboard autocomplete based on settings
+        if (getContext() != null) {
+            SharedPreferences prefs = com.termux.ai.EncryptedPreferencesManager.getEncryptedPrefs(getContext(), "termux_plus_prefs");
+            boolean autoCorrectEnabled = prefs.getBoolean(TermuxPlusSettingsActivity.PREF_KEYBOARD_AUTOCORRECT, true);
+            terminalView.setGboardAutoCompleteEnabled(autoCorrectEnabled);
+        } else {
+            terminalView.setGboardAutoCompleteEnabled(true);
+        }
 
         // Request focus and show keyboard when terminal is ready
         terminalView.post(() -> {

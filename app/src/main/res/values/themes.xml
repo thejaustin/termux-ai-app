@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
         <!-- Base application theme (Light) -->
-        <style name="Theme.TermuxAI" parent="Theme.Material3.DynamicColors.Light">
+        <style name="Theme.TermuxPlus" parent="Theme.Material3.DynamicColors.Light">
             <!-- Primary brand color -->
             <item name="colorPrimary">@color/claude_accent</item>
             <item name="colorPrimaryVariant">@color/claude_accent_light</item>
@@ -35,24 +35,24 @@
             <item name="android:textColorHint">@color/text_tertiary</item>
     
             <!-- Dialog themes -->
-            <item name="android:dialogTheme">@style/Theme.TermuxAI.AlertDialog</item>
-            <item name="android:alertDialogTheme">@style/Theme.TermuxAI.AlertDialog</item>
+            <item name="android:dialogTheme">@style/Theme.TermuxPlus.AlertDialog</item>
+            <item name="android:alertDialogTheme">@style/Theme.TermuxPlus.AlertDialog</item>
     
             <!-- Action bar -->
-            <item name="actionBarTheme">@style/ThemeOverlay.TermuxAI.ActionBar</item>
+            <item name="actionBarTheme">@style/ThemeOverlay.TermuxPlus.ActionBar</item>
         </style>
     
         <!-- Theme without action bar -->
-        <style name="Theme.TermuxAI.NoActionBar">
+        <style name="Theme.TermuxPlus.NoActionBar">
             <item name="windowActionBar">false</item>
             <item name="windowNoTitle">true</item>
         </style>
             
             <!-- Custom AlertDialog style for Light Theme -->
-            <style name="Theme.TermuxAI.AlertDialog" parent="Theme.Material3.DayNight.Dialog" />
+            <style name="Theme.TermuxPlus.AlertDialog" parent="Theme.Material3.DayNight.Dialog" />
 
         <!-- Action bar theme overlay -->
-        <style name="ThemeOverlay.TermuxAI.ActionBar" parent="Theme.AppCompat">
+        <style name="ThemeOverlay.TermuxPlus.ActionBar" parent="Theme.AppCompat">
             <item name="colorPrimary">@color/claude_accent</item>
             <item name="android:textColorPrimary">@color/text_primary</item>
         </style>    <!-- Terminal specific styles -->

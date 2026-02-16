@@ -47,7 +47,7 @@ When dynamic colors are enabled, choose your color expression style:
 
 ## Implementation Details
 
-### Application Level (`TermuxAIApplication.java`)
+### Application Level (`TermuxPlusApplication.java`)
 
 ```java
 // Dynamic Colors with custom options
@@ -76,12 +76,12 @@ DynamicColors.applyToActivitiesIfAvailable(
 Base themes use Material 3 Dynamic Colors:
 ```xml
 <!-- Light Theme -->
-<style name="Theme.TermuxAI" parent="Theme.Material3.DynamicColors.Light">
+<style name="Theme.TermuxPlus" parent="Theme.Material3.DynamicColors.Light">
     <!-- Material You 3 color roles -->
 </style>
 
 <!-- Dark Theme -->
-<style name="Theme.TermuxAI" parent="Theme.Material3.DynamicColors.Dark">
+<style name="Theme.TermuxPlus" parent="Theme.Material3.DynamicColors.Dark">
     <!-- Material You 3 color roles -->
 </style>
 ```
@@ -198,7 +198,7 @@ These roles automatically adapt when you change your wallpaper!
 ### Accessing Theme Settings in Code
 
 ```java
-TermuxAIApplication app = (TermuxAIApplication) getApplication();
+TermuxPlusApplication app = (TermuxPlusApplication) getApplication();
 
 // Check if dynamic colors are enabled
 if (app.isDynamicColorsEnabled()) {
@@ -258,7 +258,7 @@ Always test both theme modes:
 
 ## Files Modified
 
-1. **TermuxAIApplication.java**
+1. **TermuxPlusApplication.java**
    - Enhanced dynamic color application
    - Added theme management methods
    - Implemented style switching

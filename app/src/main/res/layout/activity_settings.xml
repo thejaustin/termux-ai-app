@@ -168,6 +168,25 @@
                 android:padding="8dp"/>
         </RadioGroup>
 
+        <!-- Keyboard Settings -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Keyboard &amp; Input"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="?attr/colorPrimary"
+            android:layout_marginBottom="8dp" />
+
+        <com.google.android.material.switchmaterial.SwitchMaterial
+            android:id="@+id/keyboard_autocorrect_switch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Keyboard Autocorrect &amp; Swipe"
+            android:textSize="16sp"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp" />
+
         <!-- AI Provider Section -->
         <TextView
             android:layout_width="match_parent"

@@ -12,7 +12,8 @@ import android.view.inputmethod.EditorInfo;
 @SuppressWarnings("unused")
 public class TerminalViewInputConnection extends BaseInputConnection {
 
-    private TerminalView terminalView;
+    private final TerminalView terminalView;
+    private String mComposingText = "";
 
     public TerminalViewInputConnection(TerminalView targetView, boolean fullEditor) {
         super(targetView, fullEditor);
@@ -21,13 +22,22 @@ public class TerminalViewInputConnection extends BaseInputConnection {
 
     @Override
     public boolean commitText(CharSequence text, int newCursorPosition) {
-        if (text == null || text.length() == 0) {
+        if (text == null) {
             return true;
         }
-
-        // Send each character to the terminal
+        
         TerminalSession session = terminalView.getCurrentSession();
         if (session != null) {
+            // If we have composing text, we need to remove it first because
+            // commitText replaces the composing region.
+            if (mComposingText.length() > 0) {
+                // Backspace over the entire composing text
+                for (int i = 0; i < mComposingText.length(); i++) {
+                    session.write("\b");
+                }
+                mComposingText = "";
+            }
+            
             session.write(text.toString());
             return true;
         }
@@ -37,15 +47,34 @@ public class TerminalViewInputConnection extends BaseInputConnection {
 
     @Override
     public boolean setComposingText(CharSequence text, int newCursorPosition) {
-        // For composing text (predictive input), treat it same as commit
-        // This allows Gboard autocomplete to work properly
-        if (text == null || text.length() == 0) {
+        if (text == null) {
             return true;
         }
 
+        String newText = text.toString();
         TerminalSession session = terminalView.getCurrentSession();
+        
         if (session != null) {
-            session.write(text.toString());
+            // Calculate the common prefix to avoid deleting and re-typing unchanged parts
+            int commonPrefixLength = 0;
+            int minLength = Math.min(mComposingText.length(), newText.length());
+            
+            while (commonPrefixLength < minLength && 
+                   mComposingText.charAt(commonPrefixLength) == newText.charAt(commonPrefixLength)) {
+                commonPrefixLength++;
+            }
+            
+            // Backspace over the part of the old composing text that doesn't match
+            for (int i = commonPrefixLength; i < mComposingText.length(); i++) {
+                session.write("\b");
+            }
+            
+            // Append the new part of the text
+            if (commonPrefixLength < newText.length()) {
+                session.write(newText.substring(commonPrefixLength));
+            }
+            
+            mComposingText = newText;
             return true;
         }
 
@@ -54,6 +83,9 @@ public class TerminalViewInputConnection extends BaseInputConnection {
 
     @Override
     public boolean deleteSurroundingText(int beforeLength, int afterLength) {
+        // Clear composing text state on manual delete to avoid desync
+        mComposingText = "";
+        
         // Handle backspace/delete
         if (beforeLength > 0) {
             TerminalSession session = terminalView.getCurrentSession();
@@ -83,6 +115,10 @@ public class TerminalViewInputConnection extends BaseInputConnection {
         if (actionCode == EditorInfo.IME_ACTION_UNSPECIFIED ||
             actionCode == EditorInfo.IME_ACTION_DONE ||
             actionCode == EditorInfo.IME_ACTION_GO) {
+            
+            // Clear composing state
+            mComposingText = "";
+            
             TerminalSession session = terminalView.getCurrentSession();
             if (session != null) {
                 session.write("\r");  // Send carriage return (Enter)
@@ -94,7 +130,9 @@ public class TerminalViewInputConnection extends BaseInputConnection {
 
     @Override
     public boolean finishComposingText() {
-        // Clear any composing text
+        // Clear internal tracking when composition is finished
+        // The text is already written to the terminal
+        mComposingText = "";
         return super.finishComposingText();
     }
 }

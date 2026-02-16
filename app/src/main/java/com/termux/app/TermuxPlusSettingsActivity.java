@@ -28,7 +28,8 @@ public class TermuxPlusSettingsActivity extends AppCompatActivity {
     private static final String PREF_DYNAMIC_COLORS = "dynamic_colors_enabled";
     private static final String PREF_CLAUDE_MODEL = "claude_model";
     private static final String PREF_TOKEN_LIMIT = "token_limit";
-    private static final String PREF_AUTO_SUGGESTIONS = "auto_suggestions_enabled";
+    public static final String PREF_AUTO_SUGGESTIONS = "auto_suggestions_enabled";
+    public static final String PREF_KEYBOARD_AUTOCORRECT = "keyboard_autocorrect_enabled";
     private static final String PREF_COMMAND_FILTERING = "command_filtering_enabled";
     private static final String PREF_LOCAL_PROCESSING = "local_processing_enabled";
 
@@ -40,6 +41,9 @@ public class TermuxPlusSettingsActivity extends AppCompatActivity {
     private RadioGroup themeStyleGroup;
     private RadioButton styleExpressive, styleVibrant, styleTonal;
     private TextView themeStyleLabel;
+
+    // Keyboard settings
+    private SwitchMaterial keyboardAutocorrectSwitch;
 
     // AI Provider settings
     private RadioGroup providerGroup;
@@ -88,6 +92,9 @@ public class TermuxPlusSettingsActivity extends AppCompatActivity {
         styleVibrant = findViewById(R.id.style_vibrant);
         styleTonal = findViewById(R.id.style_tonal);
         themeStyleLabel = findViewById(R.id.theme_style_label);
+
+        // Keyboard settings
+        keyboardAutocorrectSwitch = findViewById(R.id.keyboard_autocorrect_switch);
 
         // AI Provider settings
         providerGroup = findViewById(R.id.provider_group);
@@ -254,6 +261,10 @@ public class TermuxPlusSettingsActivity extends AppCompatActivity {
             styleExpressive.setChecked(true);
         }
 
+        // Load keyboard settings
+        boolean keyboardAutocorrect = prefs.getBoolean(PREF_KEYBOARD_AUTOCORRECT, true);
+        keyboardAutocorrectSwitch.setChecked(keyboardAutocorrect);
+
         // Load AI provider settings
         String provider = prefs.getString(PREF_AI_PROVIDER, "claude");
         if ("gemini".equals(provider)) {
@@ -396,6 +407,7 @@ public class TermuxPlusSettingsActivity extends AppCompatActivity {
         editor.putString(PREF_CLAUDE_MODEL, model);
         editor.putString(PREF_TOKEN_LIMIT, String.valueOf(tokenLimit));
         editor.putBoolean(PREF_DYNAMIC_COLORS, dynamicColors);
+        editor.putBoolean(PREF_KEYBOARD_AUTOCORRECT, keyboardAutocorrectSwitch.isChecked());
         editor.putBoolean(PREF_AUTO_SUGGESTIONS, autoSuggestions);
         editor.putBoolean(PREF_COMMAND_FILTERING, commandFiltering);
         editor.putBoolean(PREF_LOCAL_PROCESSING, localProcessing);

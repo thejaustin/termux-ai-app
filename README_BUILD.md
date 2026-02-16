@@ -124,7 +124,8 @@ termux-ai-app/
 │   ├── ai/                     # AI integration components
 │   │   ├── AIClient.java       # Claude API client
 │   │   ├── ClaudeCodeIntegration.java
-│   │   └── TermuxAIApplication.java
+│   ├── plus/                   # Termux+ Core
+│   │   └── TermuxPlusApplication.java
 │   ├── app/                    # Main app activities
 │   │   ├── TabbedTerminalActivity.java
 │   │   └── TerminalFragment.java
@@ -139,7 +140,7 @@ termux-ai-app/
 - **`EnhancedTerminalView`** - Terminal with AI integration
 - **`ClaudeCodeIntegration`** - Core AI detection engine
 - **`TerminalFragment`** - Individual terminal instances
-- **`TermuxAIApplication`** - Global app initialization
+- **`TermuxPlusApplication`** - Global app initialization
 
 ## 🔧 Configuration
 
