@@ -14,6 +14,14 @@
             android:pathData="M20,25 L88,25 L88,75 L20,75 Z"
             android:strokeWidth="2"
             android:strokeColor="@color/claude_accent" />
+        
+        <!-- Plus Symbol (+) for Termux+ -->
+        <path
+            android:fillColor="@color/claude_accent_light"
+            android:pathData="M80,15 L95,15 L95,20 L80,20 Z M85,10 L90,10 L90,25 L85,25 Z"
+            android:strokeWidth="1"
+            android:strokeColor="@color/white" />
+
         <!-- Command prompt -->
         <path
             android:fillColor="@color/claude_accent"
