@@ -66,10 +66,13 @@ public class TerminalView extends View {
         cursorPaint = new Paint();
         cursorPaint.setColor(0xFF00FF00); // Green cursor
 
-        // Calculate character dimensions
+        // Calculate character dimensions using a single character
+        float[] widths = new float[1];
+        textPaint.getTextWidths("X", widths);
+        charWidth = widths[0];
+        
         Paint.FontMetrics metrics = textPaint.getFontMetrics();
         charHeight = (float) Math.ceil(metrics.descent - metrics.ascent);
-        charWidth = textPaint.measureText("X");
     }
 
     @Override
@@ -138,17 +141,25 @@ public class TerminalView extends View {
                     int effect = TextStyle.decodeEffect(style);
 
                     // Get actual RGB colors from palette
-                    int fgRgb = TextStyle.DEFAULT_COLORSCHEME[foreColor & 0xF];
-                    int bgRgb = TextStyle.DEFAULT_COLORSCHEME[backColor & 0xF];
+                    int fgRgb = TextStyle.getColor(foreColor, TextStyle.DEFAULT_COLORSCHEME);
+                    int bgRgb = TextStyle.getColor(backColor, TextStyle.DEFAULT_COLORSCHEME);
+
+                    // If style is default (0) or default foreground (256), use white on black
+                    if (foreColor == 0 || foreColor == TextStyle.COLOR_INDEX_FOREGROUND) {
+                        fgRgb = Color.WHITE;
+                    }
+                    if (backColor == 0 || backColor == TextStyle.COLOR_INDEX_BACKGROUND) {
+                        bgRgb = Color.BLACK;
+                    }
 
                     // Handle inverse video
-                    if (TextStyle.isInverse(effect)) {
+                    if (TextStyle.isInverse(style)) {
                         int temp = fgRgb;
                         fgRgb = bgRgb;
                         bgRgb = temp;
                     }
 
-                    // Draw background if not default black
+                    // Draw background if not black
                     if (bgRgb != Color.BLACK) {
                         backgroundPaint.setColor(bgRgb);
                         canvas.drawRect(x, y - charHeight + 5, x + charWidth, y + 2, backgroundPaint);
@@ -156,11 +167,11 @@ public class TerminalView extends View {
 
                     // Set text attributes
                     textPaint.setColor(fgRgb);
-                    textPaint.setFakeBoldText(TextStyle.isBold(effect));
-                    textPaint.setUnderlineText(TextStyle.isUnderline(effect));
+                    textPaint.setFakeBoldText(TextStyle.isBold(style));
+                    textPaint.setUnderlineText(TextStyle.isUnderline(style));
 
                     // Draw character
-                    if (ch != ' ') {
+                    if (ch != ' ' && ch != 0) {
                         canvas.drawText(String.valueOf(ch), x, y, textPaint);
                     }
 
@@ -189,7 +200,7 @@ public class TerminalView extends View {
 
     @Override
     public boolean onCheckIsTextEditor() {
-        return true;
+        return currentSession != null;
     }
 
     @Override
@@ -209,7 +220,7 @@ public class TerminalView extends View {
                 currentSession.write("\r");
                 return true;
             } else if (keyCode == KeyEvent.KEYCODE_DEL) {
-                currentSession.write("\b");
+                currentSession.write("\u007f");
                 return true;
             } else if (keyCode == KeyEvent.KEYCODE_TAB) {
                 currentSession.write("\t");
@@ -227,11 +238,36 @@ public class TerminalView extends View {
         return super.dispatchKeyEvent(event);
     }
 
+    @Override
+    protected void onSizeChanged(int w, int h, int oldw, int oldh) {
+        super.onSizeChanged(w, h, oldw, oldh);
+        
+        // Calculate new rows and columns
+        int cols = (int) Math.floor((w - 20) / charWidth);
+        int rows = (int) Math.floor(h / charHeight);
+        
+        if (cols > 0 && rows > 0 && currentSession != null) {
+            currentSession.updateSize(cols, rows);
+        }
+    }
+
     /**
      * Attach a terminal session to this view.
      */
     public void attachSession(TerminalSession session) {
         this.currentSession = session;
+        
+        // Update session size to match current view size
+        int w = getWidth();
+        int h = getHeight();
+        if (w > 0 && h > 0) {
+            int cols = (int) Math.floor((w - 20) / charWidth);
+            int rows = (int) Math.floor(h / charHeight);
+            if (cols > 0 && rows > 0) {
+                session.updateSize(cols, rows);
+            }
+        }
+        
         invalidate();
     }
 

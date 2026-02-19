@@ -29,18 +29,59 @@ Java_com_termux_terminal_JNI_createSubprocess(
     jobjectArray envVars,
     jintArray processIdOut)
 {
+    // 1. Extract all data in parent BEFORE fork
+    
     // Get command string
     const char* cmdStr = env->GetStringUTFChars(cmd, nullptr);
     if (!cmdStr) {
         LOGE("Failed to get command string");
         return -1;
     }
+    char* cmdCopy = strdup(cmdStr);
+    env->ReleaseStringUTFChars(cmd, cmdStr);
 
     // Get working directory
-    const char* cwdStr = nullptr;
+    char* cwdCopy = nullptr;
     if (cwd != nullptr) {
-        cwdStr = env->GetStringUTFChars(cwd, nullptr);
+        const char* cwdStr = env->GetStringUTFChars(cwd, nullptr);
+        if (cwdStr) {
+            cwdCopy = strdup(cwdStr);
+            env->ReleaseStringUTFChars(cwd, cwdStr);
+        }
     }
+
+    // Get arguments
+    jsize argc = args ? env->GetArrayLength(args) : 0;
+    char** argv = new char*[argc + 2];
+    argv[0] = cmdCopy;
+    for (jsize i = 0; i < argc; i++) {
+        auto jArg = (jstring)env->GetObjectArrayElement(args, i);
+        if (jArg) {
+            const char* arg = env->GetStringUTFChars(jArg, nullptr);
+            argv[i + 1] = strdup(arg);
+            env->ReleaseStringUTFChars(jArg, arg);
+            env->DeleteLocalRef(jArg);
+        } else {
+            argv[i + 1] = nullptr;
+        }
+    }
+    argv[argc + 1] = nullptr;
+
+    // Get environment variables
+    jsize envCount = envVars ? env->GetArrayLength(envVars) : 0;
+    char** envp = new char*[envCount + 1];
+    for (jsize i = 0; i < envCount; i++) {
+        auto jEnvVar = (jstring)env->GetObjectArrayElement(envVars, i);
+        if (jEnvVar) {
+            const char* envVar = env->GetStringUTFChars(jEnvVar, nullptr);
+            envp[i] = strdup(envVar);
+            env->ReleaseStringUTFChars(jEnvVar, envVar);
+            env->DeleteLocalRef(jEnvVar);
+        } else {
+            envp[i] = nullptr;
+        }
+    }
+    envp[envCount] = nullptr;
 
     // Create PTY
     int master_fd = -1;
@@ -49,8 +90,13 @@ Java_com_termux_terminal_JNI_createSubprocess(
 
     if (create_pty(&master_fd, &slave_fd, slave_name, sizeof(slave_name)) != 0) {
         LOGE("Failed to create PTY");
-        env->ReleaseStringUTFChars(cmd, cmdStr);
-        if (cwdStr) env->ReleaseStringUTFChars(cwd, cwdStr);
+        // Cleanup...
+        free(cmdCopy);
+        free(cwdCopy);
+        for(int i=1; i<=argc; i++) free(argv[i]);
+        delete[] argv;
+        for(int i=0; i<envCount; i++) free(envp[i]);
+        delete[] envp;
         return -1;
     }
 
@@ -64,19 +110,23 @@ Java_com_termux_terminal_JNI_createSubprocess(
         LOGE("Fork failed");
         close(master_fd);
         close(slave_fd);
-        env->ReleaseStringUTFChars(cmd, cmdStr);
-        if (cwdStr) env->ReleaseStringUTFChars(cwd, cwdStr);
+        // Cleanup...
+        free(cmdCopy);
+        free(cwdCopy);
+        for(int i=1; i<=argc; i++) free(argv[i]);
+        delete[] argv;
+        for(int i=0; i<envCount; i++) free(envp[i]);
+        delete[] envp;
         return -1;
     }
 
     if (pid == 0) {
-        // Child process
+        // Child process - NO JNI CALLS ALLOWED HERE
         close(master_fd);
 
         // Create new session and set controlling terminal
         setsid();
         if (ioctl(slave_fd, TIOCSCTTY, 0) != 0) {
-            LOGE("Failed to set controlling terminal");
             exit(1);
         }
 
@@ -90,50 +140,21 @@ Java_com_termux_terminal_JNI_createSubprocess(
         }
 
         // Change directory if specified
-        if (cwdStr && chdir(cwdStr) != 0) {
-            LOGE("Failed to change directory to %s", cwdStr);
+        if (cwdCopy && chdir(cwdCopy) != 0) {
+            // Failed to change directory
         }
 
         // Set environment variables
-        if (envVars != nullptr) {
-            jsize envCount = env->GetArrayLength(envVars);
-            for (jsize i = 0; i < envCount; i++) {
-                auto jEnvVar = (jstring)env->GetObjectArrayElement(envVars, i);
-                if (jEnvVar) {
-                    const char* envVar = env->GetStringUTFChars(jEnvVar, nullptr);
-                    if (envVar) {
-                        // Split on '=' and use putenv
-                        char* envCopy = strdup(envVar);
-                        putenv(envCopy);
-                        env->ReleaseStringUTFChars(jEnvVar, envVar);
-                    }
-                    env->DeleteLocalRef(jEnvVar);
-                }
+        if (envp != nullptr) {
+            for (int i = 0; envp[i] != nullptr; i++) {
+                putenv(envp[i]);
             }
         }
-
-        // Prepare argv array
-        jsize argc = args ? env->GetArrayLength(args) : 0;
-        char** argv = new char*[argc + 2];
-        argv[0] = const_cast<char*>(cmdStr);
-
-        for (jsize i = 0; i < argc; i++) {
-            auto jArg = (jstring)env->GetObjectArrayElement(args, i);
-            if (jArg) {
-                const char* arg = env->GetStringUTFChars(jArg, nullptr);
-                argv[i + 1] = const_cast<char*>(arg);
-                env->DeleteLocalRef(jArg);
-            } else {
-                argv[i + 1] = nullptr;
-            }
-        }
-        argv[argc + 1] = nullptr;
 
         // Execute command
         execvp(argv[0], argv);
 
         // If we get here, exec failed
-        LOGE("execvp failed for command: %s", cmdStr);
         exit(127);
     }
 
@@ -148,17 +169,13 @@ Java_com_termux_terminal_JNI_createSubprocess(
         env->SetIntArrayRegion(processIdOut, 0, 1, &pidValue);
     }
 
-    // Cleanup
-    env->ReleaseStringUTFChars(cmd, cmdStr);
-    if (cwdStr) {
-        env->ReleaseStringUTFChars(cwd, cwdStr);
-    }
-
-    // Make master FD non-blocking
-    int flags = fcntl(master_fd, F_GETFL, 0);
-    if (flags != -1) {
-        fcntl(master_fd, F_SETFL, flags | O_NONBLOCK);
-    }
+    // Cleanup parent's copies
+    free(cmdCopy);
+    free(cwdCopy);
+    for(int i=1; i<=argc; i++) free(argv[i]);
+    delete[] argv;
+    for(int i=0; i<envCount; i++) free(envp[i]);
+    delete[] envp;
 
     return master_fd;
 }

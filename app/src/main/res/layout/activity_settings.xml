@@ -342,7 +342,7 @@
             android:layout_marginBottom="16dp" />
 
         <!-- Auto Suggestions -->
-        <Switch
+        <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/auto_suggestions_switch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -362,7 +362,7 @@
             android:layout_marginTop="16dp"
             android:layout_marginBottom="16dp" />
 
-        <Switch
+        <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/command_filtering_switch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -371,7 +371,7 @@
             android:padding="8dp"
             android:layout_marginBottom="8dp" />
 
-        <Switch
+        <com.google.android.material.switchmaterial.SwitchMaterial
             android:id="@+id/local_processing_switch"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

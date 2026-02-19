@@ -11,6 +11,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Real terminal session with PTY support.
@@ -37,6 +39,7 @@ public class TerminalSession {
     private boolean mIsRunning = false;
 
     private final Handler mMainThreadHandler = new Handler(Looper.getMainLooper());
+    private final ExecutorService mWriterExecutor = Executors.newSingleThreadExecutor();
 
     /**
      * Create a new terminal session.
@@ -98,13 +101,19 @@ public class TerminalSession {
 
     private FileDescriptor createFileDescriptor(int fd) {
         try {
-            FileDescriptor fileDescriptor = new FileDescriptor();
-            Field descriptorField = FileDescriptor.class.getDeclaredField("descriptor");
-            descriptorField.setAccessible(true);
-            descriptorField.setInt(fileDescriptor, fd);
-            return fileDescriptor;
+            return android.os.ParcelFileDescriptor.adoptFd(fd).getFileDescriptor();
         } catch (Exception e) {
-            throw new RuntimeException("Failed to create FileDescriptor", e);
+            Log.e(TAG, "Failed to create FileDescriptor via ParcelFileDescriptor", e);
+            // Fallback to reflection if absolutely necessary, though ParcelFileDescriptor is preferred
+            try {
+                FileDescriptor fileDescriptor = new FileDescriptor();
+                Field descriptorField = FileDescriptor.class.getDeclaredField("descriptor");
+                descriptorField.setAccessible(true);
+                descriptorField.setInt(fileDescriptor, fd);
+                return fileDescriptor;
+            } catch (Exception e2) {
+                throw new RuntimeException("Failed to create FileDescriptor", e2);
+            }
         }
     }
 
@@ -116,8 +125,8 @@ public class TerminalSession {
                 while (mIsRunning) {
                     int bytesRead = JNI.readFromPty(mPtyFd, buffer, MAX_READ_BYTES);
 
-                    if (bytesRead < 0) {
-                        // EOF or error - process terminated
+                    if (bytesRead <= 0) {
+                        // EOF (0) or error (-1) - process terminated
                         break;
                     }
 
@@ -168,16 +177,18 @@ public class TerminalSession {
      * @param text Text to write
      */
     public void write(String text) {
-        if (!mIsRunning || mPtyOutputStream == null || text == null) {
+        if (!mIsRunning || text == null) {
             return;
         }
 
-        try {
-            byte[] bytes = text.getBytes(StandardCharsets.UTF_8);
-            JNI.writeToPty(mPtyFd, bytes, bytes.length);
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to write to PTY", e);
-        }
+        mWriterExecutor.execute(() -> {
+            try {
+                byte[] bytes = text.getBytes(StandardCharsets.UTF_8);
+                JNI.writeToPty(mPtyFd, bytes, bytes.length);
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to write to PTY", e);
+            }
+        });
     }
 
     /**
@@ -236,6 +247,10 @@ public class TerminalSession {
         if (mReaderThread != null && mReaderThread.isAlive()) {
             mReaderThread.interrupt();
             mReaderThread = null;
+        }
+
+        if (mWriterExecutor != null && !mWriterExecutor.isShutdown()) {
+            mWriterExecutor.shutdown();
         }
     }
 

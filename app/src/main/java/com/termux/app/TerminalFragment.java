@@ -363,6 +363,8 @@ public class TerminalFragment extends Fragment implements TerminalSessionClient 
     public void onTextChanged(@NonNull TerminalSession changedSession) {
         if (terminalView != null) {
             terminalView.onScreenUpdated();
+            // Trigger AI processing for the new output
+            terminalView.onTextChanged("", 0, 0, 0);
         }
     }
     

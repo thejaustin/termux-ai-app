@@ -33,7 +33,7 @@ public class TerminalViewInputConnection extends BaseInputConnection {
             if (mComposingText.length() > 0) {
                 // Backspace over the entire composing text
                 for (int i = 0; i < mComposingText.length(); i++) {
-                    session.write("\b");
+                    session.write("\u007f");
                 }
                 mComposingText = "";
             }
@@ -66,7 +66,7 @@ public class TerminalViewInputConnection extends BaseInputConnection {
             
             // Backspace over the part of the old composing text that doesn't match
             for (int i = commonPrefixLength; i < mComposingText.length(); i++) {
-                session.write("\b");
+                session.write("\u007f");
             }
             
             // Append the new part of the text
@@ -92,7 +92,7 @@ public class TerminalViewInputConnection extends BaseInputConnection {
             if (session != null) {
                 // Send backspace characters
                 for (int i = 0; i < beforeLength; i++) {
-                    session.write("\b");
+                    session.write("\u007f");
                 }
                 return true;
             }
