@@ -208,6 +208,7 @@ public class TerminalFragment extends Fragment implements TerminalSessionClient 
             workingDirectory,
             args,
             env,
+            null,
             this
         );
         
@@ -363,8 +364,7 @@ public class TerminalFragment extends Fragment implements TerminalSessionClient 
     public void onTextChanged(@NonNull TerminalSession changedSession) {
         if (terminalView != null) {
             terminalView.onScreenUpdated();
-            // Trigger AI processing for the new output
-            terminalView.onTextChanged("", 0, 0, 0);
+            terminalView.processNewOutput();
         }
     }
     
@@ -397,7 +397,7 @@ public class TerminalFragment extends Fragment implements TerminalSessionClient 
     }
     
     @Override
-    public void onPasteTextFromClipboard(@NonNull TerminalSession session) {
+    public void onPasteTextFromClipboard(@Nullable TerminalSession session) {
         // Handle clipboard paste
         if (getContext() == null) return;
         android.content.ClipboardManager clipboard =
@@ -425,4 +425,36 @@ public class TerminalFragment extends Fragment implements TerminalSessionClient 
             terminalView.onScreenUpdated();
         }
     }
+
+    @Override
+    public void onTerminalCursorStateChange(boolean state) {}
+
+    @Override
+    public void setTerminalShellPid(@NonNull TerminalSession session, int pid) {}
+
+    @Override
+    public Integer getTerminalCursorStyle() { return null; }
+
+    @Override
+    public void logError(String tag, String message) { Log.e(tag, message); }
+
+    @Override
+    public void logWarn(String tag, String message) { Log.w(tag, message); }
+
+    @Override
+    public void logInfo(String tag, String message) { Log.i(tag, message); }
+
+    @Override
+    public void logDebug(String tag, String message) { Log.d(tag, message); }
+
+    @Override
+    public void logVerbose(String tag, String message) { Log.v(tag, message); }
+
+    @Override
+    public void logStackTraceWithMessage(String tag, String message, Exception e) {
+        Log.e(tag, message, e);
+    }
+
+    @Override
+    public void logStackTrace(String tag, Exception e) { Log.e(tag, "Stack trace", e); }
 }

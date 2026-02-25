@@ -1,85 +1,41 @@
 package com.termux.terminal;
 
 /**
- * JNI interface for native PTY operations.
- *
- * This class provides Java bindings to native C++ code for creating and managing
- * pseudo-terminals (PTY) on Android.
+ * Native methods for creating and managing pseudoterminal subprocesses. C code is in jni/termux.c.
  */
-public class JNI {
-    private static final String TAG = "TermuxJNI";
+final class JNI {
 
     static {
-        try {
-            System.loadLibrary("termux-terminal");
-        } catch (UnsatisfiedLinkError e) {
-            android.util.Log.e(TAG, "Failed to load native library", e);
-            throw e;
-        }
+        System.loadLibrary("termux");
     }
 
     /**
-     * Create a subprocess with a pseudo-terminal.
+     * Create a subprocess. Differs from {@link ProcessBuilder} in that a pseudoterminal is used to communicate with the
+     * subprocess.
+     * <p/>
+     * Callers are responsible for calling {@link #close(int)} on the returned file descriptor.
      *
-     * @param cmd Executable path or command
-     * @param cwd Working directory (can be null for current directory)
-     * @param args Command arguments (can be null)
-     * @param envVars Environment variables in "KEY=VALUE" format (can be null)
-     * @param processIdOut Output array to receive the process ID (length must be >= 1)
-     * @return File descriptor for the PTY master, or -1 on failure
+     * @param cmd       The command to execute
+     * @param cwd       The current working directory for the executed command
+     * @param args      An array of arguments to the command
+     * @param envVars   An array of strings of the form "VAR=value" to be added to the environment of the process
+     * @param processId A one-element array to which the process ID of the started process will be written.
+     * @return the file descriptor resulting from opening /dev/ptmx master device. The sub process will have opened the
+     * slave device counterpart (/dev/pts/$N) and have it as stdint, stdout and stderr.
      */
-    public static native int createSubprocess(
-        String cmd,
-        String cwd,
-        String[] args,
-        String[] envVars,
-        int[] processIdOut
-    );
+    public static native int createSubprocess(String cmd, String cwd, String[] args, String[] envVars, int[] processId, int rows, int columns, int cellWidth, int cellHeight);
+
+    /** Set the window size for a given pty, which allows connected programs to learn how large their screen is. */
+    public static native void setPtyWindowSize(int fd, int rows, int cols, int cellWidth, int cellHeight);
 
     /**
-     * Set the window size of a PTY.
+     * Causes the calling thread to wait for the process associated with the receiver to finish executing.
      *
-     * @param fd PTY master file descriptor
-     * @param rows Number of rows
-     * @param cols Number of columns
-     * @return 0 on success, -1 on failure
+     * @return if >= 0, the exit status of the process. If < 0, the signal causing the process to stop negated.
      */
-    public static native int setPtyWindowSize(int fd, int rows, int cols);
+    public static native int waitFor(int processId);
 
-    /**
-     * Wait for a process to exit and get its exit code.
-     *
-     * This is a blocking call.
-     *
-     * @param pid Process ID to wait for
-     * @return Exit code if process exited normally, -signal if killed by signal, -1 on error
-     */
-    public static native int waitFor(int pid);
+    /** Close a file descriptor through the close(2) system call. */
+    public static native void close(int fileDescriptor);
 
-    /**
-     * Close a file descriptor.
-     *
-     * @param fd File descriptor to close
-     */
-    public static native void close(int fd);
-
-    /**
-     * Read data from PTY.
-     *
-     * @param fd PTY master file descriptor
-     * @param buffer Buffer to read into
-     * @param length Maximum number of bytes to read
-     * @return Number of bytes read, or -1 on error
-     */
-    public static native int readFromPty(int fd, byte[] buffer, int length);
-
-    /**
-     * Write data to PTY.
-     *
-     * @param fd PTY master file descriptor
-     * @param buffer Buffer containing data to write
-     * @param length Number of bytes to write
-     * @return Number of bytes written, or -1 on error
-     */
-    public static native int writeToPty(int fd, byte[] buffer, int length);
 }

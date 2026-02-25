@@ -90,27 +90,30 @@ int create_pty(int* master_fd, int* slave_fd, char* slave_name, size_t slave_nam
 }
 
 /**
- * Set PTY window size.
+ * Set PTY window size including pixel dimensions.
  *
  * @param fd PTY file descriptor
  * @param rows Number of rows
  * @param cols Number of columns
+ * @param cellWidth Width of a cell in pixels (for ws_xpixel)
+ * @param cellHeight Height of a cell in pixels (for ws_ypixel)
  * @return 0 on success, -1 on failure
  */
-int set_pty_window_size(int fd, int rows, int cols) {
+int set_pty_window_size(int fd, int rows, int cols, int cellWidth, int cellHeight) {
     struct winsize ws;
     memset(&ws, 0, sizeof(ws));
 
     ws.ws_row = static_cast<unsigned short>(rows);
     ws.ws_col = static_cast<unsigned short>(cols);
-    ws.ws_xpixel = 0;
-    ws.ws_ypixel = 0;
+    ws.ws_xpixel = static_cast<unsigned short>(cols * cellWidth);
+    ws.ws_ypixel = static_cast<unsigned short>(rows * cellHeight);
 
     if (ioctl(fd, TIOCSWINSZ, &ws) != 0) {
         LOGE("ioctl(TIOCSWINSZ) failed for fd=%d, rows=%d, cols=%d", fd, rows, cols);
         return -1;
     }
 
-    LOGD("Set PTY window size: fd=%d, rows=%d, cols=%d", fd, rows, cols);
+    LOGD("Set PTY window size: fd=%d, rows=%d, cols=%d, xpixel=%d, ypixel=%d",
+         fd, rows, cols, ws.ws_xpixel, ws.ws_ypixel);
     return 0;
 }

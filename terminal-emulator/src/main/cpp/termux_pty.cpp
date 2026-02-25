@@ -16,8 +16,8 @@
 // Helper function to open PTY
 extern int create_pty(int* master_fd, int* slave_fd, char* slave_name, size_t slave_name_size);
 
-// Helper function to set PTY window size
-extern int set_pty_window_size(int fd, int rows, int cols);
+// Helper function to set PTY window size (rows, cols, cellWidth, cellHeight)
+extern int set_pty_window_size(int fd, int rows, int cols, int cellWidth, int cellHeight);
 
 extern "C" JNIEXPORT jint JNICALL
 Java_com_termux_terminal_JNI_createSubprocess(
@@ -27,10 +27,14 @@ Java_com_termux_terminal_JNI_createSubprocess(
     jstring cwd,
     jobjectArray args,
     jobjectArray envVars,
-    jintArray processIdOut)
+    jintArray processId,
+    jint rows,
+    jint columns,
+    jint cellWidth,
+    jint cellHeight)
 {
     // 1. Extract all data in parent BEFORE fork
-    
+
     // Get command string
     const char* cmdStr = env->GetStringUTFChars(cmd, nullptr);
     if (!cmdStr) {
@@ -90,7 +94,6 @@ Java_com_termux_terminal_JNI_createSubprocess(
 
     if (create_pty(&master_fd, &slave_fd, slave_name, sizeof(slave_name)) != 0) {
         LOGE("Failed to create PTY");
-        // Cleanup...
         free(cmdCopy);
         free(cwdCopy);
         for(int i=1; i<=argc; i++) free(argv[i]);
@@ -99,6 +102,9 @@ Java_com_termux_terminal_JNI_createSubprocess(
         delete[] envp;
         return -1;
     }
+
+    // Set initial window size before forking
+    set_pty_window_size(master_fd, rows, columns, cellWidth, cellHeight);
 
     LOGD("Created PTY: master_fd=%d, slave=%s", master_fd, slave_name);
 
@@ -110,7 +116,6 @@ Java_com_termux_terminal_JNI_createSubprocess(
         LOGE("Fork failed");
         close(master_fd);
         close(slave_fd);
-        // Cleanup...
         free(cmdCopy);
         free(cwdCopy);
         for(int i=1; i<=argc; i++) free(argv[i]);
@@ -141,7 +146,7 @@ Java_com_termux_terminal_JNI_createSubprocess(
 
         // Change directory if specified
         if (cwdCopy && chdir(cwdCopy) != 0) {
-            // Failed to change directory
+            // Failed to change directory - continue anyway
         }
 
         // Set environment variables
@@ -164,9 +169,9 @@ Java_com_termux_terminal_JNI_createSubprocess(
     LOGD("Forked process: pid=%d", pid);
 
     // Return PID through output parameter
-    if (processIdOut) {
+    if (processId) {
         jint pidValue = static_cast<jint>(pid);
-        env->SetIntArrayRegion(processIdOut, 0, 1, &pidValue);
+        env->SetIntArrayRegion(processId, 0, 1, &pidValue);
     }
 
     // Cleanup parent's copies
@@ -180,15 +185,17 @@ Java_com_termux_terminal_JNI_createSubprocess(
     return master_fd;
 }
 
-extern "C" JNIEXPORT jint JNICALL
+extern "C" JNIEXPORT void JNICALL
 Java_com_termux_terminal_JNI_setPtyWindowSize(
     JNIEnv* /* env */,
     jclass /* clazz */,
     jint fd,
     jint rows,
-    jint cols)
+    jint cols,
+    jint cellWidth,
+    jint cellHeight)
 {
-    return set_pty_window_size(fd, rows, cols);
+    set_pty_window_size(fd, rows, cols, cellWidth, cellHeight);
 }
 
 extern "C" JNIEXPORT jint JNICALL
@@ -230,61 +237,4 @@ Java_com_termux_terminal_JNI_close(
         close(fd);
         LOGD("Closed fd %d", fd);
     }
-}
-
-extern "C" JNIEXPORT jint JNICALL
-Java_com_termux_terminal_JNI_readFromPty(
-    JNIEnv* env,
-    jclass /* clazz */,
-    jint fd,
-    jbyteArray buffer,
-    jint length)
-{
-    if (fd < 0 || !buffer) {
-        return -1;
-    }
-
-    jbyte* bufPtr = env->GetByteArrayElements(buffer, nullptr);
-    if (!bufPtr) {
-        return -1;
-    }
-
-    ssize_t bytesRead = read(fd, bufPtr, static_cast<size_t>(length));
-
-    env->ReleaseByteArrayElements(buffer, bufPtr, 0);
-
-    // For non-blocking FD: return 0 for EAGAIN/EWOULDBLOCK (no data yet)
-    // Return -1 only for real errors (EOF or other failures)
-    if (bytesRead < 0) {
-        if (errno == EAGAIN || errno == EWOULDBLOCK) {
-            return 0;  // No data available yet, not an error
-        }
-        return -1;  // Real error
-    }
-
-    return static_cast<jint>(bytesRead);
-}
-
-extern "C" JNIEXPORT jint JNICALL
-Java_com_termux_terminal_JNI_writeToPty(
-    JNIEnv* env,
-    jclass /* clazz */,
-    jint fd,
-    jbyteArray buffer,
-    jint length)
-{
-    if (fd < 0 || !buffer) {
-        return -1;
-    }
-
-    jbyte* bufPtr = env->GetByteArrayElements(buffer, nullptr);
-    if (!bufPtr) {
-        return -1;
-    }
-
-    ssize_t bytesWritten = write(fd, bufPtr, static_cast<size_t>(length));
-
-    env->ReleaseByteArrayElements(buffer, bufPtr, JNI_ABORT);
-
-    return static_cast<jint>(bytesWritten);
 }

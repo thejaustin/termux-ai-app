@@ -17,8 +17,11 @@ import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.Toast;
 
+import android.util.Log;
+
 import com.termux.plus.api.AIProvider;
 import com.termux.view.TerminalView;
+import com.termux.view.TerminalViewClient;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -89,6 +92,34 @@ public class EnhancedTerminalView extends TerminalView {
 
         initializePaints();
         setupGestureDetector();
+        setTerminalViewClient(new DefaultTerminalViewClient());
+    }
+
+    /** Minimal TerminalViewClient with sensible defaults for Termux+. */
+    private class DefaultTerminalViewClient implements TerminalViewClient {
+        @Override public float onScale(float scale) { return scale; }
+        @Override public void onSingleTapUp(MotionEvent e) { showKeyboard(); }
+        @Override public boolean shouldBackButtonBeMappedToEscape() { return true; }
+        @Override public boolean shouldEnforceCharBasedInput() { return false; }
+        @Override public boolean shouldUseCtrlSpaceWorkaround() { return false; }
+        @Override public boolean isTerminalViewSelected() { return hasFocus(); }
+        @Override public void copyModeChanged(boolean copyMode) {}
+        @Override public boolean onKeyDown(int keyCode, KeyEvent e, TerminalSession session) { return false; }
+        @Override public boolean onKeyUp(int keyCode, KeyEvent e) { return false; }
+        @Override public boolean onLongPress(MotionEvent event) { return false; }
+        @Override public boolean readControlKey() { return false; }
+        @Override public boolean readAltKey() { return false; }
+        @Override public boolean readShiftKey() { return false; }
+        @Override public boolean readFnKey() { return false; }
+        @Override public boolean onCodePoint(int codePoint, boolean ctrlDown, TerminalSession session) { return false; }
+        @Override public void onEmulatorSet() {}
+        @Override public void logError(String tag, String message) { Log.e(tag, message); }
+        @Override public void logWarn(String tag, String message) { Log.w(tag, message); }
+        @Override public void logInfo(String tag, String message) { Log.i(tag, message); }
+        @Override public void logDebug(String tag, String message) { Log.d(tag, message); }
+        @Override public void logVerbose(String tag, String message) { Log.v(tag, message); }
+        @Override public void logStackTraceWithMessage(String tag, String message, Exception e) { Log.e(tag, message, e); }
+        @Override public void logStackTrace(String tag, Exception e) { Log.e(tag, "Stack trace", e); }
     }
 
     public void setAIProvider(AIProvider provider) {
@@ -194,12 +225,9 @@ public class EnhancedTerminalView extends TerminalView {
         });
     }
 
-    @Override
-    public void onTextChanged(CharSequence text, int start, int lengthBefore, int lengthAfter) {
-        super.onTextChanged(text, start, lengthBefore, lengthAfter);
-        
+    /** Called by TerminalFragment when session text changes; triggers AI processing. */
+    public void processNewOutput() {
         final String currentLine = getCurrentLine();
-        
         if (currentLine != null && currentAIProvider != null && !backgroundExecutor.isShutdown()) {
             backgroundExecutor.execute(() -> {
                 if (currentAIProvider.isEnabled()) {
@@ -215,8 +243,23 @@ public class EnhancedTerminalView extends TerminalView {
             if (session != null) {
                 TerminalEmulator emulator = session.getEmulator();
                 if (emulator != null) {
-                    return emulator.getScreen().getSelectedText(0, emulator.getCursorRow(), 
-                        emulator.getScreen().getColumns(), emulator.getCursorRow());
+                    int row = emulator.getCursorRow();
+                    return emulator.getScreen().getSelectedText(0, row, emulator.mColumns, row);
+                }
+            }
+        } catch (Exception e) {
+            // Ignore errors
+        }
+        return null;
+    }
+
+    public String getTranscriptText() {
+        try {
+            TerminalSession session = getCurrentSession();
+            if (session != null) {
+                TerminalEmulator emulator = session.getEmulator();
+                if (emulator != null) {
+                    return emulator.getScreen().getTranscriptText();
                 }
             }
         } catch (Exception e) {

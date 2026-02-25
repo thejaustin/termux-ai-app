@@ -1,89 +1,91 @@
-# Termux+ - Modular AI-Enhanced Terminal for Android (v2.0.0)
+# Termux+
 
-A powerful, modular fork of the official Termux app that transforms the terminal into an AI-native development environment. Built for extensibility, Termux+ features a robust plugin system and deep integrations with leading AI models like Claude and Gemini.
+A fork of [Termux](https://github.com/termux/termux-app) with AI integration, tabbed sessions, and Material You theming.
 
-## 🚀 Key Features
+[![GitHub release](https://img.shields.io/github/v/release/thejaustin/termux-ai-app)](https://github.com/thejaustin/termux-ai-app/releases)
+[![License](https://img.shields.io/badge/license-GPLv3-blue)](LICENSE)
 
-### 🧩 Modular Plugin Architecture (NEW in v2.0.0)
-- **Plugin Manager** - Enable, disable, and configure extensions at runtime.
-- **Plus Features Toggles** - Granular control over experimental features like Voice Input, Gesture Controls, and AI Integration.
-- **AI Provider API** - Swap between different AI backends (Claude, Gemini, etc.) via plugins.
-- **Terminal Extensions** - Expand terminal functionality with official and third-party plugins.
-- **Customizable Experience** - Only load the features you need.
+---
 
-### 🧠 Advanced AI Integrations
-- **Claude Code Integration** - Full support for Anthropic's Claude Code CLI with native progress tracking.
-- **Multi-Provider Support** - Choose between **Claude**, **Gemini**, and more.
-- **Real-time Assistance** - AI-powered command suggestions and error analysis.
-- **Voice Commands** - Spoken command input directly into the terminal.
-- **Context-Aware** - Automatically detects project types (Node.js, Python, Rust, etc.) for smarter assistance.
+## What is Termux+?
 
-### 💻 Professional Terminal Experience
-- **Multi-Window Support** - Open multiple independent terminal windows with isolated sessions.
-- **Tabbed Interface** - Manage multiple projects simultaneously with intuitive tabs.
-- **Performance Optimized** - Background processing for regex parsing and persistence to ensure zero lag.
-- **Material You (M3)** - Dynamic theming that adapts to your wallpaper.
-- **Real PTY Emulation** - Native C++ backend for authentic shell behavior.
+Termux+ is an Android terminal emulator and Linux environment built on top of the official Termux terminal core. It adds an AI-assist layer, tabbed terminal sessions, and a plugin system while keeping the same reliable PTY backend that Termux uses.
 
-## 🔒 Security & Privacy
+It is aimed at developers who want a mobile terminal that can talk to AI models (Claude, Gemini) without leaving the terminal.
 
-We take security seriously. This app handles shell access and AI credentials, so we've implemented production-grade security:
+---
 
-- **Encrypted Storage**: API keys are encrypted at rest using AndroidX Security (AES-256-GCM). Keys are *never* stored in plaintext.
-- **Secure Transmission**: API keys are sent via secure HTTP headers, never in URLs.
-- **Intent Validation**: Strict validation prevents intent injection attacks.
-- **Minimized Permissions**: We've removed unused dangerous permissions.
-- **Backup Protection**: Sensitive credentials are explicitly excluded from Android backups.
+## Features
 
-## 🏗 Build Instructions
+- **Full terminal emulation** — VT100/xterm compatible, true 24-bit color, Unicode and wide-character support
+- **Tabbed sessions** — open multiple independent shell sessions side by side
+- **AI integration** — Claude and Gemini plugins; get command suggestions and error analysis inline
+- **Material You theming** — dynamic colors that follow your wallpaper (Android 12+)
+- **Plugin system** — enable or disable features at runtime; swap AI backends without rebuilding
+- **Gesture controls** — pinch to zoom, fling to scroll, long-press for text selection
+- **Encrypted key storage** — API keys are stored with AES-256-GCM, never in plaintext
 
-### Prerequisites
+---
+
+## Installation
+
+> **Note:** Termux+ is in active development. It requires Termux bootstrap packages to be installed at the standard paths.
+
+### From releases
+
+Download the latest APK from the [Releases](https://github.com/thejaustin/termux-ai-app/releases) page and sideload it.
+
+### Build from source
+
+**Requirements:**
 - Android Studio Ladybug or newer
 - Android SDK 34+
-- **Android NDK** (Side-by-side) - Required for C++ PTY compilation
+- Android NDK (side-by-side) — required for C++ PTY compilation
 - CMake 3.22.1+
 
-### Building from Source
+```bash
+git clone https://github.com/thejaustin/termux-ai-app.git
+cd termux-ai-app
+./gradlew assembleDebug
+```
 
-1. **Clone the Repository**
-   ```bash
-   git clone https://github.com/thejaustin/termux-ai-app.git
-   cd termux-ai-app
-   ```
+The APK will be at `app/build/outputs/apk/debug/app-debug.apk`.
 
-2. **Build the APK**
-   ```bash
-   # Debug build
-   ./gradlew assembleDebug
-   ```
+---
 
-*Note: Building directly on an Android device (in Termux) is currently not supported due to NDK requirements.*
+## AI Setup
 
-## 🏗 Roadmap
+1. Open **Settings → Plus Features**
+2. Enable the AI provider you want (Claude or Gemini)
+3. Enter your API key — it is stored encrypted on-device
+4. Start a terminal session; the AI overlay activates automatically
 
-### Phase 1 - Core Foundation ✅ COMPLETE
-- [x] Basic AI integration (Claude & Gemini)
-- [x] Security hardening (AES-256-GCM)
-- [x] Real terminal emulation (PTY + ANSI parser)
-- [x] Native C++ implementation
+API keys are sent only to the provider you configure. They are never stored in plaintext or included in backups.
 
-### Phase 2 - Modularity & Polish ✅ COMPLETE
-- [x] **Modular Plugin System**
-- [x] **Multi-Window Support**
-- [x] **Performance Optimizations**
-- [x] **Real Voice Input**
-- [x] **Termux+ Rebranding**
+---
 
-### Phase 3 - Ecosystem Expansion (Next)
-- [ ] Third-party Plugin SDK (DEX/APK loading)
-- [ ] On-device AI model support
-- [ ] Enhanced Project Insights tool
-- [ ] Cloud Context Sync
+## Project structure
 
-## 📄 License
+```
+app/                    Android app module (activities, fragments, AI/plugin layer)
+terminal-emulator/      Terminal core library (VT100 emulator, PTY JNI, session)
+  src/main/cpp/         Native C++ PTY code (CMake)
+  src/main/java/        Java terminal emulator classes
+```
 
-This project is licensed under the GPLv3 License.
+The terminal core (`terminal-emulator/`) tracks upstream [termux/termux-app](https://github.com/termux/termux-app). Termux+ additions live in `app/`.
 
-## 📞 Support
+---
 
-- **Issues** - [GitHub Issues](https://github.com/thejaustin/termux-ai-app/issues)
+## Contributing
+
+Pull requests are welcome. Please open an issue first for significant changes.
+
+- Bug reports: [Issues](https://github.com/thejaustin/termux-ai-app/issues)
+- The terminal core should stay compatible with upstream Termux where possible
+
+---
+
+## License
+
+GPLv3 — see [LICENSE](LICENSE). Termux+ is a fork of Termux, which is also GPLv3.
